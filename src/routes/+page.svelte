@@ -1,22 +1,19 @@
 <script lang="ts">
     import { onMount } from 'svelte';
+    import { scansStore, loadScansData } from '$lib/stores/scans';
 
-    let scansData: { images: string[] } | null = null;
+	$: if ($scansStore) {
+        console.log('Loaded scans:', $scansStore);
+    }
 
-    onMount(async () => {
-        try {
-            const response = await fetch('/brain_scan_examples/scans_db.json');
-            scansData = await response.json();
-            console.log('Loaded scans data:', scansData);
-        } catch (error) {
-            console.error('Error loading scans data:', error);
-        }
+    onMount(() => {
+        loadScansData();
     });
 </script>
 
 <div class="size-full bg-white text-black">    
-    {#if scansData}
-        <p>Scans loaded! Check the console.</p>
+    {#if $scansStore}
+        <p>Scans loaded!</p>
     {:else}
         <p>Loading scans...</p>
     {/if}
