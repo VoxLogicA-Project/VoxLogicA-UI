@@ -1,9 +1,10 @@
 <script lang="ts">
     import { onMount } from 'svelte';
-    import { scansStore, loadScansData } from '$lib/stores/scans';
+    import { scanUrlsStore, loadScansData } from '$lib/stores/scans';
 
-	$: if ($scansStore) {
-        console.log('Loaded scans:', $scansStore);
+    // Log the transformed URLs when they're available
+    $: if ($scanUrlsStore) {
+        console.log('Scan URLs:', $scanUrlsStore.imageUrls);
     }
 
     onMount(() => {
@@ -12,8 +13,8 @@
 </script>
 
 <div class="size-full bg-white text-black">    
-    {#if $scansStore}
-        <p>Scans loaded!</p>
+    {#if $scanUrlsStore}
+        <p>Scans loaded! Check the console.</p>
     {:else}
         <p>Loading scans...</p>
     {/if}

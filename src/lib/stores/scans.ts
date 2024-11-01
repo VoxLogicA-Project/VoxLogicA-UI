@@ -1,10 +1,32 @@
-import { writable } from 'svelte/store';
+import { writable, derived, type Readable } from 'svelte/store';
 
+// View
 interface ScansData {
     images: string[];
 }
 
+// ViewModel
+interface ScanUrlsData {
+    imageUrls: string[];
+}
+
 export const scansStore = writable<ScansData | null>(null);
+
+// New derived store (readonly/Readable) 
+const BRAIN_SCAN_URL_PREFIX = '/brain_scan_examples/';
+export const scanUrlsStore: Readable<ScanUrlsData | null> = derived(
+    scansStore,
+    $scansStore => {
+        // Null-safety
+        if (!$scansStore) return null;
+        
+        return {
+            imageUrls: $scansStore.images.map(
+                image => `${BRAIN_SCAN_URL_PREFIX}${image}`
+            )
+        };
+    }
+);
 
 export async function loadScansData(): Promise<ScansData | null> {
     try {
