@@ -6,7 +6,7 @@ interface ScansData {
 }
 
 // ViewModel
-interface ScanUrlsData {
+export interface ScanUrlsData {
     imageUrls: string[];
 }
 
