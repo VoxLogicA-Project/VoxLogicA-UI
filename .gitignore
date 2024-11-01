@@ -6,6 +6,7 @@ node_modules
 .vercel
 /.svelte-kit
 /build
+repomix-output.txt
 
 # OS
 .DS_Store

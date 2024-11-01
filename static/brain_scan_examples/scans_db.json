@@ -1,7 +1,3 @@
 {
-  "images": [
-    "Axial.png",
-    "Coronal.png",
-    "Sagittal.png"
-  ]
+	"images": ["Axial.png", "Coronal.png", "Sagittal.png"]
 }
