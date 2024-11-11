@@ -1,24 +1,27 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
-	import { scanUrlsStore, loadScansData } from '$lib/stores/scans';
-	import BrainScans from '$lib/components/BrainScans.svelte';
-
-	onMount(() => {
-		loadScansData();
-	});
+	import DatasetBrowser from '$lib/components/DatasetBrowser.svelte';
+	import { datasetStore } from '$lib/viewmodels/datasetStore';
 </script>
 
-<svelte:head>
-	<title>VoxLogica UI</title>
-	<meta name="description" content="View and analyze brain scan images" />
-</svelte:head>
+<div class="h-full w-full flex bg-white">
+	<!-- Sidebar -->
+	<div class="w-72 border-r border-gray-200 py-6">
+		<DatasetBrowser />
+		<!-- Case list will go here -->
+		<!-- Script panel will go here -->
+	</div>
 
-<div class="container mx-auto p-4">
-	{#if $scanUrlsStore}
-		<BrainScans scanData={$scanUrlsStore} />
-	{:else}
-		<div class="flex justify-center items-center h-32">
-			<p class="text-lg">Loading scans...</p>
-		</div>
-	{/if}
+	<!-- Main content -->
+	<div class="flex-1 p-6">
+		{#if $datasetStore.currentDataset}
+			<h2 class="text-xl font-medium text-gray-800">
+				{$datasetStore.currentDataset.name}
+			</h2>
+			<!-- Viewer will go here -->
+		{:else}
+			<div class="flex h-full items-center justify-center">
+				<p class="text-gray-400">Select a dataset to begin</p>
+			</div>
+		{/if}
+	</div>
 </div>
