@@ -39,6 +39,14 @@ function createDatasetStore() {
 			}
 		},
 
+		selectDataset(dataset: Dataset) {
+			store.update((state) => ({
+				...state,
+				currentDataset: dataset,
+				selectedCases: [],
+			}));
+		},
+
 		// Toggles case selection, enforcing the MAX_CASES limit
 		toggleCase(caseName: string) {
 			store.update((state) => {
