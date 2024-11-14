@@ -1,8 +1,9 @@
 <script lang="ts">
 	import { datasetStore, reachedMaxCases } from '$lib/viewmodels/datasetStore';
+	import type { Case } from '$lib/models/dataset';
 
 	let searchQuery = '';
-	let cases: string[] = [];
+	let cases: Case[] = [];
 
 	// Fetches case list when dataset changes
 	$: if ($datasetStore.currentDataset) {
@@ -14,7 +15,7 @@
 
 	// Filters cases based on search query
 	$: filteredCases = searchQuery
-		? cases.filter((caseName) => caseName.toLowerCase().includes(searchQuery.toLowerCase()))
+		? cases.filter((caseData) => caseData.id.toLowerCase().includes(searchQuery.toLowerCase()))
 		: cases;
 </script>
 
@@ -33,27 +34,27 @@
 		<!-- Cases list -->
 		<div class="flex-1 overflow-y-auto space-y-0.5">
 			{#if filteredCases.length > 0}
-				{#each filteredCases as caseName (caseName)}
-					{@const isSelected = $datasetStore.selectedCases.includes(caseName)}
+				{#each filteredCases as caseData (caseData.id)}
+					{@const isSelected = $datasetStore.selectedCases.some((c) => c.id === caseData.id)}
 					{@const isDisabled = $reachedMaxCases && !isSelected}
 					<button
-						class="w-full px-4 py-2.5 text-left transition-all duration-200 group
-						{isSelected
+						class="w-full px-4 py-2.5 text-left transition-all duration-200
+							hover:bg-surface-200-700-token hover:pl-6 group
+							{isSelected
 							? 'bg-primary-500/10 text-primary-700 dark:text-primary-400'
 							: 'text-surface-900-50-token'}
-						{isDisabled ? 'opacity-50 cursor-not-allowed' : ''}
-						"
-						on:click={() => datasetStore.toggleCase(caseName)}
+							{isDisabled ? 'opacity-50 cursor-not-allowed' : ''}"
+						on:click={() => datasetStore.toggleCase(caseData)}
 						disabled={isDisabled}
 					>
 						<div class="flex items-center justify-between">
 							<span class="truncate font-medium">
-								{caseName}
+								{caseData.id}
 							</span>
 
 							{#if isSelected}
 								<span class="badge badge-sm variant-filled-primary">
-									{$datasetStore.selectedCases.indexOf(caseName) + 1}
+									{$datasetStore.selectedCases.findIndex((c) => c.id === caseData.id) + 1}
 								</span>
 							{:else}
 								<svg

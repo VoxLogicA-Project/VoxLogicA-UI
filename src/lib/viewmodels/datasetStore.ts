@@ -1,44 +1,28 @@
 import { writable, derived, type Writable } from 'svelte/store';
-import type { Dataset } from '$lib/models/dataset';
+import type { Dataset, Case, Layer } from '$lib/models/dataset';
 
 // Maximum number of cases that can be selected simultaneously
 const MAX_CASES = 16;
 
 interface DatasetState {
-	datasets: Dataset[];
 	currentDataset: Dataset | null;
-	selectedCases: string[];
+	selectedCases: Case[];
+	selectedLayers: Record<string, Layer[]>;
 	loading: boolean;
 	error: string | null;
 }
 
 function createDatasetStore() {
 	const store: Writable<DatasetState> = writable({
-		datasets: [],
 		currentDataset: null,
 		selectedCases: [],
+		selectedLayers: {},
 		loading: false,
 		error: null,
 	});
 
 	const datasetStore = {
 		...store,
-		// Fetches available datasets from the server
-		async loadDatasets() {
-			store.update((state) => ({ ...state, loading: true, error: null }));
-			try {
-				const response = await fetch('/datasets');
-				const datasets = await response.json();
-				store.update((state) => ({ ...state, datasets, loading: false }));
-			} catch (error) {
-				store.update((state) => ({
-					...state,
-					loading: false,
-					error: 'Failed to load datasets',
-				}));
-			}
-		},
-
 		selectDataset(dataset: Dataset) {
 			store.update((state) => ({
 				...state,
@@ -47,18 +31,56 @@ function createDatasetStore() {
 			}));
 		},
 
-		// Toggles case selection, enforcing the MAX_CASES limit
-		toggleCase(caseName: string) {
+		// Toggles a case
+		toggleCase(caseData: Case) {
 			store.update((state) => {
-				const currentIndex = state.selectedCases.indexOf(caseName);
+				const currentIndex = state.selectedCases.findIndex((c) => c.id === caseData.id);
+
 				if (currentIndex === -1 && state.selectedCases.length < MAX_CASES) {
-					return { ...state, selectedCases: [...state.selectedCases, caseName] };
+					return { ...state, selectedCases: [...state.selectedCases, caseData] };
 				}
+
 				if (currentIndex !== -1) {
-					const selectedCases = state.selectedCases.filter((c) => c !== caseName);
-					return { ...state, selectedCases };
+					const selectedCases = state.selectedCases.filter((c) => c.id !== caseData.id);
+					const { [caseData.id]: _, ...remainingLayers } = state.selectedLayers;
+
+					return {
+						...state,
+						selectedCases,
+						selectedLayers: remainingLayers,
+					};
 				}
+
 				return state;
+			});
+		},
+
+		// Toggles a layer
+		toggleLayer(caseId: string, layer: Layer) {
+			store.update((state) => {
+				const currentLayers = state.selectedLayers[caseId] || [];
+				const layerIndex = currentLayers.findIndex((l) => l.id === layer.id);
+
+				if (layerIndex === -1) {
+					// Add layer if not present
+					return {
+						...state,
+						selectedLayers: {
+							...state.selectedLayers,
+							[caseId]: [...currentLayers, layer],
+						},
+					};
+				} else {
+					// Remove layer if already present
+					const updatedLayers = currentLayers.filter((_, index) => index !== layerIndex);
+					return {
+						...state,
+						selectedLayers: {
+							...state.selectedLayers,
+							[caseId]: updatedLayers,
+						},
+					};
+				}
 			});
 		},
 	} as const;

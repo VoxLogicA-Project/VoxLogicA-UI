@@ -1,8 +1,9 @@
 <script lang="ts">
 	import { datasetStore } from '$lib/viewmodels/datasetStore';
+	import type { Layer } from '$lib/models/dataset';
 
 	// Stores layer information for each selected case
-	let layersData: Record<string, string[]> = {};
+	let layersData: Record<string, Layer[]> = {};
 	let loading = false;
 	let error: string | null = null;
 
@@ -16,12 +17,12 @@
 		loading = true;
 		error = null;
 		try {
-			const promises = $datasetStore.selectedCases.map(async (caseName) => {
+			const promises = $datasetStore.selectedCases.map(async (caseData) => {
 				const response = await fetch(
-					`/datasets/${$datasetStore.currentDataset?.path}/cases/${caseName}/layers`
+					`/datasets/${$datasetStore.currentDataset?.path}/cases/${caseData.id}/layers`
 				);
 				const layers = await response.json();
-				return [caseName, layers];
+				return [caseData.id, layers];
 			});
 
 			const results = await Promise.all(promises);
@@ -35,6 +36,10 @@
 
 	$: if ($datasetStore.selectedCases) {
 		loadLayers();
+	}
+
+	function handleLayerClick(caseId: string, layer: Layer) {
+		datasetStore.toggleLayer(caseId, layer);
 	}
 </script>
 
@@ -57,15 +62,21 @@
 					</tr>
 				</thead>
 				<tbody>
-					{#each Object.entries(layersData) as [caseName, layers]}
+					{#each Object.entries(layersData) as [caseId, layers]}
 						<tr>
-							<td>{caseName}</td>
+							<td>{caseId}</td>
 							<td>
 								<div class="flex flex-wrap gap-2">
 									{#each layers as layer}
-										<span class="chip variant-soft">
-											{layer}
-										</span>
+										{@const isSelected = $datasetStore.selectedLayers[caseId]?.some(
+											(l) => l.id === layer.id
+										)}
+										<button
+											class="chip {isSelected ? 'variant-filled' : 'variant-soft'}"
+											on:click={() => handleLayerClick(caseId, layer)}
+										>
+											{layer.id}
+										</button>
 									{/each}
 								</div>
 							</td>

@@ -1,9 +1,24 @@
 <script lang="ts">
 	import { datasetStore } from '$lib/viewmodels/datasetStore';
 	import { onMount } from 'svelte';
+	import type { Dataset } from '$lib/models/dataset';
+
+	let datasets: Dataset[] = [];
+
+	async function loadDatasets() {
+		datasetStore.update((state) => ({ ...state, loading: true, error: null }));
+		try {
+			const response = await fetch('/datasets');
+			datasets = await response.json();
+		} catch (err) {
+			datasetStore.update((state) => ({ ...state, error: 'Failed to load datasets' }));
+		} finally {
+			datasetStore.update((state) => ({ ...state, loading: false }));
+		}
+	}
 
 	onMount(() => {
-		datasetStore.loadDatasets();
+		loadDatasets();
 	});
 </script>
 
@@ -20,7 +35,7 @@
 		</div>
 	{:else}
 		<div class="space-y-0.5">
-			{#each $datasetStore.datasets as dataset}
+			{#each datasets as dataset}
 				<button
 					class="w-full px-4 py-2.5 text-left transition-all duration-200
 						hover:bg-surface-200-700-token hover:pl-6 group

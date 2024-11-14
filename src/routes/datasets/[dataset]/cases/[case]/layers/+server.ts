@@ -1,5 +1,6 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
+import type { Layer } from '$lib/models/dataset';
 import fs from 'fs/promises';
 import path from 'path';
 
@@ -8,12 +9,15 @@ export const GET: RequestHandler = async ({ params }) => {
 		const casePath = path.join(process.cwd(), 'static/datasets', params.dataset, params.case);
 		const files = await fs.readdir(casePath);
 
-		// Extract layer names from .nii.gz files, removing patient ID prefix
-		const layers = files
+		// Convert files to Layer objects
+		const layers: Layer[] = files
 			.filter((file) => file.endsWith('.nii.gz'))
 			.map((file) => {
 				const match = file.match(/.*_(.+)\.nii\.gz$/);
-				return match ? match[1] : file;
+				return {
+					id: match ? match[1] : file,
+					path: path.join(params.dataset, params.case, file),
+				};
 			});
 
 		return json(layers);
