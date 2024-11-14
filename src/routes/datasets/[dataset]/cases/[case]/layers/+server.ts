@@ -1,12 +1,13 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import type { Layer } from '$lib/models/dataset';
 import fs from 'fs/promises';
 import path from 'path';
+import { DATASET_PATH } from '$lib/config/config';
+import type { Layer } from '$lib/models/dataset';
 
 export const GET: RequestHandler = async ({ params }) => {
 	try {
-		const casePath = path.join(process.cwd(), 'static/datasets', params.dataset, params.case);
+		const casePath = path.join(DATASET_PATH, params.dataset, params.case);
 		const files = await fs.readdir(casePath);
 
 		// Convert files to Layer objects
