@@ -8,6 +8,7 @@ interface DatasetState {
 	currentDataset: Dataset | null;
 	selectedCases: Case[];
 	selectedLayers: Record<string, Layer[]>;
+	selectedBaseLayer: Record<string, Layer>;
 	loading: boolean;
 	error: string | null;
 }
@@ -17,6 +18,7 @@ function createDatasetStore() {
 		currentDataset: null,
 		selectedCases: [],
 		selectedLayers: {},
+		selectedBaseLayer: {},
 		loading: false,
 		error: null,
 	});
@@ -43,11 +45,13 @@ function createDatasetStore() {
 				if (currentIndex !== -1) {
 					const selectedCases = state.selectedCases.filter((c) => c.id !== caseData.id);
 					const { [caseData.id]: _, ...remainingLayers } = state.selectedLayers;
+					const { [caseData.id]: __, ...remainingBaseLayers } = state.selectedBaseLayer;
 
 					return {
 						...state,
 						selectedCases,
 						selectedLayers: remainingLayers,
+						selectedBaseLayer: remainingBaseLayers,
 					};
 				}
 
@@ -82,6 +86,16 @@ function createDatasetStore() {
 					};
 				}
 			});
+		},
+
+		setBaseLayer(caseId: string, layer: Layer) {
+			store.update((state) => ({
+				...state,
+				selectedBaseLayer: {
+					...state.selectedBaseLayer,
+					[caseId]: layer,
+				},
+			}));
 		},
 	} as const;
 

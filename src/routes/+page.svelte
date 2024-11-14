@@ -1,7 +1,7 @@
 <script lang="ts">
 	import DatasetBrowser from '$lib/components/DatasetBrowser.svelte';
 	import CaseList from '$lib/components/CaseList.svelte';
-	import LayerTable from '$lib/components/LayerTable.svelte';
+	import ViewerGrid from '$lib/components/ViewerGrid.svelte';
 	import { datasetStore } from '$lib/viewmodels/datasetStore';
 	import { onMount } from 'svelte';
 
@@ -97,22 +97,14 @@
 	</aside>
 
 	<!-- Main content -->
-	<div class="flex-1 p-6 overflow-auto">
+	<div class="flex-1 overflow-hidden flex flex-col">
 		{#if $datasetStore.currentDataset}
-			<div class="space-y-6">
-				<div class="flex items-center justify-between">
-					<h2 class="text-xl font-medium">
-						{$datasetStore.currentDataset.name}
-					</h2>
-					{#if $datasetStore.selectedCases.length > 0}
-						<div class="text-sm text-surface-600-300-token">
-							{$datasetStore.selectedCases.length} case{$datasetStore.selectedCases.length === 1
-								? ''
-								: 's'} selected
-						</div>
-					{/if}
+			<!-- Add a flex container for viewer and controls -->
+			<div class="flex-1 flex gap-4 overflow-hidden">
+				<!-- Viewer container -->
+				<div class="flex-1 relative bg-black rounded-lg overflow-hidden">
+					<ViewerGrid />
 				</div>
-				<LayerTable />
 			</div>
 		{:else}
 			<div class="flex h-full items-center justify-center">
