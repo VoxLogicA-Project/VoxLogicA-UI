@@ -29,23 +29,25 @@
 	}
 
 	function toggleLayerForAllCases(layer: Layer) {
-		const isVisualizedInSome = $datasetStore.selectedCases.some((case_) =>
+		const isVisualizedInAll = $datasetStore.selectedCases.every((case_) =>
 			isLayerVisualized(layer.id, case_.id)
 		);
 
-		$datasetStore.selectedCases.forEach((case_) => {
-			if (isLayerAvailable(layer.id, case_.id)) {
-				if (isVisualizedInSome) {
-					if (isLayerVisualized(layer.id, case_.id)) {
-						datasetStore.toggleLayer(case_.id, layer);
-					}
-				} else {
-					if (!isLayerVisualized(layer.id, case_.id)) {
-						datasetStore.toggleLayer(case_.id, layer);
-					}
+		if (!isVisualizedInAll) {
+			// Enable layer in all cases
+			$datasetStore.selectedCases.forEach((case_) => {
+				if (!isLayerVisualized(layer.id, case_.id) && isLayerAvailable(layer.id, case_.id)) {
+					datasetStore.toggleLayer(case_.id, layer);
 				}
-			}
-		});
+			});
+		} else {
+			// Disable layer in all cases
+			$datasetStore.selectedCases.forEach((case_) => {
+				if (isLayerAvailable(layer.id, case_.id)) {
+					datasetStore.toggleLayer(case_.id, layer);
+				}
+			});
+		}
 	}
 </script>
 
