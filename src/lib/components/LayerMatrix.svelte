@@ -85,9 +85,9 @@
 		<thead>
 			<tr>
 				<th class="w-16 text-center">Base</th>
-				<th class="text-left">Layer</th>
+				<th class="text-left w-48">Layer</th>
 				{#each $datasetStore.selectedCases as case_}
-					<th class="w-16 text-center">{case_.id}</th>
+					<th class="w-32 text-center px-4">{case_.id}</th>
 				{/each}
 			</tr>
 		</thead>
@@ -107,7 +107,7 @@
 								: ''}
 						/>
 					</td>
-					<td class="align-middle">
+					<td class="align-middle w-48">
 						<ListButton
 							selected={isBaseLayer(layer.id)}
 							disabled={isBaseLayer(layer.id)}
@@ -118,7 +118,7 @@
 						</ListButton>
 					</td>
 					{#each $datasetStore.selectedCases as case_}
-						<td class="w-16 text-center align-middle">
+						<td class="w-32 text-center align-middle px-4">
 							<input
 								type="checkbox"
 								class="checkbox"

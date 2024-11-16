@@ -24,7 +24,7 @@
 </script>
 
 <div class="h-full">
-	<h2 class="h3 p-4">Datasets</h2>
+	<h2 class="h3 pl-4 pr-4">Datasets</h2>
 
 	{#if $datasetStore.loading}
 		<div class="flex justify-center p-4">

@@ -5,11 +5,38 @@
 	import ViewerGrid from '$lib/components/ViewerGrid.svelte';
 	import LayerMatrix from '$lib/components/LayerMatrix.svelte';
 	import { datasetStore } from '$lib/viewmodels/datasetStore';
+
+	function toggleDarkMode() {
+		const html = document.documentElement;
+		html.classList.toggle('dark');
+	}
 </script>
 
 <div class="h-screen w-screen flex overflow-hidden bg-surface-50-900-token">
 	<!-- Left Sidebar -->
 	<CollapsibleSidebar side="left">
+		<!-- New top section -->
+		<div class="flex items-center justify-between p-4 border-b border-surface-500/30">
+			<div class="flex items-center gap-3">
+				<!-- Placeholder logo - replace with actual logo -->
+				<div
+					class="w-8 h-8 bg-primary-500 rounded-lg flex items-center justify-center text-white font-bold"
+				>
+					V
+				</div>
+				<span class="text-lg font-semibold">VoxLogica</span>
+			</div>
+
+			<button
+				class="w-8 h-8 rounded-lg bg-surface-300-600-token hover:bg-surface-400-500-token flex items-center justify-center"
+				on:click={toggleDarkMode}
+				title="Toggle dark mode"
+			>
+				<i class="fa-solid fa-sun text-lg hidden dark:block" />
+				<i class="fa-solid fa-moon text-lg block dark:hidden" />
+			</button>
+		</div>
+
 		<div class="py-6 flex-shrink-0">
 			<DatasetBrowser />
 		</div>
