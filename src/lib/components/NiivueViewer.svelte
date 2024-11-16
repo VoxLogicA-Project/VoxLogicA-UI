@@ -36,7 +36,6 @@
 			// Setup resize observer
 			resizeObserver = new ResizeObserver(() => {
 				if (nv) {
-					nv.resizeCanvas();
 					nv.drawScene();
 				}
 			});
@@ -51,17 +50,15 @@
 
 				// Set first layer as base layer if available
 				if (layers.length > 0) {
-					datasetStore.setBaseLayer(case_.id, layers[0]);
-					await loadCaseLayers();
+					// TODO: improve this to set the first layer that is available among the intersection of all cases'layers
+					datasetStore.setBaseLayer(layers[0]);
+					// await loadCaseLayers();
 				}
 			}
 		}
 	});
 
-	$: if (
-		nv &&
-		($datasetStore.selectedBaseLayer[case_.id] || $datasetStore.selectedLayers[case_.id])
-	) {
+	$: if (nv && $datasetStore.selectedBaseLayer) {
 		loadCaseLayers();
 	}
 
@@ -71,33 +68,32 @@
 		// Clear existing volumes
 		nv.volumes = [];
 
-		// Get base layer and overlay layers for this case
-		const baseLayer = $datasetStore.selectedBaseLayer[case_.id];
-		const overlayLayers = $datasetStore.selectedLayers[case_.id] || [];
-
 		try {
 			// Load base layer first
-			if (baseLayer) {
-				const volumePath = `/datasets/${baseLayer.path}`;
-				await nv.addVolumeFromUrl({
-					url: volumePath,
-					name: `${case_.id} - ${baseLayer.id}`,
-					colormap: 'gray',
-				});
+			if ($datasetStore.selectedBaseLayer) {
+				// Make sure the base layer is available for this case
+				const baseLayer = $datasetStore.availableLayers[case_.id]?.find(
+					(layer) => layer.id === $datasetStore.selectedBaseLayer?.id
+				);
+
+				if (baseLayer) {
+					await nv.addVolumeFromUrl({
+						url: baseLayer.path,
+						colormap: 'gray',
+					});
+				}
 			}
 
 			// Load overlay layers
+			const overlayLayers = $datasetStore.selectedLayers[case_.id] || [];
 			for (const layer of overlayLayers) {
-				const volumePath = `/datasets/${layer.path}`;
 				await nv.addVolumeFromUrl({
-					url: volumePath,
-					name: `${case_.id} - ${layer.id}`,
+					url: layer.path,
 					colormap: 'red',
 					opacity: 0.5,
 				});
 			}
 
-			// Refresh the view
 			nv.drawScene();
 		} catch (error) {
 			console.error('Failed to load layers:', error);

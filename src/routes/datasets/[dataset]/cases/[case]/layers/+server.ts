@@ -10,14 +10,23 @@ export const GET: RequestHandler = async ({ params }) => {
 		const casePath = path.join(DATASET_PATH, params.dataset, params.case);
 		const files = await fs.readdir(casePath);
 
-		// Convert files to Layer objects
 		const layers: Layer[] = files
 			.filter((file) => file.endsWith('.nii.gz'))
 			.map((file) => {
-				const match = file.match(/.*_(.+)\.nii\.gz$/);
+				let layer_id = file.match(new RegExp(`${params.case}_(.+)\\.nii\\.gz$`));
+				let filename = file.match(/(.+)\.nii\.gz$/);
+				// Fallback to filename without extension if case_layerId pattern is not found
+				if (!layer_id) {
+					layer_id = filename;
+				}
+				if (!layer_id || !filename) {
+					throw new Error(`Invalid filename format: ${file}`);
+				}
 				return {
-					id: match ? match[1] : file,
-					path: path.join(params.dataset, params.case, file),
+					id: layer_id[1],
+					// TODO: fix this. We should not load from static path.
+					path: `/datasets/${params.dataset}/${params.case}/${filename[1]}.nii.gz`,
+					// path: `/datasets/${params.dataset}/cases/${params.case}/layers/${filename[1]}`,
 				};
 			});
 

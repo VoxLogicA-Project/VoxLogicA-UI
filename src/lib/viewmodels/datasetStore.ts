@@ -1,4 +1,4 @@
-import { writable, derived, type Writable } from 'svelte/store';
+import { writable, derived, type Writable, get } from 'svelte/store';
 import type { Dataset, Case, Layer } from '$lib/models/dataset';
 
 // Maximum number of cases that can be selected simultaneously
@@ -8,7 +8,8 @@ interface DatasetState {
 	currentDataset: Dataset | null;
 	selectedCases: Case[];
 	selectedLayers: Record<string, Layer[]>;
-	selectedBaseLayer: Record<string, Layer>;
+	selectedBaseLayer: Layer | null;
+	availableLayers: Record<string, Layer[]>;
 	loading: boolean;
 	error: string | null;
 }
@@ -18,7 +19,8 @@ function createDatasetStore() {
 		currentDataset: null,
 		selectedCases: [],
 		selectedLayers: {},
-		selectedBaseLayer: {},
+		selectedBaseLayer: null,
+		availableLayers: {},
 		loading: false,
 		error: null,
 	});
@@ -30,28 +32,58 @@ function createDatasetStore() {
 				...state,
 				currentDataset: dataset,
 				selectedCases: [],
+				selectedLayers: {},
+				selectedBaseLayer: null,
+				availableLayers: {},
 			}));
 		},
 
-		// Toggles a case
+		async updateAvailableLayers(caseId: string) {
+			const state = get(store);
+			if (!state.currentDataset) return;
+
+			try {
+				const response = await fetch(
+					`/datasets/${state.currentDataset.path}/cases/${caseId}/layers`
+				);
+				const layers = await response.json();
+
+				store.update((state) => ({
+					...state,
+					availableLayers: {
+						...state.availableLayers,
+						[caseId]: layers,
+					},
+				}));
+
+				if (!state.selectedBaseLayer && layers.length > 0) {
+					this.setBaseLayer(layers[0]);
+				}
+			} catch (error) {
+				console.error('Failed to load layers for case:', error);
+			}
+		},
+
 		toggleCase(caseData: Case) {
 			store.update((state) => {
 				const currentIndex = state.selectedCases.findIndex((c) => c.id === caseData.id);
 
 				if (currentIndex === -1 && state.selectedCases.length < MAX_CASES) {
+					this.updateAvailableLayers(caseData.id);
 					return { ...state, selectedCases: [...state.selectedCases, caseData] };
 				}
 
 				if (currentIndex !== -1) {
 					const selectedCases = state.selectedCases.filter((c) => c.id !== caseData.id);
 					const { [caseData.id]: _, ...remainingLayers } = state.selectedLayers;
-					const { [caseData.id]: __, ...remainingBaseLayers } = state.selectedBaseLayer;
+					const { [caseData.id]: ___, ...remainingAvailableLayers } = state.availableLayers;
 
 					return {
 						...state,
 						selectedCases,
 						selectedLayers: remainingLayers,
-						selectedBaseLayer: remainingBaseLayers,
+						selectedBaseLayer: state.selectedBaseLayer,
+						availableLayers: remainingAvailableLayers,
 					};
 				}
 
@@ -59,7 +91,6 @@ function createDatasetStore() {
 			});
 		},
 
-		// Toggles a layer
 		toggleLayer(caseId: string, layer: Layer) {
 			store.update((state) => {
 				const currentLayers = state.selectedLayers[caseId] || [];
@@ -88,13 +119,10 @@ function createDatasetStore() {
 			});
 		},
 
-		setBaseLayer(caseId: string, layer: Layer) {
+		setBaseLayer(layer: Layer) {
 			store.update((state) => ({
 				...state,
-				selectedBaseLayer: {
-					...state.selectedBaseLayer,
-					[caseId]: layer,
-				},
+				selectedBaseLayer: layer,
 			}));
 		},
 	} as const;

@@ -198,3 +198,49 @@ src/
 - Ensure proper error handling for file operations
 - Maintain clear separation between original and generated data
 - Support extensibility for future dataset layouts
+
+# Notes about layer selection
+
+Create a user interface that allows users to efficiently manage the visibility of layers across multiple patient cases. Each layer can be visualized or hidden, and layers may not be available for all cases. The UI should provide both global and selective control options.
+
+The UI will feature a matrix where rows represent layers and columns represent cases. Each cell in the matrix will use visual indicators to show the status of each layer for each case:
+
+- 🟢 (Green Circle): The layer is currently visualized for the case.
+- ⚪️ (Empty Circle): The layer is not visualized for the case but is available.
+- 🔴 (Red Circle): The layer is not available for the case.
+
+User Interaction
+
+- Click on Circles: Users can click on a circle in the matrix to toggle the visualization status for that specific case. This allows for selective activation or deactivation of layers.
+- Click on Layer Name: Clicking on the layer name toggles the layer globally across all cases where it is available. This provides a quick way to apply changes universally.
+
+Example
+
+Imagine you have three open cases: Case A, Case B, and Case C. Here's how the UI might look:
+
+| Layer Name | Case A | Case B | Case C |
+| ---------- | ------ | ------ | ------ |
+| Layer 1    | ⚪️     | 🟢     | ⚪️     |
+| Layer 2    | 🟢     | ⚪️     | ⚪️     |
+| Layer 3    | ⚪️     | ⚪️     | 🟢     |
+| Layer 4    | 🟢     | 🟢     | 🔴     |
+
+- Layer 1: Visualized for Case B, available but not visualized for Cases A and C.
+- Layer 2: Visualized for Case A, available but not visualized for Cases B and C.
+- Layer 3: Visualized for Case C, available but not visualized for Cases A and B.
+- Layer 4: Visualized for Cases A and B, not available for Case C.
+
+Discarded Alternatives
+
+- Option 1: Global Layer Control Panel Only
+  - Description: A single control panel to toggle layers globally across all cases.
+  - Reason for Discarding: Lacks flexibility for case-specific analysis and doesn't account for layers that are unavailable for certain cases.
+- Option 2: Individual Case Layer Controls with Synchronization
+  - Description: Each case has its own layer control, with an option to synchronize layers across cases.
+    Reason for Discarding: More complex UI due to dual control options, and synchronization might not be intuitive for users.
+- Option 3: Layer Grouping and Filtering
+  - Description: Group similar layers and provide filtering options.
+  - Reason for Discarding: Not applicable as layers are independent and not grouped, and filtering doesn't address the issue of layer availability.
+
+Conclusion
+The enhanced indicator system provides a clear, intuitive, and flexible way to manage layer visibility across multiple cases. It combines the benefits of both global and selective control, making it easier for users to interact with complex datasets efficiently. This approach ensures that users can quickly understand and manage the visualization status and availability of layers, improving the overall usability of the neuroimaging data UI.

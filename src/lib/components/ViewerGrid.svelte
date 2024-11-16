@@ -12,8 +12,8 @@
 					: 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4';
 </script>
 
-<div class={`h-screen overflow-y-auto bg-surface-100 dark:bg-surface-900 p-8`}>
-	<section class={`grid gap-4 h-full ${gridClass}`}>
+<div class="h-full p-8">
+	<section class={`grid gap-4 ${gridClass} pb-8`}>
 		{#each $datasetStore.selectedCases as case_ (case_.id)}
 			<div class="card h-fit">
 				<div class="p-2 border-b border-surface-300-600-token bg-surface-100-800-token">
