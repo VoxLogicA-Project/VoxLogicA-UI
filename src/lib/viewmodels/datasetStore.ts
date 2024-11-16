@@ -8,7 +8,6 @@ interface DatasetState {
 	currentDataset: Dataset | null;
 	selectedCases: Case[];
 	selectedLayers: Record<string, Layer[]>;
-	selectedBaseLayer: Layer | null;
 	availableLayers: Record<string, Layer[]>;
 	loading: boolean;
 	error: string | null;
@@ -19,7 +18,6 @@ function createDatasetStore() {
 		currentDataset: null,
 		selectedCases: [],
 		selectedLayers: {},
-		selectedBaseLayer: null,
 		availableLayers: {},
 		loading: false,
 		error: null,
@@ -33,7 +31,6 @@ function createDatasetStore() {
 				currentDataset: dataset,
 				selectedCases: [],
 				selectedLayers: {},
-				selectedBaseLayer: null,
 				availableLayers: {},
 			}));
 		},
@@ -54,11 +51,11 @@ function createDatasetStore() {
 						...state.availableLayers,
 						[caseId]: layers,
 					},
+					selectedLayers: {
+						...state.selectedLayers,
+						[caseId]: layers.length > 0 ? [layers[0]] : [],
+					},
 				}));
-
-				if (!state.selectedBaseLayer && layers.length > 0) {
-					this.setBaseLayer(layers[0]);
-				}
 			} catch (error) {
 				console.error('Failed to load layers for case:', error);
 			}
@@ -82,7 +79,6 @@ function createDatasetStore() {
 						...state,
 						selectedCases,
 						selectedLayers: remainingLayers,
-						selectedBaseLayer: state.selectedBaseLayer,
 						availableLayers: remainingAvailableLayers,
 					};
 				}
@@ -96,8 +92,8 @@ function createDatasetStore() {
 				const currentLayers = state.selectedLayers[caseId] || [];
 				const layerIndex = currentLayers.findIndex((l) => l.id === layer.id);
 
+				// Add layer if not present
 				if (layerIndex === -1) {
-					// Add layer if not present
 					return {
 						...state,
 						selectedLayers: {
@@ -105,25 +101,17 @@ function createDatasetStore() {
 							[caseId]: [...currentLayers, layer],
 						},
 					};
-				} else {
-					// Remove layer if already present
-					const updatedLayers = currentLayers.filter((_, index) => index !== layerIndex);
-					return {
-						...state,
-						selectedLayers: {
-							...state.selectedLayers,
-							[caseId]: updatedLayers,
-						},
-					};
 				}
+				// Remove layer if already present
+				const updatedLayers = currentLayers.filter((_, index) => index !== layerIndex);
+				return {
+					...state,
+					selectedLayers: {
+						...state.selectedLayers,
+						[caseId]: updatedLayers,
+					},
+				};
 			});
-		},
-
-		setBaseLayer(layer: Layer) {
-			store.update((state) => ({
-				...state,
-				selectedBaseLayer: layer,
-			}));
 		},
 	} as const;
 

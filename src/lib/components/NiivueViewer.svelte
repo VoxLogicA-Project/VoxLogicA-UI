@@ -47,18 +47,11 @@
 					`/datasets/${$datasetStore.currentDataset.path}/cases/${case_.id}/layers`
 				);
 				layers = await response.json();
-
-				// Set first layer as base layer if available
-				if (layers.length > 0) {
-					// TODO: improve this to set the first layer that is available among the intersection of all cases'layers
-					datasetStore.setBaseLayer(layers[0]);
-					// await loadCaseLayers();
-				}
 			}
 		}
 	});
 
-	$: if (nv && $datasetStore.selectedBaseLayer) {
+	$: if (nv && $datasetStore.selectedLayers[case_.id]) {
 		loadCaseLayers();
 	}
 
@@ -69,28 +62,13 @@
 		nv.volumes = [];
 
 		try {
-			// Load base layer first
-			if ($datasetStore.selectedBaseLayer) {
-				// Make sure the base layer is available for this case
-				const baseLayer = $datasetStore.availableLayers[case_.id]?.find(
-					(layer) => layer.id === $datasetStore.selectedBaseLayer?.id
-				);
-
-				if (baseLayer) {
-					await nv.addVolumeFromUrl({
-						url: baseLayer.path,
-						colormap: 'gray',
-					});
-				}
-			}
-
-			// Load overlay layers
-			const overlayLayers = $datasetStore.selectedLayers[case_.id] || [];
-			for (const layer of overlayLayers) {
+			// Load all selected layers in white
+			const selectedLayers = $datasetStore.selectedLayers[case_.id] || [];
+			for (const layer of selectedLayers) {
 				await nv.addVolumeFromUrl({
 					url: layer.path,
-					colormap: 'red',
-					opacity: 0.5,
+					colormap: 'gray', // Use gray/white colormap for all layers
+					opacity: 1,
 				});
 			}
 

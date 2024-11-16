@@ -20,7 +20,6 @@
 	}
 
 	function isLayerAvailable(layerId: string, caseId: string): boolean {
-		// Check if the layer exists in the case's available layers
 		return $datasetStore.availableLayers[caseId]?.some((layer) => layer.id === layerId) ?? false;
 	}
 
@@ -29,48 +28,18 @@
 		return caseLayers.some((layer) => layer.id === layerId);
 	}
 
-	function isBaseLayer(layerId: string): boolean {
-		return $datasetStore.selectedBaseLayer?.id === layerId;
-	}
-
-	function setBaseLayer(layer: Layer) {
-		// Only set as base layer if it's available for all cases
-		if (isLayerAvailableForAllCases(layer.id)) {
-			// First, unselect this layer from all cases where it's selected
-			$datasetStore.selectedCases.forEach((case_) => {
-				if (isLayerVisualized(layer.id, case_.id)) {
-					datasetStore.toggleLayer(case_.id, layer);
-				}
-			});
-			// Then set it as base layer
-			datasetStore.setBaseLayer(layer);
-		}
-	}
-
-	// Check if this layer is available for all cases
-	function isLayerAvailableForAllCases(layerId: string): boolean {
-		return $datasetStore.selectedCases.every((case_) =>
-			$datasetStore.availableLayers[case_.id]?.some((layer) => layer.id === layerId)
-		);
-	}
-
-	// Add this function to handle clicking on layer name
 	function toggleLayerForAllCases(layer: Layer) {
-		// Check if layer is visualized in any case
 		const isVisualizedInSome = $datasetStore.selectedCases.some((case_) =>
 			isLayerVisualized(layer.id, case_.id)
 		);
 
-		// If visualized in any case, remove from all. Otherwise, add to all available cases
 		$datasetStore.selectedCases.forEach((case_) => {
-			if (isLayerAvailable(layer.id, case_.id) && !isBaseLayer(layer.id)) {
+			if (isLayerAvailable(layer.id, case_.id)) {
 				if (isVisualizedInSome) {
-					// If shown anywhere, remove from all
 					if (isLayerVisualized(layer.id, case_.id)) {
 						datasetStore.toggleLayer(case_.id, layer);
 					}
 				} else {
-					// If not shown anywhere, add where available
 					if (!isLayerVisualized(layer.id, case_.id)) {
 						datasetStore.toggleLayer(case_.id, layer);
 					}
@@ -84,7 +53,6 @@
 	<table class="w-full">
 		<thead>
 			<tr>
-				<th class="w-16 text-center">Base</th>
 				<th class="text-left w-48">Layer</th>
 				{#each $datasetStore.selectedCases as case_}
 					<th class="w-32 text-center px-4">{case_.id}</th>
@@ -94,26 +62,8 @@
 		<tbody>
 			{#each allLayers as layer}
 				<tr class="border-t border-surface-500/30 h-12 align-middle">
-					<td class="w-16 text-center">
-						<input
-							type="radio"
-							class="radio"
-							name="baseLayer"
-							checked={isBaseLayer(layer.id)}
-							disabled={!isLayerAvailableForAllCases(layer.id)}
-							on:change={() => setBaseLayer(layer)}
-							title={!isLayerAvailableForAllCases(layer.id)
-								? 'Layer must be available in all cases to be set as base layer'
-								: ''}
-						/>
-					</td>
 					<td class="align-middle w-48">
-						<ListButton
-							selected={isBaseLayer(layer.id)}
-							disabled={isBaseLayer(layer.id)}
-							isBaseLayer={isBaseLayer(layer.id)}
-							on:click={() => toggleLayerForAllCases(layer)}
-						>
+						<ListButton selected={false} on:click={() => toggleLayerForAllCases(layer)}>
 							{layer.id}
 						</ListButton>
 					</td>
@@ -123,7 +73,7 @@
 								type="checkbox"
 								class="checkbox"
 								checked={isLayerVisualized(layer.id, case_.id)}
-								disabled={!isLayerAvailable(layer.id, case_.id) || isBaseLayer(layer.id)}
+								disabled={!isLayerAvailable(layer.id, case_.id)}
 								on:change={() => datasetStore.toggleLayer(case_.id, layer)}
 							/>
 						</td>
