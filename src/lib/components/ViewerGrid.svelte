@@ -21,7 +21,16 @@
 				<div
 					class="p-2 border-b border-surface-300-600-token bg-surface-100-800-token flex justify-between items-center"
 				>
-					<span class="text-sm font-medium">{case_.id}</span>
+					<span class="text-sm font-medium flex items-center flex-1 min-w-0">
+						{#if true}
+							<div class="badge badge-sm variant-filled-primary mr-2 flex-shrink-0">
+								{$mainStore.cases.selected.findIndex((c) => c.id === case_.id) + 1}
+							</div>
+						{/if}
+						<span class="truncate">
+							{case_.id}
+						</span>
+					</span>
 					<button
 						class="w-6 h-6 flex items-center justify-center rounded
                         hover:bg-surface-300-600-token transition-colors"
@@ -32,7 +41,18 @@
 					</button>
 				</div>
 				<div class="aspect-square">
-					<NiivueViewer {case_} />
+					{#if $mainStore.layers.selected[case_.id]?.length > 0}
+						<NiivueViewer {case_} />
+					{:else}
+						<div
+							class="w-full h-full variant-soft-surface flex flex-col items-center justify-center gap-2"
+						>
+							<i class="fa-solid fa-layer-group text-4xl text-surface-400-500-token" />
+							<p class="text-sm text-surface-400-500-token text-center px-4">
+								Add layers to this case to view images
+							</p>
+						</div>
+					{/if}
 				</div>
 			</div>
 		{/each}

@@ -27,6 +27,9 @@
 
 			if (size > minSize && size < maxSize) {
 				sidebarElement.style[isVertical ? 'width' : 'height'] = `${size}px`;
+			} else if (size <= minSize && !isCollapsed) {
+				// Auto-collapse when dragged below minSize
+				toggleCollapse();
 			}
 		}
 
@@ -72,36 +75,6 @@
 	>
 		<slot />
 	</div>
-
-	<!-- Toggle button when expanded -->
-	{#if !isCollapsed}
-		{#if side === 'bottom'}
-			<button
-				class="btn variant-ghost-surface absolute z-10 transition-all duration-200 w-7 h-7"
-				style="left: 0; top: 0;"
-				on:click={toggleCollapse}
-			>
-				<i class="fa-solid fa-chevron-down" />
-			</button>
-		{:else if side === 'top'}
-			<button
-				class="btn variant-ghost-surface absolute z-10 transition-all duration-200 w-7 h-7"
-				style="left: 0; bottom: 0;"
-				on:click={toggleCollapse}
-			>
-				<i class="fa-solid fa-chevron-up" />
-			</button>
-		{:else}
-			<!-- Left/Right sidebar collapse button -->
-			<button
-				class="btn variant-ghost-surface absolute z-10 transition-all duration-200 w-7 h-7"
-				style="top: 0; {side === 'left' ? 'right: 0' : 'left: 0'};"
-				on:click={toggleCollapse}
-			>
-				<i class="fa-solid {side === 'left' ? 'fa-chevron-left' : 'fa-chevron-right'}" />
-			</button>
-		{/if}
-	{/if}
 
 	<!-- Toggle button container - only shown when collapsed -->
 	{#if isCollapsed}

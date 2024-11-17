@@ -17,16 +17,21 @@
 	<table class="w-full">
 		<thead>
 			<tr>
-				<th class="text-left w-48 border-r border-surface-500/30">Layer</th>
-				{#each $mainStore.cases.selected as case_}
-					<th class="w-32 text-center px-4 border-r border-surface-500/30">{case_.id}</th>
+				<th class="text-left w-48 border-r border-b border-surface-500/30">Layer</th>
+				{#each $mainStore.cases.selected as case_, index}
+					<th
+						class="w-32 text-center px-4 border-b border-surface-500/30 {index !==
+						$mainStore.cases.selected.length - 1
+							? 'border-r'
+							: ''}">{case_.id}</th
+					>
 				{/each}
 			</tr>
 		</thead>
 		<tbody>
-			{#each $uniqueLayers as layer}
-				<tr class="border-t border-surface-500/30 h-12 align-middle">
-					<td class="align-middle w-48 border-r border-surface-500/30">
+			{#each $uniqueLayers as layer, layerIndex}
+				<tr class="align-middle h-12">
+					<td class="align-middle w-48 border-r border-b border-surface-500/30">
 						<div class="flex items-center gap-2">
 							<ColorPicker
 								label=""
@@ -64,14 +69,19 @@
 							</ListButton>
 						</div>
 					</td>
-					{#each $mainStore.cases.selected as case_}
+					{#each $mainStore.cases.selected as case_, caseIndex}
 						{@const isAvailable = ($mainStore.layers.availableByCase[case_.id] || []).some(
 							(l) => l.id === layer.id
 						)}
 						{@const isSelected = ($mainStore.layers.selected[case_.id] || []).some(
 							(l) => l.id === layer.id
 						)}
-						<td class="w-32 text-center align-middle px-4 border-r border-surface-500/30">
+						<td
+							class="w-32 text-center align-middle px-4 border-b border-surface-500/30 {caseIndex !==
+							$mainStore.cases.selected.length - 1
+								? 'border-r'
+								: ''}"
+						>
 							<input
 								type="checkbox"
 								class="checkbox"
