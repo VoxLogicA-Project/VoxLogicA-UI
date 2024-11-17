@@ -2,15 +2,29 @@
 	import { onMount, onDestroy } from 'svelte';
 	import { browser } from '$app/environment';
 	import { mainStore } from '$lib/stores/mainStore';
+	import { selectedLayersForCase } from '$lib/stores/layerStore';
 	import type { Case } from '$lib/models/types';
+	import type { RgbaColor } from 'svelte-awesome-color-picker';
 
 	export let case_: Case;
+
+	const selectedLayersForCaseStore = selectedLayersForCase(case_.id);
 
 	let container: HTMLDivElement;
 	let canvas: HTMLCanvasElement;
 	let nv: any;
 	let Niivue: any;
 	let resizeObserver: ResizeObserver;
+
+	function rgbaColorToColorMap(rgbaColor: RgbaColor) {
+		return {
+			R: [0, 1, rgbaColor.r],
+			G: [0, 1, rgbaColor.g],
+			B: [0, 1, rgbaColor.b],
+			A: [0, 255, 255],
+			I: [0, 1, 255],
+		};
+	}
 
 	onMount(async () => {
 		if (browser) {
@@ -34,7 +48,7 @@
 		}
 	});
 
-	$: if (nv && $mainStore.layers.selected[case_.id]) {
+	$: if (nv && $selectedLayersForCaseStore) {
 		loadCaseLayers();
 	}
 
@@ -43,24 +57,26 @@
 
 		nv.volumes = [];
 
-		try {
-			const selectedLayers = $mainStore.layers.selected[case_.id] || [];
-			for (const layer of selectedLayers) {
-				const style = $mainStore.layers.styles[layer.id];
+		const selectedLayers = $mainStore.layers.selected[case_.id] || [];
+		for (const layer of selectedLayers) {
+			console.log(case_.id, layer.path);
+			const rgbaColor = $mainStore.layers.styles[layer.id]?.color;
+			if (!rgbaColor) {
 				await nv.addVolumeFromUrl({
 					url: layer.path,
-					colormap: style?.color ? 'custom' : 'gray',
-					opacity: style?.color?.a ?? 1,
-					colormap_custom: style?.color
-						? [style.color.r / 255, style.color.g / 255, style.color.b / 255]
-						: undefined,
+				});
+			} else {
+				const layerColorMap = rgbaColorToColorMap(rgbaColor);
+				nv.addColormap(layer.id, layerColorMap);
+				await nv.addVolumeFromUrl({
+					url: layer.path,
+					opacity: rgbaColor.a,
+					colormap: layer.id,
 				});
 			}
-
-			nv.drawScene();
-		} catch (error) {
-			console.error('Failed to load layers:', error);
 		}
+
+		nv.drawScene();
 	}
 
 	onDestroy(() => {

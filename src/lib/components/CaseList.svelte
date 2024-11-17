@@ -2,19 +2,9 @@
 	import { mainStore } from '$lib/stores/mainStore';
 	import { caseStore } from '$lib/stores/caseStore';
 	import ListButton from './common/ListButton.svelte';
-	import { onMount } from 'svelte';
+	import { selectedDatasetId } from '$lib/stores/datasetStore';
 
 	let searchQuery = '';
-
-	// Track previous dataset to prevent unnecessary reloads
-	let previousDatasetId: string | null = null;
-
-	// Load cases when dataset changes
-	$: if ($mainStore.datasets.selected && $mainStore.datasets.selected.id !== previousDatasetId) {
-		previousDatasetId = $mainStore.datasets.selected.id;
-		caseStore.loadCases();
-		console.log('Wow');
-	}
 
 	// Filters cases based on search query
 	$: filteredCases = searchQuery
@@ -22,6 +12,11 @@
 				caseData.id.toLowerCase().includes(searchQuery.toLowerCase())
 			)
 		: $mainStore.cases.available;
+
+	// Watch the dataset ID directly (hack?)
+	$: if ($selectedDatasetId) {
+		caseStore.loadCases();
+	}
 </script>
 
 <div class="flex flex-col h-full">

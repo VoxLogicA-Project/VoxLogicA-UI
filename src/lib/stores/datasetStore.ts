@@ -2,6 +2,7 @@ import type { Dataset } from '$lib/models/types';
 import { apiRepository } from '$lib/models/repository';
 import type { MainState } from './mainStore';
 import { mainStore } from './mainStore';
+import { derived } from 'svelte/store';
 
 function createDatasetStore() {
 	return {
@@ -84,3 +85,4 @@ function createDatasetStore() {
 }
 
 export const datasetStore = createDatasetStore();
+export const selectedDatasetId = derived(mainStore, ($state) => $state.datasets.selected?.id);

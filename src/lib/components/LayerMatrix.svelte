@@ -2,6 +2,7 @@
 	import { mainStore } from '$lib/stores/mainStore';
 	import { layerStore, uniqueLayers } from '$lib/stores/layerStore';
 	import ListButton from './common/ListButton.svelte';
+	import ColorPicker from 'svelte-awesome-color-picker';
 
 	$: if ($mainStore.cases.selected.length > 0) {
 		const lastSelectedCase = $mainStore.cases.selected[$mainStore.cases.selected.length - 1];
@@ -26,12 +27,42 @@
 			{#each $uniqueLayers as layer}
 				<tr class="border-t border-surface-500/30 h-12 align-middle">
 					<td class="align-middle w-48">
-						<ListButton
-							selected={false}
-							on:click={() => layerStore.selectLayerForAllSelectedCases(layer)}
-						>
-							{layer.id}
-						</ListButton>
+						<div class="flex items-center gap-2">
+							<ColorPicker
+								label=""
+								rgb={$mainStore.layers.styles[layer.id]?.color}
+								on:input={(e) => {
+									mainStore.update((state) => ({
+										...state,
+										layers: {
+											...state.layers,
+											styles: {
+												...state.layers.styles,
+												[layer.id]: {
+													...state.layers.styles[layer.id],
+													color: e.detail.rgb,
+												},
+											},
+										},
+									}));
+								}}
+							/>
+							<ListButton
+								selected={false}
+								on:click={() => {
+									const isSelected = Object.values($mainStore.layers.selected).some((layers) =>
+										layers?.some((l) => l.id === layer.id)
+									);
+									if (isSelected) {
+										layerStore.unselectLayerIdForAllSelectedCases(layer.id);
+									} else {
+										layerStore.selectLayerIdForAllSelectedCases(layer.id);
+									}
+								}}
+							>
+								{layer.id}
+							</ListButton>
+						</div>
 					</td>
 					{#each $mainStore.cases.selected as case_}
 						{@const isAvailable = ($mainStore.layers.availableByCase[case_.id] || []).some(

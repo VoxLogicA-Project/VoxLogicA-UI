@@ -63,49 +63,9 @@ const initialState: MainState = {
 	},
 };
 
-function logStateChange(prev: MainState, next: MainState) {
-	console.group('[MainStore] State Change');
-
-	// Log datasets changes
-	if (prev.datasets !== next.datasets) {
-		console.log('Datasets changed:', {
-			prev: prev.datasets,
-			next: next.datasets,
-		});
-	}
-
-	// Log cases changes
-	if (prev.cases !== next.cases) {
-		console.log('Cases changed:', {
-			prev: prev.cases,
-			next: next.cases,
-		});
-	}
-
-	// Log layers changes
-	if (prev.layers !== next.layers) {
-		console.log('Layers changed:', {
-			prev: prev.layers,
-			next: next.layers,
-		});
-	}
-
-	// Log UI changes
-	if (prev.ui !== next.ui) {
-		console.log('UI changed:', {
-			prev: prev.ui,
-			next: next.ui,
-		});
-	}
-
-	console.groupEnd();
-}
-
-let previousState = initialState;
 export const mainStore = writable<MainState>(initialState);
 
 // Add subscription with detailed logging
 mainStore.subscribe((state) => {
-	logStateChange(previousState, state);
-	previousState = state;
+	console.log(state);
 });

@@ -7,6 +7,7 @@ import { get, derived, type Readable } from 'svelte/store';
 function createLayerStore() {
 	return {
 		async loadLayers(caseData: Case) {
+			console.log('loadLayers', caseData.id);
 			const state = get(mainStore);
 			if (!state.datasets.selected) return;
 
@@ -104,21 +105,26 @@ function createLayerStore() {
 			}
 		},
 
-		selectLayerForAllSelectedCases(layer: Layer) {
+		selectLayerIdForAllSelectedCases(layerId: string) {
 			const state = get(mainStore);
 
 			// TODO: maybe improve to perform a single update.
 			for (const caseId in state.layers.availableByCase) {
-				this.selectLayer(caseId, layer);
+				const layer = state.layers.availableByCase[caseId]?.find((l) => l.id === layerId);
+				if (layer) {
+					this.selectLayer(caseId, layer);
+				}
 			}
 		},
 
-		unselectLayerForAllSelectedCases(layer: Layer) {
+		unselectLayerIdForAllSelectedCases(layerId: string) {
 			const state = get(mainStore);
 
-			// TODO: maybe improve to perform a single update.
 			for (const caseId in state.layers.availableByCase) {
-				this.unselectLayer(caseId, layer);
+				const layer = state.layers.availableByCase[caseId]?.find((l) => l.id === layerId);
+				if (layer) {
+					this.unselectLayer(caseId, layer);
+				}
 			}
 		},
 	};
@@ -141,3 +147,6 @@ export const uniqueLayers: Readable<Layer[]> = derived(mainStore, ($state) => {
 
 	return Array.from(layerMap.values());
 });
+
+export const selectedLayersForCase = (caseId: string): Readable<Layer[]> =>
+	derived(mainStore, ($state) => $state.layers.selected[caseId] || []);
