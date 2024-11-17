@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte';
 	import { browser } from '$app/environment';
-	import { datasetStore } from '$lib/viewmodels/datasetStore';
-	import type { Case, Layer } from '$lib/models/dataset';
+	import { mainStore } from '$lib/stores/mainStore';
+	import type { Case } from '$lib/models/types';
 
 	export let case_: Case;
 
@@ -10,65 +10,50 @@
 	let canvas: HTMLCanvasElement;
 	let nv: any;
 	let Niivue: any;
-
-	// Add state for layers
-	let layers: Layer[] = [];
-
-	// Add resize observer to handle container size changes
 	let resizeObserver: ResizeObserver;
 
 	onMount(async () => {
 		if (browser) {
-			// Only import Niivue in the browser
 			const NiivueModule = await import('@niivue/niivue');
 			Niivue = NiivueModule.Niivue;
 
-			// Initialize Niivue
 			nv = new Niivue({
 				backColor: [0, 0, 0, 1],
 				show3Dcrosshair: true,
-				// Add these options to improve performance
 				dragMode: 0,
 				smoothDisplay: false,
 			});
 			nv.attachToCanvas(canvas);
 
-			// Setup resize observer
 			resizeObserver = new ResizeObserver(() => {
 				if (nv) {
 					nv.drawScene();
 				}
 			});
 			resizeObserver.observe(container);
-
-			// Fetch layers for this case
-			if ($datasetStore.currentDataset) {
-				const response = await fetch(
-					`/datasets/${$datasetStore.currentDataset.path}/cases/${case_.id}/layers`
-				);
-				layers = await response.json();
-			}
 		}
 	});
 
-	$: if (nv && $datasetStore.selectedLayers[case_.id]) {
+	$: if (nv && $mainStore.layers.selected[case_.id]) {
 		loadCaseLayers();
 	}
 
 	async function loadCaseLayers() {
-		if (!$datasetStore.currentDataset || !nv) return;
+		if (!$mainStore.datasets.selected || !nv) return;
 
-		// Clear existing volumes
 		nv.volumes = [];
 
 		try {
-			// Load all selected layers in white
-			const selectedLayers = $datasetStore.selectedLayers[case_.id] || [];
+			const selectedLayers = $mainStore.layers.selected[case_.id] || [];
 			for (const layer of selectedLayers) {
+				const style = $mainStore.layers.styles[layer.id];
 				await nv.addVolumeFromUrl({
 					url: layer.path,
-					colormap: 'gray', // Use gray/white colormap for all layers
-					opacity: 1,
+					colormap: style?.color ? 'custom' : 'gray',
+					opacity: style?.color?.a ?? 1,
+					colormap_custom: style?.color
+						? [style.color.r / 255, style.color.g / 255, style.color.b / 255]
+						: undefined,
 				});
 			}
 

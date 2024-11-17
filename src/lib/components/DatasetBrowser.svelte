@@ -1,47 +1,33 @@
 <script lang="ts">
-	import { datasetStore } from '$lib/viewmodels/datasetStore';
-	import { onMount } from 'svelte';
-	import type { Dataset } from '$lib/models/dataset';
+	import { mainStore } from '$lib/stores/mainStore';
+	import { datasetStore } from '$lib/stores/datasetStore';
 	import ListButton from './common/ListButton.svelte';
-
-	let datasets: Dataset[] = [];
-
-	async function loadDatasets() {
-		datasetStore.update((state) => ({ ...state, loading: true, error: null }));
-		try {
-			const response = await fetch('/datasets');
-			datasets = await response.json();
-		} catch (err) {
-			datasetStore.update((state) => ({ ...state, error: 'Failed to load datasets' }));
-		} finally {
-			datasetStore.update((state) => ({ ...state, loading: false }));
-		}
-	}
+	import { onMount } from 'svelte';
 
 	onMount(() => {
-		loadDatasets();
+		datasetStore.loadDatasets();
 	});
 </script>
 
 <div class="h-full">
 	<h2 class="h3 pl-4 pr-4">Datasets</h2>
 
-	{#if $datasetStore.loading}
+	{#if $mainStore.datasets.loading}
 		<div class="flex justify-center p-4">
 			<span class="loader" />
 		</div>
-	{:else if $datasetStore.error}
+	{:else if $mainStore.datasets.error}
 		<div class="alert variant-filled-error">
-			{$datasetStore.error}
+			{$mainStore.datasets.error}
 		</div>
 	{:else}
 		<div class="space-y-0.5">
-			{#each datasets as dataset}
+			{#each $mainStore.datasets.available as dataset}
 				<ListButton
-					selected={dataset === $datasetStore.currentDataset}
+					selected={dataset === $mainStore.datasets.selected}
 					on:click={() => datasetStore.selectDataset(dataset)}
 				>
-					{dataset.name}
+					{dataset.id}
 				</ListButton>
 			{/each}
 		</div>

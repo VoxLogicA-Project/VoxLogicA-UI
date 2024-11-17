@@ -578,6 +578,11 @@ color-name@~1.1.4:
   resolved "https://registry.yarnpkg.com/color-name/-/color-name-1.1.4.tgz#c2a09a87acbde69543de6f63fa3995c826c536a2"
   integrity sha512-dOy+3AuW3a2wNbZHIuMZpTcgjGuLU/uBL/ubcZF9OXbDo8ff4O8yVp5Bf0efS8uEoYo5q4Fx7dY9OgQGXgAsQA==
 
+colord@^2.9.3:
+  version "2.9.3"
+  resolved "https://registry.yarnpkg.com/colord/-/colord-2.9.3.tgz#4f8ce919de456f1d5c1c368c307fe20f3e59fb43"
+  integrity sha512-jeC1axXpnb0/2nn/Y1LPuLdgXBLH7aDcHu4KEKfqw3CUhX7ZpfBSlPKyqXE6btIgEzfWtrX3/tyBCaCvXvMkOw==
+
 commander@^12.0.0:
   version "12.1.0"
   resolved "https://registry.yarnpkg.com/commander/-/commander-12.1.0.tgz#01423b36f501259fdaac4d0e4d60c96c991585d3"
@@ -851,6 +856,11 @@ hasown@^2.0.2:
   integrity sha512-0hJU9SCPvmMzIBdZFqNPXWa6dqh7WdH0cII9y+CyS8rG3nL48Bclra9HmKhVVUHyPWNH5Y7xDwAB7bfgSjkUMQ==
   dependencies:
     function-bind "^1.1.2"
+
+immer@^10.1.1:
+  version "10.1.1"
+  resolved "https://registry.yarnpkg.com/immer/-/immer-10.1.1.tgz#206f344ea372d8ea176891545ee53ccc062db7bc"
+  integrity sha512-s2MPrmjovJcoMaHtx6K11Ra7oD05NT97w1IC5zpMkT6Atjr7H8LjaDd81iIxUYpMKSRRNMJE703M1Fhr/TctHw==
 
 import-meta-resolve@^4.1.0:
   version "4.1.0"
@@ -1392,6 +1402,19 @@ supports-preserve-symlinks-flag@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/supports-preserve-symlinks-flag/-/supports-preserve-symlinks-flag-1.0.0.tgz#6eda4bd344a3c94aea376d4cc31bc77311039e09"
   integrity sha512-ot0WnXS9fgdkgIcePe6RHNk1WA8+muPa6cSjeR3V8K27q9BB1rTE3R1p7Hv0z1ZyAc8s6Vvv8DIyWf681MAt0w==
+
+svelte-awesome-color-picker@^3.1.4:
+  version "3.1.4"
+  resolved "https://registry.yarnpkg.com/svelte-awesome-color-picker/-/svelte-awesome-color-picker-3.1.4.tgz#06198c93127c29633d2052d50c8995da9baf5c2c"
+  integrity sha512-tiFakxvSpCwodOSFW6CflnLVSldSlDY77rDipHfW7hvB+4gTP3y6uO+Dm9O9e7P5N7K+CNyNjjdjbZOHYkMyNQ==
+  dependencies:
+    colord "^2.9.3"
+    svelte-awesome-slider "^1.1.2"
+
+svelte-awesome-slider@^1.1.2:
+  version "1.1.2"
+  resolved "https://registry.yarnpkg.com/svelte-awesome-slider/-/svelte-awesome-slider-1.1.2.tgz#9d09453d35d232030e483c7968c11fa583e78b55"
+  integrity sha512-HFIWwq6rtX6aXyc6ns2R0P6pDLYIr6nRjTPyAddAiTAgZqsohAoEfOEwKKqMmZ6Q+CH48zzcFdyo6lFkBJvyQw==
 
 svelte-check@^4.0.0:
   version "4.0.5"

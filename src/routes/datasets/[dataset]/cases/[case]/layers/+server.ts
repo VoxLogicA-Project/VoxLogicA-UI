@@ -3,7 +3,7 @@ import type { RequestHandler } from './$types';
 import fs from 'fs/promises';
 import path from 'path';
 import { DATASET_PATH } from '$lib/config/config';
-import type { Layer } from '$lib/models/dataset';
+import type { Layer } from '$lib/models/types';
 
 export const GET: RequestHandler = async ({ params }) => {
 	try {

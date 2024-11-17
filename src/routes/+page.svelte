@@ -4,7 +4,8 @@
 	import CaseList from '$lib/components/CaseList.svelte';
 	import ViewerGrid from '$lib/components/ViewerGrid.svelte';
 	import LayerMatrix from '$lib/components/LayerMatrix.svelte';
-	import { datasetStore } from '$lib/viewmodels/datasetStore';
+	import { mainStore } from '$lib/stores/mainStore';
+	import { uiStore } from '$lib/stores/uiStore';
 
 	function toggleDarkMode() {
 		const html = document.documentElement;
@@ -14,11 +15,15 @@
 
 <div class="h-screen w-screen flex overflow-hidden bg-surface-50-900-token">
 	<!-- Left Sidebar -->
-	<CollapsibleSidebar side="left">
-		<!-- New top section -->
+	<CollapsibleSidebar
+		side="left"
+		defaultSize="300px"
+		isCollapsed={$mainStore.ui.datasetSidebarCollapsed}
+		on:toggle={(e) => uiStore.toggleDatasetSidebar()}
+	>
+		<!-- Header -->
 		<div class="flex items-center justify-between p-4 border-b border-surface-500/30">
 			<div class="flex items-center gap-3">
-				<!-- Placeholder logo - replace with actual logo -->
 				<div
 					class="w-8 h-8 bg-primary-500 rounded-lg flex items-center justify-center text-white font-bold"
 				>
@@ -37,9 +42,12 @@
 			</button>
 		</div>
 
+		<!-- Dataset Browser -->
 		<div class="py-6 flex-shrink-0">
 			<DatasetBrowser />
 		</div>
+
+		<!-- Case List -->
 		<div class="border-t border-surface-500/30 flex-1 overflow-hidden flex flex-col">
 			<div class="pt-6 flex-1 overflow-y-auto">
 				<CaseList />
@@ -47,17 +55,25 @@
 		</div>
 	</CollapsibleSidebar>
 
-	<!-- Main content - adjusted flex structure -->
+	<!-- Main Content -->
 	<div class="flex-1 flex flex-col overflow-hidden">
-		{#if $datasetStore.currentDataset}
+		{#if $mainStore.datasets.selected}
 			<div class="flex-1 flex flex-col min-h-0">
+				<!-- Viewer Grid -->
 				<div class="flex-1 overflow-auto">
 					<ViewerGrid />
 				</div>
 
-				<!-- Layer Matrix in Collapsible Bottom Panel -->
-				{#if $datasetStore.selectedCases.length > 0}
-					<CollapsibleSidebar side="bottom" defaultSize="250px" minSize={100} maxSize={600}>
+				<!-- Layer Matrix -->
+				{#if $mainStore.cases.selected.length > 0}
+					<CollapsibleSidebar
+						side="bottom"
+						defaultSize="250px"
+						minSize={100}
+						maxSize={600}
+						isCollapsed={$mainStore.ui.layerSidebarCollapsed}
+						on:toggle={(e) => uiStore.toggleLayerSidebar()}
+					>
 						<div class="w-full h-full overflow-auto">
 							<LayerMatrix />
 						</div>

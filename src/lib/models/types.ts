@@ -1,5 +1,7 @@
+import type { RgbaColor } from 'svelte-awesome-color-picker';
+
 export interface Dataset {
-	name: string;
+	id: string;
 	layout: string;
 	path: string;
 }
@@ -12,4 +14,8 @@ export interface Case {
 export interface Layer {
 	id: string;
 	path: string;
+}
+
+export interface LayerStyle {
+	color?: RgbaColor;
 }

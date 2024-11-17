@@ -5,9 +5,9 @@
 	export let defaultSize = '300px';
 	export let minSize = 150;
 	export let maxSize = 800;
+	export let isCollapsed = false;
 
 	let sidebarElement: HTMLElement;
-	let isCollapsed = false;
 
 	// Determine if sidebar is vertical (left/right) or horizontal (top/bottom)
 	$: isVertical = side === 'left' || side === 'right';

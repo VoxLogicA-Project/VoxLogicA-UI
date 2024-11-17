@@ -15,9 +15,12 @@ export const GET: RequestHandler = async () => {
 					const datasetPath = path.join(DATASET_PATH, entry.name);
 					const configPath = path.join(datasetPath, 'dataset.json');
 					const config = JSON.parse(await fs.readFile(configPath, 'utf-8'));
+					// Rename name to id to uniform with the rest of the models
+					const { name, ...restConfig } = config;
 
 					return {
-						...config,
+						...restConfig,
+						id: name,
 						path: entry.name,
 					};
 				})
