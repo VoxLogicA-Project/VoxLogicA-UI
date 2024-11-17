@@ -2,6 +2,14 @@
 	import { mainStore } from '$lib/stores/mainStore';
 	import { layerStore, uniqueLayers } from '$lib/stores/layerStore';
 	import ListButton from './common/ListButton.svelte';
+
+	$: if ($mainStore.cases.selected.length > 0) {
+		const lastSelectedCase = $mainStore.cases.selected[$mainStore.cases.selected.length - 1];
+		const currentLayers = $mainStore.layers.availableByCase[lastSelectedCase.id];
+		if (!currentLayers) {
+			layerStore.loadLayers(lastSelectedCase);
+		}
+	}
 </script>
 
 <div class="p-4 bg-surface-100-800-token rounded-lg">

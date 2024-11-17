@@ -3,8 +3,6 @@ import { apiRepository } from '$lib/models/repository';
 import type { MainState } from './mainStore';
 import { mainStore } from './mainStore';
 import { get, derived, type Readable } from 'svelte/store';
-import { subStore } from 'immer-loves-svelte';
-import type { RgbaColor } from 'svelte-awesome-color-picker';
 
 function createLayerStore() {
 	return {
