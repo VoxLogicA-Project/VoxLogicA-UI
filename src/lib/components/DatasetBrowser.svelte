@@ -10,7 +10,7 @@
 </script>
 
 <div class="h-full">
-	<h2 class="h3 pl-4 pr-4">Datasets</h2>
+	<h2 class="font-bold text-2xl pl-4 pr-4 pb-4">Datasets</h2>
 
 	{#if $mainStore.datasets.loading}
 		<div class="flex justify-center p-4">
