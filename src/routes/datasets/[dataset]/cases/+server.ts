@@ -7,9 +7,19 @@ import type { Case } from '$lib/models/types';
 
 export const GET: RequestHandler = async ({ params }: { params: { dataset: string } }) => {
 	try {
+		// Check if dataset exists
 		const datasetPath = path.join(DATASET_PATH, params.dataset);
-		const entries = await fs.readdir(datasetPath, { withFileTypes: true });
 
+		// Get directory entries
+		let entries;
+		try {
+			entries = await fs.readdir(datasetPath, { withFileTypes: true });
+		} catch (err) {
+			console.error(`Error reading dataset directory: ${err}`);
+			return new Response('Failed to read dataset directory', { status: 500 });
+		}
+
+		// Map directories to cases
 		const cases: Case[] = entries
 			.filter((entry) => entry.isDirectory())
 			.map((entry) => ({
@@ -17,8 +27,13 @@ export const GET: RequestHandler = async ({ params }: { params: { dataset: strin
 				path: path.join(params.dataset, entry.name),
 			}));
 
+		if (cases.length === 0) {
+			return new Response('No cases found in dataset', { status: 404 });
+		}
+
 		return json(cases);
 	} catch (error) {
-		return new Response('Failed to load cases', { status: 500 });
+		console.error('Unexpected error loading cases:', error);
+		return new Response('Internal server error', { status: 500 });
 	}
 };

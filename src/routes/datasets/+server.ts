@@ -7,24 +7,21 @@ import { DATASET_PATH } from '../config';
 export const GET: RequestHandler = async () => {
 	try {
 		const entries = await fs.readdir(DATASET_PATH, { withFileTypes: true });
+		const datasetHandler = (await import('./[dataset]/+server')).GET;
 
-		const datasets = await Promise.all(
-			entries
-				.filter((entry) => entry.isDirectory())
-				.map(async (entry) => {
-					const datasetPath = path.join(DATASET_PATH, entry.name);
-					const configPath = path.join(datasetPath, 'dataset.json');
-					const config = JSON.parse(await fs.readFile(configPath, 'utf-8'));
-					// Rename name to id to uniform with the rest of the models
-					const { name, ...restConfig } = config;
-
-					return {
-						...restConfig,
-						id: name,
-						path: entry.name,
-					};
-				})
-		);
+		const datasets = (
+			await Promise.all(
+				entries
+					.filter((entry) => entry.isDirectory())
+					.map(async (entry) => {
+						const response = await datasetHandler({ params: { dataset: entry.name } } as any);
+						if (response.status === 200) {
+							return await response.json();
+						}
+						return null;
+					})
+			)
+		).filter((dataset): dataset is NonNullable<typeof dataset> => dataset !== null);
 
 		return json(datasets);
 	} catch (error) {
