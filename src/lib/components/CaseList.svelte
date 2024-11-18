@@ -1,31 +1,33 @@
 <script lang="ts">
-	import { mainStore } from '$lib/stores/mainStore';
-	import { caseStore } from '$lib/stores/caseStore';
+	import { mainState } from '$lib/modelviews/mainState.svelte';
+	import { caseOperations } from '$lib/modelviews/caseOperations.svelte';
 	import ListButton from './common/ListButton.svelte';
-	import { selectedDatasetId } from '$lib/stores/datasetStore';
 
-	let searchQuery = '';
+	let searchQuery = $state('');
 
 	// Filters cases based on search query
-	$: filteredCases = searchQuery
-		? $mainStore.cases.available.filter((caseData) =>
-				caseData.id.toLowerCase().includes(searchQuery.toLowerCase())
-			)
-		: $mainStore.cases.available;
+	const filteredCases = $derived(
+		searchQuery
+			? mainState.cases.available.filter((caseData) =>
+					caseData.id.toLowerCase().includes(searchQuery.toLowerCase())
+				)
+			: mainState.cases.available
+	);
 
-	// Watch the dataset ID directly (hack?)
-	$: if ($selectedDatasetId) {
-		caseStore.loadCases();
-	}
+	$effect(() => {
+		if (mainState.datasets.selected) {
+			caseOperations.loadCases();
+		}
+	});
 </script>
 
 <div class="flex flex-col h-full">
-	{#if $mainStore.datasets.selected}
+	{#if mainState.datasets.selected}
 		<!-- Search bar -->
 		<div class="px-4 pb-4">
 			<div class="input-group grid-cols-[auto_1fr]">
 				<div class="input-group-shim">
-					<i class="fa-solid fa-search" />
+					<i class="fa-solid fa-search"></i>
 				</div>
 				<input class="p-1" type="search" placeholder="Search cases..." bind:value={searchQuery} />
 			</div>
@@ -35,14 +37,14 @@
 		<div class="flex-1 overflow-y-auto space-y-0.5">
 			{#if filteredCases.length > 0}
 				{#each filteredCases as caseData (caseData.id)}
-					{@const isSelected = $mainStore.cases.selected.some((c) => c.id === caseData.id)}
-					{@const isDisabled = !caseStore.canSelectMore() && !isSelected}
+					{@const isSelected = mainState.cases.selected.some((c) => c.id === caseData.id)}
+					{@const isDisabled = !caseOperations.canSelectMore() && !isSelected}
 					<ListButton
 						selected={isSelected}
 						disabled={isDisabled}
 						showBadge={isSelected}
-						badgeContent={$mainStore.cases.selected.findIndex((c) => c.id === caseData.id) + 1}
-						on:click={() => caseStore.toggleCase(caseData)}
+						badgeContent={mainState.cases.selected.findIndex((c) => c.id === caseData.id) + 1}
+						on:click={() => caseOperations.toggleCase(caseData)}
 					>
 						{caseData.id}
 					</ListButton>
@@ -51,7 +53,7 @@
 				<div
 					class="flex flex-col items-center justify-center h-full text-surface-600-300-token p-4"
 				>
-					<i class="fa-solid fa-circle-xmark text-3xl mb-2 opacity-50" />
+					<i class="fa-solid fa-circle-xmark text-3xl mb-2 opacity-50"></i>
 					<p class="text-center">
 						No cases found matching "<span class="font-medium">{searchQuery}</span>"
 					</p>

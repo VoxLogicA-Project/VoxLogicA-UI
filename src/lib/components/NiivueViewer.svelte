@@ -1,19 +1,17 @@
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte';
 	import { browser } from '$app/environment';
-	import { mainStore } from '$lib/stores/mainStore';
-	import { selectedLayersForCase } from '$lib/stores/layerStore';
+	import { mainState } from '$lib/modelviews/mainState.svelte';
 	import type { Case } from '$lib/models/types';
 	import type { RgbaColor } from 'svelte-awesome-color-picker';
 
-	export let case_: Case;
-
-	const selectedLayersForCaseStore = selectedLayersForCase(case_.id);
+	const { case_ } = $props<{ case_: Case }>();
 
 	let container: HTMLDivElement;
 	let canvas: HTMLCanvasElement;
 	let nv: any;
 	let Niivue: any;
+	let isInitialized = $state(false);
 
 	function rgbaColorToColorMap(rgbaColor: RgbaColor) {
 		return {
@@ -27,47 +25,62 @@
 
 	onMount(async () => {
 		if (browser) {
-			const NiivueModule = await import('@niivue/niivue');
-			Niivue = NiivueModule.Niivue;
+			try {
+				const NiivueModule = await import('@niivue/niivue');
+				Niivue = NiivueModule.Niivue;
 
-			nv = new Niivue({
-				backColor: [0, 0, 0, 1],
-				show3Dcrosshair: true,
-				dragMode: 0,
-				smoothDisplay: false,
-			});
-			nv.attachToCanvas(canvas);
+				nv = new Niivue({
+					backColor: [0, 0, 0, 1],
+					show3Dcrosshair: true,
+					dragMode: 0,
+					smoothDisplay: false,
+				});
+				await nv.attachToCanvas(canvas);
+				isInitialized = true;
+
+				if (mainState.layers.selected[case_.id]) {
+					await loadCaseLayers();
+				}
+			} catch (error) {
+				console.error('Failed to initialize Niivue:', error);
+			}
 		}
 	});
 
-	$: if (nv && $selectedLayersForCaseStore) {
-		loadCaseLayers();
-	}
+	$effect(() => {
+		if (isInitialized && mainState.layers.selected[case_.id]) {
+			loadCaseLayers();
+		}
+	});
 
 	async function loadCaseLayers() {
-		if (!$mainStore.datasets.selected || !nv) return;
+		if (!mainState.datasets.selected || !nv) return;
 
-		nv.volumes = [];
+		try {
+			nv.volumes = [];
 
-		const selectedLayers = $mainStore.layers.selected[case_.id] || [];
-		for (const layer of selectedLayers) {
-			const rgbaColor = $mainStore.layers.styles[layer.id]?.color;
-			if (!rgbaColor) {
-				await nv.addVolumeFromUrl({
-					url: layer.path,
-				});
-			} else {
-				const layerColorMap = rgbaColorToColorMap(rgbaColor);
-				nv.addColormap(layer.id, layerColorMap);
-				await nv.addVolumeFromUrl({
-					url: layer.path,
-					opacity: rgbaColor.a,
-					colormap: layer.id,
-				});
+			const selectedLayers = mainState.layers.selected[case_.id] || [];
+			for (const layer of selectedLayers) {
+				const rgbaColor = mainState.layers.styles[layer.id]?.color;
+				if (!rgbaColor) {
+					await nv.addVolumeFromUrl({
+						url: layer.path,
+					});
+				} else {
+					const layerColorMap = rgbaColorToColorMap(rgbaColor);
+					nv.addColormap(layer.id, layerColorMap);
+					await nv.addVolumeFromUrl({
+						url: layer.path,
+						opacity: rgbaColor.a,
+						colormap: layer.id,
+					});
+				}
 			}
-		}
 
-		nv.drawScene();
+			nv.drawScene();
+		} catch (error) {
+			console.error('Failed to load layers:', error);
+		}
 	}
 
 	onDestroy(() => {
@@ -78,5 +91,5 @@
 </script>
 
 <div bind:this={container} class="relative w-full aspect-square">
-	<canvas bind:this={canvas} class="w-full h-full bg-black" />
+	<canvas bind:this={canvas} class="w-full h-full bg-black" aria-label="Niivue Viewer"></canvas>
 </div>

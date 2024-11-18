@@ -1,5 +1,4 @@
 import type { Dataset, Case, Layer, LayerStyle } from '$lib/models/types';
-import { writable } from 'svelte/store';
 
 interface DatasetsState {
 	available: Dataset[];
@@ -36,7 +35,7 @@ export interface MainState {
 	ui: UIState;
 }
 
-const initialState: MainState = {
+export const mainState = $state<MainState>({
 	datasets: {
 		available: [],
 		selected: null,
@@ -61,11 +60,4 @@ const initialState: MainState = {
 		datasetSidebarCollapsed: false,
 		layerSidebarCollapsed: false,
 	},
-};
-
-export const mainStore = writable<MainState>(initialState);
-
-// Add subscription with detailed logging
-mainStore.subscribe((state) => {
-	console.log(state);
 });

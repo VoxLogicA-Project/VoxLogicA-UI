@@ -4,7 +4,11 @@
 	import CaseList from '$lib/components/CaseList.svelte';
 	import ViewerGrid from '$lib/components/ViewerGrid.svelte';
 	import LayerMatrix from '$lib/components/LayerMatrix.svelte';
-	import { mainStore } from '$lib/stores/mainStore';
+	import { mainState } from '$lib/modelviews/mainState.svelte';
+
+	$effect(() => {
+		$inspect(mainState);
+	});
 
 	function toggleDarkMode() {
 		const html = document.documentElement;
@@ -17,16 +21,12 @@
 	<CollapsibleSidebar
 		side="left"
 		defaultSize="300px"
-		bind:isCollapsed={$mainStore.ui.datasetSidebarCollapsed}
+		bind:isCollapsed={mainState.ui.datasetSidebarCollapsed}
 	>
 		<!-- Header -->
 		<div class="flex items-center justify-between p-4 border-b border-surface-500/30">
 			<div class="flex items-center gap-3">
-				<a
-					href="/?reload=true"
-					class="flex items-center gap-3"
-					on:click|preventDefault={() => (window.location.href = '/')}
-				>
+				<a href="/" class="flex items-center gap-3" onclick={() => (window.location.href = '/')}>
 					<div
 						class="w-8 h-8 h3 bg-primary-500 rounded-lg flex items-center justify-center text-white font-bold"
 					>
@@ -38,11 +38,12 @@
 
 			<button
 				class="w-8 h-8 rounded-lg bg-surface-300-600-token hover:bg-surface-400-500-token flex items-center justify-center"
-				on:click={toggleDarkMode}
+				onclick={toggleDarkMode}
 				title="Toggle dark mode"
+				aria-label="Toggle dark mode"
 			>
-				<i class="fa-solid fa-sun text-lg hidden dark:block" />
-				<i class="fa-solid fa-moon text-lg block dark:hidden" />
+				<i class="fa-solid fa-sun text-lg hidden dark:block"></i>
+				<i class="fa-solid fa-moon text-lg block dark:hidden"></i>
 			</button>
 		</div>
 
@@ -61,7 +62,7 @@
 
 	<!-- Main Content -->
 	<div class="flex-1 flex flex-col overflow-hidden">
-		{#if $mainStore.datasets.selected}
+		{#if mainState.datasets.selected}
 			<div class="flex-1 flex flex-col min-h-0">
 				<!-- Viewer Grid -->
 				<div class="flex-1 overflow-auto">
@@ -69,13 +70,13 @@
 				</div>
 
 				<!-- Layer Matrix -->
-				{#if $mainStore.cases.selected.length > 0}
+				{#if mainState.cases.selected.length > 0}
 					<CollapsibleSidebar
 						side="bottom"
 						defaultSize="250px"
 						minSize={100}
 						maxSize={600}
-						bind:isCollapsed={$mainStore.ui.layerSidebarCollapsed}
+						bind:isCollapsed={mainState.ui.layerSidebarCollapsed}
 					>
 						<div class="w-full h-full overflow-auto">
 							<LayerMatrix />

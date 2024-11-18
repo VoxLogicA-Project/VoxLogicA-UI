@@ -82,6 +82,7 @@
 			<button
 				class="w-full h-full btn variant-soft rounded-none flex items-center justify-center"
 				on:click={toggleCollapse}
+				aria-label={`${isCollapsed ? 'Expand' : 'Collapse'} sidebar`}
 			>
 				<i
 					class="fa-solid {side === 'left'
@@ -91,7 +92,7 @@
 							: side === 'top'
 								? 'fa-chevron-down'
 								: 'fa-chevron-up'}"
-				/>
+				></i>
 			</button>
 		</div>
 	{/if}
@@ -108,6 +109,7 @@
 			class:top-0={side === 'bottom'}
 			aria-label="Resize sidebar"
 			on:mousedown={initResize}
-		/>
+		>
+		</button>
 	{/if}
 </aside>

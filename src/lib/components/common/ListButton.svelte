@@ -30,8 +30,8 @@
 		{:else if !selected && !disabled}
 			<i
 				class="fa-solid fa-chevron-right w-3 h-3 opacity-0 -translate-x-2 transition-all duration-200
-				group-hover:opacity-50 group-hover:translate-x-0"
-			/>
+			group-hover:opacity-50 group-hover:translate-x-0"
+			></i>
 		{/if}
 	</div>
 </button>
