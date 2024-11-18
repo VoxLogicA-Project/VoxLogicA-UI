@@ -9,6 +9,7 @@
 	} = $props();
 </script>
 
+<!-- svelte-ignore event_directive_deprecated -->
 <button
 	class="w-full px-4 py-2.5 text-left transition-all duration-200
 		{!disabled ? 'hover:bg-surface-200-700-token hover:pl-6 group' : ''}

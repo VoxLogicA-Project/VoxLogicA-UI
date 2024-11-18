@@ -35,9 +35,8 @@ function createLayerOperations() {
 		},
 
 		unselectLayer(caseId: string, layer: Layer) {
-			mainState.layers.selected[caseId] = mainState.layers.selected[caseId].filter(
-				(l) => l.id !== layer.id
-			);
+			const currentLayers = mainState.layers.selected[caseId] || [];
+			mainState.layers.selected[caseId] = currentLayers.filter((l) => l.id !== layer.id);
 		},
 
 		toggleLayer(caseId: string, layer: Layer) {
