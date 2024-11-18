@@ -11,6 +11,18 @@
 			layerStore.loadLayers(lastSelectedCase);
 		}
 	}
+
+	// Watch for theme changes to update the color picker
+	let isDarkMode = false;
+	if (typeof document !== 'undefined') {
+		isDarkMode = document.documentElement.classList.contains('dark');
+		new MutationObserver(() => {
+			isDarkMode = document.documentElement.classList.contains('dark');
+		}).observe(document.documentElement, {
+			attributes: true,
+			attributeFilter: ['class'],
+		});
+	}
 </script>
 
 <div class="p-4 bg-surface-100-800-token rounded-lg">
@@ -33,25 +45,27 @@
 				<tr class="align-middle h-12">
 					<td class="align-middle w-48 border-r border-b border-surface-500/30">
 						<div class="flex items-center gap-2">
-							<ColorPicker
-								label=""
-								rgb={$mainStore.layers.styles[layer.id]?.color}
-								on:input={(e) => {
-									mainStore.update((state) => ({
-										...state,
-										layers: {
-											...state.layers,
-											styles: {
-												...state.layers.styles,
-												[layer.id]: {
-													...state.layers.styles[layer.id],
-													color: e.detail.rgb,
+							<div class:dark={isDarkMode}>
+								<ColorPicker
+									label=""
+									rgb={$mainStore.layers.styles[layer.id]?.color}
+									on:input={(e) => {
+										mainStore.update((state) => ({
+											...state,
+											layers: {
+												...state.layers,
+												styles: {
+													...state.layers.styles,
+													[layer.id]: {
+														...state.layers.styles[layer.id],
+														color: e.detail.rgb,
+													},
 												},
 											},
-										},
-									}));
-								}}
-							/>
+										}));
+									}}
+								/>
+							</div>
 							<ListButton
 								selected={false}
 								on:click={() => {
@@ -96,3 +110,13 @@
 		</tbody>
 	</table>
 </div>
+
+<style>
+	.dark {
+		--cp-bg-color: #333;
+		--cp-border-color: white;
+		--cp-text-color: white;
+		--cp-input-color: #555;
+		--cp-button-hover-color: #777;
+	}
+</style>
