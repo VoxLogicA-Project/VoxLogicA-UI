@@ -15,25 +15,22 @@ export interface IDataRepository {
 	getDatasets(): Promise<Dataset[]>;
 	getCases(dataset: Dataset): Promise<Case[]>;
 	getLayers(dataset: Dataset, caseData: Case): Promise<Layer[]>;
-	getLayerFile(dataset: Dataset, caseData: Case, layerId: string): Promise<Layer>;
 }
 
 export function createApiRepository(): IDataRepository {
-	async function fetchWithError<T>(url: string, errorMessage: string): Promise<T> {
+	async function fetchWithError<T>(url: string, defaultErrorMessage: string): Promise<T> {
 		try {
 			const response = await fetch(url);
-
 			if (!response.ok) {
-				throw new RepositoryError(errorMessage, response.status);
+				const errorData = await response.json();
+				throw new RepositoryError(errorData?.message || defaultErrorMessage, response.status);
 			}
-
 			return await response.json();
 		} catch (error) {
 			if (error instanceof RepositoryError) {
 				throw error;
 			}
-
-			throw new RepositoryError(errorMessage, undefined, error);
+			throw new RepositoryError(defaultErrorMessage, undefined, error);
 		}
 	}
 
@@ -54,10 +51,6 @@ export function createApiRepository(): IDataRepository {
 				`/datasets/${dataset.path}/cases/${caseData.id}/layers`,
 				`Failed to fetch layers for case: ${caseData.id}`
 			);
-		},
-
-		async getLayerFile(dataset: Dataset, caseData: Case, layerId: string): Promise<Layer> {
-			throw new Error('Not implemented');
 		},
 	};
 }

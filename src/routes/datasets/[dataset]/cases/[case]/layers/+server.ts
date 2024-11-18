@@ -1,37 +1,57 @@
-import { json } from '@sveltejs/kit';
+import { json, error } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import fs from 'fs/promises';
 import path from 'path';
 import { DATASET_PATH } from '../../../../../config';
-import type { Layer } from '$lib/models/types';
+import type { Dataset, Layer } from '$lib/models/types';
 
-export const GET: RequestHandler = async ({ params }) => {
-	try {
-		const casePath = path.join(DATASET_PATH, params.dataset, params.case);
-		const files = await fs.readdir(casePath);
-
-		const layers: Layer[] = files
-			.filter((file) => file.endsWith('.nii.gz'))
-			.map((file) => {
-				let layer_id = file.match(new RegExp(`${params.case}_(.+)\\.nii\\.gz$`));
-				let filename = file.match(/(.+)\.nii\.gz$/);
-				// Fallback to filename without extension if case_layerId pattern is not found
-				if (!layer_id) {
-					layer_id = filename;
-				}
-				if (!layer_id || !filename) {
-					throw new Error(`Invalid filename format: ${file}`);
-				}
-				return {
-					id: layer_id[1],
-					// TODO: fix this. We should not load from static path.
-					path: `/datasets/${params.dataset}/${params.case}/${filename[1]}.nii.gz`,
-					// path: `/datasets/${params.dataset}/cases/${params.case}/layers/${filename[1]}`,
-				};
-			});
-
-		return json(layers);
-	} catch (error) {
-		return new Response('Failed to load layers', { status: 500 });
+export const GET: RequestHandler = async ({ params, fetch }) => {
+	const datasetResponse = await fetch(`/datasets/${params.dataset}`);
+	if (!datasetResponse.ok) {
+		throw error(404, `Dataset ${params.dataset} not found`);
 	}
+	const dataset: Dataset = await datasetResponse.json();
+
+	if (dataset.layout !== 'brats') {
+		throw error(
+			400,
+			`Dataset layout '${dataset.layout}' is not supported. Only 'brats' is currently supported.`
+		);
+	}
+
+	const casePath = path.join(DATASET_PATH, params.dataset, params.case);
+	let files: string[];
+
+	try {
+		files = await fs.readdir(casePath);
+	} catch (e) {
+		throw error(404, `Case directory not found: ${params.case}`);
+	}
+
+	const layers: Layer[] = [];
+
+	for (const file of files.filter((file) => file.endsWith('.nii.gz'))) {
+		let layer_id = file.match(new RegExp(`${params.case}_(.+)\\.nii\\.gz$`));
+		let filename = file.match(/(.+)\.nii\.gz$/);
+
+		if (!layer_id) {
+			layer_id = filename;
+		}
+
+		if (!layer_id || !filename) {
+			console.error(`Skipping invalid filename format: ${file}`);
+			continue;
+		}
+
+		layers.push({
+			id: layer_id[1],
+			path: `/datasets/${params.dataset}/${params.case}/${filename[1]}.nii.gz`,
+		});
+	}
+
+	if (layers.length === 0) {
+		throw error(404, `No valid layers found for case: ${params.case}`);
+	}
+
+	return json(layers);
 };

@@ -2,7 +2,9 @@
 	import '../app.postcss';
 	import { AppShell } from '@skeletonlabs/skeleton';
 	import { onMount } from 'svelte';
+	import { initializeStores, Toast } from '@skeletonlabs/skeleton';
 
+	initializeStores();
 	onMount(() => {
 		// Check system preference and set initial theme
 		if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
@@ -20,6 +22,7 @@
 	});
 </script>
 
+<Toast />
 <AppShell>
 	<slot />
 </AppShell>

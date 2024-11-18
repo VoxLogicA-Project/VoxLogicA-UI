@@ -3,6 +3,9 @@
 	import { layerOperations, getUniqueLayers } from '$lib/modelviews/layerOperations.svelte';
 	import ListButton from './common/ListButton.svelte';
 	import ColorPicker from 'svelte-awesome-color-picker';
+	import { getToastStore } from '@skeletonlabs/skeleton';
+
+	const toastStore = getToastStore();
 
 	$effect(() => {
 		if (mainState.cases.selected.length > 0) {
@@ -11,6 +14,16 @@
 			if (!currentLayers) {
 				layerOperations.loadLayers(lastSelectedCase);
 			}
+		}
+	});
+
+	$effect(() => {
+		if (mainState.layers.error) {
+			console.error(mainState.layers.error);
+			toastStore.trigger({
+				message: mainState.layers.error,
+				background: 'variant-filled-error',
+			});
 		}
 	});
 
