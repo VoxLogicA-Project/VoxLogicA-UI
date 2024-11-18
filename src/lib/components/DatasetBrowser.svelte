@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { mainState } from '$lib/modelviews/mainState.svelte';
-	import { datasetOperations } from '$lib/modelviews/datasetOperations';
+	import { datasetOperations } from '$lib/modelviews/datasetOperations.svelte';
 	import ListButton from './common/ListButton.svelte';
 	import { onMount } from 'svelte';
 
