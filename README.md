@@ -33,10 +33,10 @@ yarn dev
 
 ### Tech Stack
 
-- [SvelteKit](https://kit.svelte.dev/) - Web framework
+- [SvelteKit](https://svelte.dev/) - Web framework
 - [Skeleton UI](https://www.skeleton.dev/) - UI components
 - [TailwindCSS](https://tailwindcss.com/) - Styling
-- [NiiVue](https://niivue.github.io/) - Neuroimaging visualization
+- [NiiVue](https://niivue.github.io/niivue/) - Neuroimaging visualization
 
 ### Scripts
 
