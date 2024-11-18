@@ -14,7 +14,6 @@
 	let canvas: HTMLCanvasElement;
 	let nv: any;
 	let Niivue: any;
-	let resizeObserver: ResizeObserver;
 
 	function rgbaColorToColorMap(rgbaColor: RgbaColor) {
 		return {
@@ -38,13 +37,6 @@
 				smoothDisplay: false,
 			});
 			nv.attachToCanvas(canvas);
-
-			resizeObserver = new ResizeObserver(() => {
-				if (nv) {
-					nv.drawScene();
-				}
-			});
-			resizeObserver.observe(container);
 		}
 	});
 
@@ -82,9 +74,6 @@
 	onDestroy(() => {
 		if (nv) {
 			nv.closeDrawing();
-		}
-		if (resizeObserver) {
-			resizeObserver.disconnect();
 		}
 	});
 </script>
