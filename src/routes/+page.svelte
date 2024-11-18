@@ -5,7 +5,6 @@
 	import ViewerGrid from '$lib/components/ViewerGrid.svelte';
 	import LayerMatrix from '$lib/components/LayerMatrix.svelte';
 	import { mainStore } from '$lib/stores/mainStore';
-	import { uiStore } from '$lib/stores/uiStore';
 
 	function toggleDarkMode() {
 		const html = document.documentElement;
@@ -18,8 +17,7 @@
 	<CollapsibleSidebar
 		side="left"
 		defaultSize="300px"
-		isCollapsed={$mainStore.ui.datasetSidebarCollapsed}
-		on:toggle={(e) => uiStore.toggleDatasetSidebar()}
+		bind:isCollapsed={$mainStore.ui.datasetSidebarCollapsed}
 	>
 		<!-- Header -->
 		<div class="flex items-center justify-between p-4 border-b border-surface-500/30">
@@ -71,8 +69,7 @@
 						defaultSize="250px"
 						minSize={100}
 						maxSize={600}
-						isCollapsed={$mainStore.ui.layerSidebarCollapsed}
-						on:toggle={(e) => uiStore.toggleLayerSidebar()}
+						bind:isCollapsed={$mainStore.ui.layerSidebarCollapsed}
 					>
 						<div class="w-full h-full overflow-auto">
 							<LayerMatrix />
