@@ -1,26 +1,27 @@
 <script lang="ts">
-	export let selected = false;
-	export let disabled = false;
-	export let showBadge = false;
-	export let badgeContent: string | number = '';
-	export let isBaseLayer = false;
+	let {
+		selected = $bindable(false),
+		disabled = $bindable(false),
+		showBadge = false,
+		badgeContent = '',
+		isBaseLayer = false,
+		children,
+	} = $props();
 </script>
 
 <button
 	class="w-full px-4 py-2.5 text-left transition-all duration-200
 		{!disabled ? 'hover:bg-surface-200-700-token hover:pl-6 group' : ''}
-		{selected && !isBaseLayer
+		{selected
 		? 'bg-primary-500/10 text-primary-700 dark:text-primary-400'
-		: isBaseLayer
-			? 'text-primary-700 dark:text-primary-400 font-bold'
-			: 'text-surface-900-50-token'}
+		: 'text-surface-900-50-token'}
 		{disabled && !isBaseLayer ? 'opacity-50 cursor-default' : ''}"
 	on:click
 	{disabled}
 >
 	<div class="flex items-center justify-between">
 		<span class="truncate font-medium">
-			<slot />
+			{@render children?.()}
 		</span>
 
 		{#if showBadge && badgeContent}

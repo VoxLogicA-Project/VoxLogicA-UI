@@ -5,8 +5,7 @@
 	import ColorPicker from 'svelte-awesome-color-picker';
 	import { getToastStore } from '@skeletonlabs/skeleton';
 
-	const toastStore = getToastStore();
-
+	// Load layers for the last selected case
 	$effect(() => {
 		if (mainState.cases.selected.length > 0) {
 			const lastSelectedCase = mainState.cases.selected[mainState.cases.selected.length - 1];
@@ -17,9 +16,10 @@
 		}
 	});
 
+	// Show error toast if there is an error loading layers
+	const toastStore = getToastStore();
 	$effect(() => {
 		if (mainState.layers.error) {
-			console.error(mainState.layers.error);
 			toastStore.trigger({
 				message: mainState.layers.error,
 				background: 'variant-filled-error',

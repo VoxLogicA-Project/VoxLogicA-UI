@@ -43,7 +43,9 @@
 						selected={isSelected}
 						disabled={isDisabled}
 						showBadge={isSelected}
-						badgeContent={mainState.cases.selected.findIndex((c) => c.id === caseData.id) + 1}
+						badgeContent={(
+							mainState.cases.selected.findIndex((c) => c.id === caseData.id) + 1
+						).toString()}
 						on:click={() => caseOperations.toggleCase(caseData)}
 					>
 						{caseData.id}

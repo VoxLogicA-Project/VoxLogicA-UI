@@ -26,6 +26,7 @@ interface LayersState {
 interface UIState {
 	datasetSidebarCollapsed: boolean;
 	layerSidebarCollapsed: boolean;
+	isDarkMode: boolean;
 }
 
 export interface MainState {
@@ -59,5 +60,6 @@ export const mainState = $state<MainState>({
 	ui: {
 		datasetSidebarCollapsed: false,
 		layerSidebarCollapsed: false,
+		isDarkMode: false,
 	},
 });

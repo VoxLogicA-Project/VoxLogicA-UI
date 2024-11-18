@@ -3,26 +3,39 @@
 	import { AppShell } from '@skeletonlabs/skeleton';
 	import { onMount } from 'svelte';
 	import { initializeStores, Toast } from '@skeletonlabs/skeleton';
+	import { mainState } from '$lib/modelviews/mainState.svelte';
 
 	initializeStores();
+
+	// Initialize theme based on system preference
+	$effect(() => {
+		if (mainState.ui.isDarkMode) {
+			document.documentElement.classList.add('dark');
+		} else {
+			document.documentElement.classList.remove('dark');
+		}
+	});
+
 	onMount(() => {
 		// Check system preference and set initial theme
 		if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
-			document.documentElement.classList.add('dark');
+			mainState.ui.isDarkMode = true;
 		}
 
 		// Listen for system theme changes
 		window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
 			if (e.matches) {
-				document.documentElement.classList.add('dark');
+				mainState.ui.isDarkMode = true;
 			} else {
-				document.documentElement.classList.remove('dark');
+				mainState.ui.isDarkMode = false;
 			}
 		});
 	});
+
+	let { children } = $props();
 </script>
 
 <Toast />
 <AppShell>
-	<slot />
+	{@render children?.()}
 </AppShell>

@@ -5,15 +5,12 @@
 	import ViewerGrid from '$lib/components/ViewerGrid.svelte';
 	import LayerMatrix from '$lib/components/LayerMatrix.svelte';
 	import { mainState } from '$lib/modelviews/mainState.svelte';
+	import isDarkMode from './+layout.svelte';
 
+	// Log every change to mainState
 	$effect(() => {
 		$inspect(mainState);
 	});
-
-	function toggleDarkMode() {
-		const html = document.documentElement;
-		html.classList.toggle('dark');
-	}
 </script>
 
 <div class="h-screen w-screen flex overflow-hidden bg-surface-50-900-token">
@@ -38,7 +35,7 @@
 
 			<button
 				class="w-8 h-8 rounded-lg bg-surface-300-600-token hover:bg-surface-400-500-token flex items-center justify-center"
-				onclick={toggleDarkMode}
+				onclick={() => (mainState.ui.isDarkMode = !mainState.ui.isDarkMode)}
 				title="Toggle dark mode"
 				aria-label="Toggle dark mode"
 			>

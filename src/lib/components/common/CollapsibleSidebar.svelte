@@ -1,16 +1,19 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 
-	export let side: 'left' | 'right' | 'top' | 'bottom' = 'left';
-	export let defaultSize = '300px';
-	export let minSize = 150;
-	export let maxSize = 800;
-	export let isCollapsed = false;
+	let {
+		side = 'left',
+		defaultSize = '300px',
+		minSize = 150,
+		maxSize = 800,
+		isCollapsed = $bindable(false),
+		children,
+	} = $props();
 
 	let sidebarElement: HTMLElement;
 
 	// Determine if sidebar is vertical (left/right) or horizontal (top/bottom)
-	$: isVertical = side === 'left' || side === 'right';
+	const isVertical = side === 'left' || side === 'right';
 
 	function initResize(event: MouseEvent) {
 		event.preventDefault();
@@ -73,7 +76,7 @@
 		class="overflow-hidden relative {isVertical ? 'flex-1 flex flex-col pr-1' : 'w-full h-full'}"
 		class:hidden={isCollapsed}
 	>
-		<slot />
+		{@render children?.()}
 	</div>
 
 	<!-- Toggle button container - only shown when collapsed -->
@@ -81,7 +84,7 @@
 		<div class="w-full h-full flex items-center justify-center">
 			<button
 				class="w-full h-full btn variant-soft rounded-none flex items-center justify-center"
-				on:click={toggleCollapse}
+				onclick={toggleCollapse}
 				aria-label={`${isCollapsed ? 'Expand' : 'Collapse'} sidebar`}
 			>
 				<i
@@ -108,7 +111,7 @@
 			class:bottom-0={side === 'top'}
 			class:top-0={side === 'bottom'}
 			aria-label="Resize sidebar"
-			on:mousedown={initResize}
+			onmousedown={initResize}
 		>
 		</button>
 	{/if}
