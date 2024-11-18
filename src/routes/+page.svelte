@@ -22,12 +22,18 @@
 		<!-- Header -->
 		<div class="flex items-center justify-between p-4 border-b border-surface-500/30">
 			<div class="flex items-center gap-3">
-				<div
-					class="w-8 h-8 bg-primary-500 rounded-lg flex items-center justify-center text-white font-bold"
+				<a
+					href="/?reload=true"
+					class="flex items-center gap-3"
+					on:click|preventDefault={() => (window.location.href = '/')}
 				>
-					V
-				</div>
-				<span class="text-lg font-semibold">VoxLogica</span>
+					<div
+						class="w-8 h-8 h3 bg-primary-500 rounded-lg flex items-center justify-center text-white font-bold"
+					>
+						V
+					</div>
+					<h3 class="h3">VoxLogicA</h3>
+				</a>
 			</div>
 
 			<button

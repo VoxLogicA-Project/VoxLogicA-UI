@@ -2,8 +2,8 @@ import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import fs from 'fs/promises';
 import path from 'path';
-import { DATASET_PATH } from '$lib/config/config';
-import type { Case } from '$lib/models/dataset';
+import { DATASET_PATH } from '../../../config';
+import type { Case } from '$lib/models/types';
 
 export const GET: RequestHandler = async ({ params }: { params: { dataset: string } }) => {
 	try {

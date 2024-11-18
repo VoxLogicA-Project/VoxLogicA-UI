@@ -51,7 +51,6 @@
 
 		const selectedLayers = $mainStore.layers.selected[case_.id] || [];
 		for (const layer of selectedLayers) {
-			console.log(case_.id, layer.path);
 			const rgbaColor = $mainStore.layers.styles[layer.id]?.color;
 			if (!rgbaColor) {
 				await nv.addVolumeFromUrl({

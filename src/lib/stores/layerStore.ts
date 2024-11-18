@@ -7,7 +7,6 @@ import { get, derived, type Readable } from 'svelte/store';
 function createLayerStore() {
 	return {
 		async loadLayers(caseData: Case) {
-			console.log('loadLayers', caseData.id);
 			const state = get(mainStore);
 			if (!state.datasets.selected) return;
 

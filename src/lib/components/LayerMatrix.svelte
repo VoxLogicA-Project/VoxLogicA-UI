@@ -29,10 +29,10 @@
 	<table class="w-full">
 		<thead>
 			<tr>
-				<th class="text-left w-48 border-r border-b border-surface-500/30">Layer</th>
+				<th class="text-left w-48 border-r border-b border-surface-500/30">Layers</th>
 				{#each $mainStore.cases.selected as case_, index}
 					<th
-						class="w-32 text-center px-4 border-b border-surface-500/30 {index !==
+						class="w-32 text-center px-4 border-b border-surface-500/30 font-normal {index !==
 						$mainStore.cases.selected.length - 1
 							? 'border-r'
 							: ''}">{case_.id}</th

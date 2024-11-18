@@ -1,7 +1,7 @@
 import type { RequestHandler } from './$types';
 import fs from 'fs/promises';
 import path from 'path';
-import { DATASET_PATH } from '$lib/config/config';
+import { DATASET_PATH } from '../../../../../../config';
 
 export const GET: RequestHandler = async ({ params }) => {
 	// TODO: fix this. This is currently not serving a file that can be loaded by Niivue.
