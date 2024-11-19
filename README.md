@@ -10,6 +10,8 @@ This UI provides an intuitive way to work with neuroimaging data, currently supp
 
 - Node.js (v18 or later)
 - Yarn package manager
+- curl (for downloading VoxLogicA binaries)
+- tar or unzip (depending on your OS)
 
 ### Installation
 
@@ -20,14 +22,65 @@ git clone <repository-url>
 cd voxlogica-ui
 ```
 
-2. Install dependencies and start the development server:
+2. Download and install dependencies:
 
 ```bash
 yarn install
+```
+
+3. Set up VoxLogicA binary:
+
+**Windows:**
+
+```powershell
+# Create directories
+mkdir -p static/bin/windows
+
+# Download and extract
+curl https://github.com/vincenzoml/VoxLogicA/releases/download/v1.3.3-experimental/VoxLogicA_1.3.3-experimental_win-x64.zip -o voxlogica.zip
+tar -xf voxlogica.zip
+mv VoxLogicA_1.3.3-experimental_win-x64/* static/bin/windows/
+rm -r VoxLogicA_1.3.3-experimental_win-x64
+rm voxlogica.zip
+```
+
+**Linux:**
+
+```bash
+# Create directories
+mkdir -p static/bin/linux
+
+# Download and extract
+curl https://github.com/vincenzoml/VoxLogicA/releases/download/v1.3.3-experimental/VoxLogicA_1.3.3-experimental_linux-x64.zip -o voxlogica.zip
+tar -xf voxlogica.zip
+mv VoxLogicA_1.3.3-experimental_linux-x64/* static/bin/linux/
+rm -r VoxLogicA_1.3.3-experimental_linux-x64
+chmod +x static/bin/linux/voxlogica
+rm voxlogica.zip
+```
+
+**macOS:**
+
+```bash
+# Create directories
+mkdir -p static/bin/macos
+
+# Download and extract
+curl https://github.com/vincenzoml/VoxLogicA/releases/download/v1.3.3-experimental/VoxLogicA_1.3.3-experimental_osx-x64.zip -o voxlogica.zip
+tar -xf voxlogica.zip
+mv VoxLogicA_1.3.3-experimental_osx-x64/* static/bin/macos/
+rm -r VoxLogicA_1.3.3-experimental_osx-x64
+chmod +x static/bin/macos/voxlogica
+rm voxlogica.zip
+```
+
+4. Start the development server:
+
+```bash
 yarn dev
 ```
 
-3. Open your browser and navigate to the development server address displayed in the terminal.
+5. Open your browser and navigate to the development server address displayed in the terminal.
 
 ## Development
 
@@ -37,6 +90,7 @@ yarn dev
 - [Skeleton UI](https://www.skeleton.dev/) - UI components
 - [TailwindCSS](https://tailwindcss.com/) - Styling
 - [NiiVue](https://niivue.github.io/niivue/) - Neuroimaging visualization
+- [VoxLogicA](https://github.com/vincenzoml/VoxLogicA) - Image analysis engine
 
 ### Scripts
 
@@ -45,6 +99,17 @@ yarn dev
 - `yarn preview` - Preview production build
 - `yarn check` - Type-check the codebase
 - `yarn format` - Format code with Prettier
+
+### Troubleshooting
+
+If you encounter permission issues with VoxLogicA binary:
+
+- **Linux/macOS**: Ensure the binary has execution permissions:
+  ```bash
+  chmod +x static/bin/linux/voxlogica  # For Linux
+  chmod +x static/bin/macos/voxlogica  # For macOS
+  ```
+- **Windows**: Make sure Windows Defender or your antivirus isn't blocking the executable.
 
 ## License
 
