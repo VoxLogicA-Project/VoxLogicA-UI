@@ -6,6 +6,7 @@
 	import LayerMatrix from '$lib/components/LayerMatrix.svelte';
 	import { mainState } from '$lib/modelviews/mainState.svelte';
 	import isDarkMode from './+layout.svelte';
+	import ScriptEditor from '$lib/components/ScriptEditor.svelte';
 
 	// Log every change to mainState
 	$effect(() => {
@@ -87,4 +88,15 @@
 			</div>
 		{/if}
 	</div>
+
+	<!-- Run section -->
+	{#if mainState.cases.selected.length > 0}
+		<CollapsibleSidebar
+			side="right"
+			defaultSize="400px"
+			bind:isCollapsed={mainState.ui.scriptSidebarCollapsed}
+		>
+			<ScriptEditor />
+		</CollapsibleSidebar>
+	{/if}
 </div>

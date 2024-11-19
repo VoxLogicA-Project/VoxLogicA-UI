@@ -19,3 +19,8 @@ export interface Layer {
 export interface LayerStyle {
 	color?: RgbaColor;
 }
+
+export interface Script {
+	id: string;
+	path: string;
+}

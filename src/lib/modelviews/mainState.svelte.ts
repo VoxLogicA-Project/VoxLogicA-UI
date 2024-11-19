@@ -1,4 +1,4 @@
-import type { Dataset, Case, Layer, LayerStyle } from '$lib/models/types';
+import type { Dataset, Case, Layer, LayerStyle, Script } from '$lib/models/types';
 
 interface DatasetsState {
 	available: Dataset[];
@@ -26,7 +26,15 @@ interface LayersState {
 interface UIState {
 	datasetSidebarCollapsed: boolean;
 	layerSidebarCollapsed: boolean;
+	scriptSidebarCollapsed: boolean;
 	isDarkMode: boolean;
+}
+
+interface ScriptsState {
+	available: Script[];
+	selected: Script | null;
+	loading: boolean;
+	error: string | null;
 }
 
 export interface MainState {
@@ -34,6 +42,7 @@ export interface MainState {
 	cases: CasesState;
 	layers: LayersState;
 	ui: UIState;
+	scripts: ScriptsState;
 }
 
 export const mainState = $state<MainState>({
@@ -60,6 +69,13 @@ export const mainState = $state<MainState>({
 	ui: {
 		datasetSidebarCollapsed: false,
 		layerSidebarCollapsed: false,
+		scriptSidebarCollapsed: false,
 		isDarkMode: false,
+	},
+	scripts: {
+		available: [],
+		selected: null,
+		loading: false,
+		error: null,
 	},
 });
