@@ -44,7 +44,7 @@ export function createApiRepository(): IDataRepository {
 
 		async getCases(dataset: Dataset): Promise<Case[]> {
 			const response = await fetchWithError(
-				`/datasets/${dataset.path}/cases`,
+				`/datasets/${dataset.id}/cases`,
 				`Failed to fetch cases for dataset: ${dataset.id}`
 			);
 			return response.json();
@@ -52,7 +52,7 @@ export function createApiRepository(): IDataRepository {
 
 		async getLayers(dataset: Dataset, caseData: Case): Promise<Layer[]> {
 			const response = await fetchWithError(
-				`/datasets/${dataset.path}/cases/${caseData.id}/layers`,
+				`/datasets/${dataset.id}/cases/${caseData.id}/layers`,
 				`Failed to fetch layers for case: ${caseData.id}`
 			);
 			return response.json();

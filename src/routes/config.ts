@@ -1,5 +1,6 @@
 import path from 'path';
 import { platform } from 'os';
+import { tmpdir } from 'os';
 
 const STATIC_PATH = path.join(process.cwd(), 'static');
 
@@ -19,3 +20,6 @@ export const VOXLOGICA_BINARY_PATH = (() => {
 			throw new Error(`Unsupported platform: ${platform()}`);
 	}
 })();
+
+export const RUN_OUTPUT_PATH = (runId: string) =>
+	path.join(process.env.RUN_OUTPUT_PATH || tmpdir(), `voxlogica_run_${runId}`);

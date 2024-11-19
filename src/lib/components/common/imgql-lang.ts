@@ -19,7 +19,7 @@ const imgqlParser: StreamParser<unknown> = {
 		if (stream.match(/\b[a-zA-Z_][a-zA-Z0-9_]*\b(?=\s*\()/)) return 'variable-2';
 
 		// Variables
-		if (stream.match(/\b[a-zA-Z_][a-zA-Z0-9_]*\b/)) return 'emphasis';
+		if (stream.match(/\b[a-zA-Z_][a-zA-Z0-9_]*\b/)) return 'variable';
 
 		// Operators
 		if (stream.match(/[=,()]/)) return 'operator';

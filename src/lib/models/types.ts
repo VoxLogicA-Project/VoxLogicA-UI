@@ -3,7 +3,6 @@ import type { RgbaColor } from 'svelte-awesome-color-picker';
 export interface Dataset {
 	id: string;
 	layout: string;
-	path: string;
 }
 
 export interface Case {
@@ -23,4 +22,11 @@ export interface LayerStyle {
 export interface Script {
 	id: string;
 	path: string;
+}
+
+// TODO: Use this for runOperations
+export interface Run {
+	id: string;
+	scriptContent: string;
+	case: Case;
 }

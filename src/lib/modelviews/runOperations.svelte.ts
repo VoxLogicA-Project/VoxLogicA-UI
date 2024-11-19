@@ -1,33 +1,27 @@
-import { exec } from 'child_process';
-import { promisify } from 'util';
-import { VOXLOGICA_BINARY_PATH } from '../../routes/config';
-import { access } from 'fs/promises';
-
-const execAsync = promisify(exec);
+import type { Case } from '$lib/models/types';
 
 function createRunOperations() {
 	return {
-		async runVoxLogicA(scriptPath: string, inputDir: string, outputDir: string) {
-			try {
-				// Check if VoxLogicA binary exists
-				await access(VOXLOGICA_BINARY_PATH);
+		async runVoxLogicA(scriptContent: string, case_: Case) {
+			const payload = {
+				scriptContent: scriptContent,
+				case_: case_,
+			};
 
-				// Run VoxLogicA
-				const { stdout, stderr } = await execAsync(
-					`${VOXLOGICA_BINARY_PATH} "${scriptPath}" --input-dir="${inputDir}" --output-dir="${outputDir}"`
-				);
+			const response = await fetch('/run', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify(payload),
+			});
 
-				if (stderr) {
-					throw new Error(stderr);
-				}
-
-				return stdout;
-			} catch (error) {
-				if (error instanceof Error && 'code' in error && error.code === 'ENOENT') {
-					throw new Error(`VoxLogicA binary not found at path: ${VOXLOGICA_BINARY_PATH}`);
-				}
-				throw new Error(`Failed to execute VoxLogicA: ${error}`);
+			if (!response.ok) {
+				const errorData = await response.json();
+				throw new Error(`Failed to run VoxLogicA: ${errorData.error || response.statusText}`);
 			}
+
+			return await response.json();
 		},
 	};
 }

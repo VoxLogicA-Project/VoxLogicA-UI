@@ -9,6 +9,10 @@
 	import { lineNumbers } from '@codemirror/view';
 	import { imgql } from './common/imgql-lang';
 	import { getUniqueLayers } from '$lib/modelviews/layerOperations.svelte';
+	import { runOperations } from '$lib/modelviews/runOperations.svelte';
+	import { getModalStore } from '@skeletonlabs/skeleton';
+
+	const modalStore = getModalStore();
 
 	let editorContent = $state('');
 	let fileInput: HTMLInputElement;
@@ -19,11 +23,11 @@
 
 	function generateHeaderContent() {
 		const layers = getUniqueLayers();
-		return layers
+		return `import "stdlib.imgql"\n\n// Load layers\n${layers
 			.map((layer) => {
-				return `load ${layer.id} = "$LAYER_PATH/${layer.id}.nii.gz"`;
+				return `load ${layer.id} = "\$\{LAYER_PATH:${layer.id}\}"`;
 			})
-			.join('\n');
+			.join('\n')}`;
 	}
 
 	// Custom theme for the editor to blend better with Skeleton
@@ -183,6 +187,38 @@
 		document.body.removeChild(a);
 		URL.revokeObjectURL(url);
 	}
+
+	// Add this function to handle the run button click
+	async function handleRun() {
+		const firstCase = mainState.cases.selected[0];
+		if (!firstCase) {
+			modalStore.trigger({
+				type: 'alert',
+				title: 'Error',
+				body: 'No cases available to run the script on.',
+			});
+			return;
+		}
+
+		try {
+			const fullContent = `${headerContent}\n\n${editorContent}`;
+			const result = await runOperations.runVoxLogicA(fullContent, firstCase);
+
+			modalStore.trigger({
+				type: 'alert',
+				title: 'Run Result',
+				body: `<div class="max-h-[70vh] overflow-auto">
+					<pre class="whitespace-pre-wrap p-4 rounded-container-token bg-surface-200-700-token">${JSON.stringify(result, null, 2)}</pre>
+				</div>`,
+			});
+		} catch (error) {
+			modalStore.trigger({
+				type: 'alert',
+				title: 'Error',
+				body: `Failed to run script: ${error}`,
+			});
+		}
+	}
 </script>
 
 <div class="flex flex-col h-full">
@@ -235,6 +271,8 @@
 		{/if}
 	</div>
 
+	<hr />
+
 	<!-- Main editor -->
 	<div id="editor" class="flex-1 p-4 overflow-auto"></div>
 
@@ -251,7 +289,7 @@
 		<button
 			class="btn variant-filled-primary flex-1"
 			disabled={!editorContent.trim()}
-			onclick={() => console.warn('To be implemented')}
+			onclick={handleRun}
 		>
 			<i class="fa-solid fa-play mr-2"></i>
 			Run Script

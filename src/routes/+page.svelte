@@ -5,7 +5,6 @@
 	import ViewerGrid from '$lib/components/ViewerGrid.svelte';
 	import LayerMatrix from '$lib/components/LayerMatrix.svelte';
 	import { mainState } from '$lib/modelviews/mainState.svelte';
-	import isDarkMode from './+layout.svelte';
 	import ScriptEditor from '$lib/components/ScriptEditor.svelte';
 
 	// Log every change to mainState

@@ -38,11 +38,10 @@ export const GET: RequestHandler = async ({ params }) => {
 			return new Response('Invalid dataset configuration: missing name or layout', { status: 400 });
 		}
 
-		const { name, ...restConfig } = config;
+		const { layout } = config;
 		const dataset: Dataset = {
-			...restConfig,
-			id: name,
-			path: params.dataset,
+			id: params.dataset,
+			layout,
 		};
 
 		return json(dataset);

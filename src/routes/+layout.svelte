@@ -2,7 +2,7 @@
 	import '../app.postcss';
 	import { AppShell } from '@skeletonlabs/skeleton';
 	import { onMount } from 'svelte';
-	import { initializeStores, Toast } from '@skeletonlabs/skeleton';
+	import { initializeStores, Toast, Modal } from '@skeletonlabs/skeleton';
 	import { mainState } from '$lib/modelviews/mainState.svelte';
 
 	initializeStores();
@@ -36,6 +36,7 @@
 </script>
 
 <Toast />
+<Modal regionBody="max-h-[70vh] overflow-auto" />
 <AppShell>
 	{@render children?.()}
 </AppShell>
