@@ -22,13 +22,24 @@ git clone <repository-url>
 cd voxlogica-ui
 ```
 
-2. Download and install dependencies:
+2. Configure environment variables (optional):
+
+```bash
+# Create a .env file
+touch .env
+
+# Add any custom paths (optional)
+DATASET_PATH=/path/to/your/datasets
+SCRIPTS_PATH=/path/to/your/scripts
+```
+
+3. Download and install dependencies:
 
 ```bash
 yarn install
 ```
 
-3. Set up VoxLogicA binary:
+4. Set up VoxLogicA binary:
 
 **Windows:**
 
@@ -74,13 +85,13 @@ chmod +x static/bin/macos/voxlogica
 rm voxlogica.zip
 ```
 
-4. Start the development server:
+5. Start the development server:
 
 ```bash
 yarn dev
 ```
 
-5. Open your browser and navigate to the development server address displayed in the terminal.
+6. Open your browser and navigate to the development server address displayed in the terminal.
 
 ## Development
 
