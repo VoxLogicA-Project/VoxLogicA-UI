@@ -14,26 +14,34 @@
 	let editorView: EditorView;
 
 	// Add these theme-related configurations
-	const darkTheme = EditorView.theme({
+	const customTheme = EditorView.theme({
 		'&': {
 			backgroundColor: 'transparent',
 		},
 		'.cm-gutters': {
 			backgroundColor: 'transparent',
 			border: 'none',
-			color: '#666',
 		},
 		'.cm-activeLine': {
-			backgroundColor: 'rgba(255, 255, 255, 0.1)',
+			backgroundColor: 'rgba(255, 255, 255, 0.05)',
 		},
 		'&.cm-focused .cm-activeLine': {
-			backgroundColor: 'rgba(255, 255, 255, 0.1)',
+			backgroundColor: 'rgba(255, 255, 255, 0.05)',
 		},
 		'.cm-selectionBackground': {
 			backgroundColor: 'rgb(var(--color-primary-500) / 0.2) !important',
 		},
 		'&.cm-focused .cm-selectionBackground': {
 			backgroundColor: 'rgb(var(--color-primary-500) / 0.3) !important',
+		},
+		'.cm-content': {
+			caretColor: 'rgb(var(--color-surface-900-50-token))',
+		},
+		'.cm-cursor': {
+			borderLeftColor: 'rgb(var(--color-surface-900-50-token))',
+		},
+		'.cm-activeLineGutter': {
+			backgroundColor: 'rgba(255, 255, 255, 0.1)',
 		},
 	});
 
@@ -51,7 +59,7 @@
 				extensions: [
 					basicSetup,
 					lineNumbers(),
-					darkTheme,
+					customTheme,
 					EditorView.lineWrapping,
 					imgql(),
 					EditorView.updateListener.of((update) => {
