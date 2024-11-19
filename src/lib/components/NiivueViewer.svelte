@@ -53,6 +53,12 @@
 		}
 	});
 
+	$effect(() => {
+		if (isInitialized && mainState.layers.styles) {
+			updateLayerStyles();
+		}
+	});
+
 	async function loadCaseLayers() {
 		if (!mainState.datasets.selected || !nv) return;
 
@@ -80,6 +86,18 @@
 			nv.drawScene();
 		} catch (error) {
 			console.error('Failed to load layers:', error);
+		}
+	}
+
+	async function updateLayerStyles() {
+		const selectedLayers = mainState.layers.selected[case_.id] || [];
+		for (const layer of selectedLayers) {
+			const rgbaColor = mainState.layers.styles[layer.id]?.color;
+			if (rgbaColor) {
+				const layerColorMap = rgbaColorToColorMap(rgbaColor);
+				nv.addColormap(layer.id, layerColorMap);
+				nv.updateGLVolume();
+			}
 		}
 	}
 
