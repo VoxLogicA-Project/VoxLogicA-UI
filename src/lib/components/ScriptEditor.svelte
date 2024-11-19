@@ -4,15 +4,53 @@
 	import { scriptOperations } from '$lib/modelviews/scriptsOperations.svelte';
 	import { apiRepository } from '$lib/models/repository';
 	import type { Script } from '$lib/models/types';
+	import { EditorState } from '@codemirror/state';
+	import { EditorView, basicSetup } from '@codemirror/basic-setup';
+	import { lineNumbers } from '@codemirror/view';
+	import { imgql } from './common/imgql-lang';
 
 	let editorContent = $state('');
 	let fileInput: HTMLInputElement;
+	let editorView: EditorView;
+
+	// Add these theme-related configurations
+	const darkTheme = EditorView.theme({
+		'&': {
+			backgroundColor: 'transparent',
+		},
+		'.cm-gutters': {
+			backgroundColor: 'transparent',
+			border: 'none',
+			color: '#666',
+		},
+		'.cm-activeLine': {
+			backgroundColor: 'rgba(255, 255, 255, 0.1)',
+		},
+		'&.cm-focused .cm-activeLine': {
+			backgroundColor: 'rgba(255, 255, 255, 0.1)',
+		},
+	});
+
+	// Initialize CodeMirror editor
+	onMount(() => {
+		editorView = new EditorView({
+			state: EditorState.create({
+				doc: editorContent,
+				extensions: [basicSetup, lineNumbers(), darkTheme, EditorView.lineWrapping, imgql()],
+			}),
+			parent: document.querySelector('#editor') || undefined,
+		});
+
+		scriptOperations.loadScripts();
+	});
 
 	// Load script's content
 	async function loadScriptContent(script: Script) {
 		try {
 			const content = await apiRepository.getScriptCode(script);
-			editorContent = content;
+			editorView.dispatch({
+				changes: { from: 0, to: editorView.state.doc.length, insert: content },
+			});
 		} catch (error) {
 			console.error('Failed to load script content:', error);
 		}
@@ -35,25 +73,27 @@
 		if (file && file.name.endsWith('.imgql')) {
 			const reader = new FileReader();
 			reader.onload = (e) => {
-				editorContent = e.target?.result as string;
+				const content = e.target?.result as string;
+				editorView.dispatch({
+					changes: { from: 0, to: editorView.state.doc.length, insert: content },
+				});
 			};
 			reader.readAsText(file);
 		}
+		scriptOperations.clearScript();
 	}
-
-	onMount(() => {
-		scriptOperations.loadScripts();
-	});
 </script>
 
 <div class="flex flex-col h-full">
 	<div class="p-4 border-b border-surface-500/30 flex gap-2">
 		<select
 			class="select flex-1"
-			value={mainState.scripts.selected?.id}
+			value={mainState.scripts.selected?.id ?? ''}
 			onchange={handleScriptSelect}
 		>
-			<option value="">Choose a script...</option>
+			<option value="" disabled selected={!mainState.scripts.selected}
+				>Choose a preset script...</option
+			>
 			{#each mainState.scripts.available as script}
 				<option value={script.id}>{script.id}</option>
 			{/each}
@@ -77,13 +117,7 @@
 	</div>
 
 	<!-- Editor area -->
-	<div class="flex-1 p-4">
-		<textarea
-			class="textarea h-full font-mono"
-			bind:value={editorContent}
-			placeholder="Write your ImgQL script here..."
-		></textarea>
-	</div>
+	<div id="editor" class="flex-1 p-4 overflow-auto"></div>
 
 	<!-- Run button at bottom -->
 	<div class="p-4 border-t border-surface-500/30">
