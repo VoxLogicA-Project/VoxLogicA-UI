@@ -8,12 +8,25 @@
 	import { EditorView, basicSetup } from '@codemirror/basic-setup';
 	import { lineNumbers } from '@codemirror/view';
 	import { imgql } from './common/imgql-lang';
+	import { getUniqueLayers } from '$lib/modelviews/layerOperations.svelte';
 
 	let editorContent = $state('');
 	let fileInput: HTMLInputElement;
 	let editorView: EditorView;
+	let headerView: EditorView | undefined;
+	let headerContent = $derived(generateHeaderContent());
+	let isHeaderCollapsed = $state(false);
 
-	// Add these theme-related configurations
+	function generateHeaderContent() {
+		const layers = getUniqueLayers();
+		return layers
+			.map((layer) => {
+				return `load ${layer.id} = "$LAYER_PATH/${layer.id}.nii.gz"`;
+			})
+			.join('\n');
+	}
+
+	// Custom theme for the editor to blend better with Skeleton
 	const customTheme = EditorView.theme({
 		'&': {
 			backgroundColor: 'transparent',
@@ -51,8 +64,25 @@
 		scriptOperations.saveScriptContent(editorContent);
 	}
 
-	// Initialize CodeMirror editor and setup auto-save
-	onMount(() => {
+	// Function to initialize header editor
+	function initHeaderCodeBlock() {
+		headerView = new EditorView({
+			state: EditorState.create({
+				doc: headerContent,
+				extensions: [
+					basicSetup,
+					lineNumbers(),
+					customTheme,
+					imgql(),
+					EditorView.editable.of(false),
+					EditorState.readOnly.of(true),
+				],
+			}),
+			parent: document.querySelector('#header-editor') || undefined,
+		});
+	}
+
+	function initEditor() {
 		editorView = new EditorView({
 			state: EditorState.create({
 				doc: editorContent,
@@ -71,8 +101,34 @@
 			}),
 			parent: document.querySelector('#editor') || undefined,
 		});
+	}
 
+	onMount(() => {
 		scriptOperations.loadScripts();
+		initHeaderCodeBlock();
+		initEditor();
+	});
+
+	// Reinitialize/destroy header editor when uncollapsed/collapsed
+	$effect(() => {
+		if (!isHeaderCollapsed && !headerView) {
+			// Small delay to ensure DOM is updated
+			setTimeout(() => {
+				initHeaderCodeBlock();
+			}, 0);
+		} else if (isHeaderCollapsed && headerView) {
+			headerView.destroy();
+			headerView = undefined;
+		}
+	});
+
+	// Update header content when it changes
+	$effect(() => {
+		if (headerView) {
+			headerView.dispatch({
+				changes: { from: 0, to: headerView.state.doc.length, insert: headerContent },
+			});
+		}
 	});
 
 	// Load script's content
@@ -116,7 +172,8 @@
 
 	// Download the current script content
 	function handleSave() {
-		const blob = new Blob([editorContent], { type: 'text/plain' });
+		const fullContent = `${headerContent}\n\n${editorContent}`;
+		const blob = new Blob([fullContent], { type: 'text/plain' });
 		const url = URL.createObjectURL(blob);
 		const a = document.createElement('a');
 		a.href = url;
@@ -160,7 +217,25 @@
 		/>
 	</div>
 
-	<!-- Editor area -->
+	<!-- Header editor with collapse button -->
+	<div class="border-t border-surface-500/30 px-4">
+		<div class="flex items-center justify-between p-2 bg-surface-200-700-token">
+			<span class="text-sm font-medium">Layer Declarations</span>
+			<button
+				class="btn btn-sm variant-ghost"
+				onclick={() => (isHeaderCollapsed = !isHeaderCollapsed)}
+				title={isHeaderCollapsed ? 'Expand' : 'Collapse'}
+				aria-label={isHeaderCollapsed ? 'Expand' : 'Collapse'}
+			>
+				<i class="fa-solid {isHeaderCollapsed ? 'fa-chevron-down' : 'fa-chevron-up'}"></i>
+			</button>
+		</div>
+		{#if !isHeaderCollapsed}
+			<div id="header-editor"></div>
+		{/if}
+	</div>
+
+	<!-- Main editor -->
 	<div id="editor" class="flex-1 p-4 overflow-auto"></div>
 
 	<!-- Run button at bottom -->
