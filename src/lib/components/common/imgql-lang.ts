@@ -1,6 +1,5 @@
 import { StreamLanguage } from '@codemirror/language';
 import type { StreamParser } from '@codemirror/language';
-import { styleTags, tags as t } from '@lezer/highlight';
 
 const imgqlParser: StreamParser<unknown> = {
 	token: function (stream) {
@@ -17,10 +16,10 @@ const imgqlParser: StreamParser<unknown> = {
 		if (stream.match(/\/\/.*$/)) return 'comment';
 
 		// Functions
-		if (stream.match(/\b[a-zA-Z_][a-zA-Z0-9_]*\b(?=\s*\()/)) return 'function';
+		if (stream.match(/\b[a-zA-Z_][a-zA-Z0-9_]*\b(?=\s*\()/)) return 'variable-2';
 
 		// Variables
-		if (stream.match(/\b[a-zA-Z_][a-zA-Z0-9_]*\b/)) return 'variable';
+		if (stream.match(/\b[a-zA-Z_][a-zA-Z0-9_]*\b/)) return 'emphasis';
 
 		// Operators
 		if (stream.match(/[=,()]/)) return 'operator';
@@ -34,17 +33,4 @@ const imgqlParser: StreamParser<unknown> = {
 	},
 };
 
-const imgqlLanguage = StreamLanguage.define(imgqlParser);
-
-// Define highlighting styles
-const imgqlHighlighting = styleTags({
-	keyword: t.keyword,
-	string: t.string,
-	number: t.number,
-	comment: t.lineComment,
-	function: t.function(t.variableName),
-	variable: t.variableName,
-	operator: t.operator,
-});
-
-export const imgql = () => imgqlLanguage;
+export const imgql = () => StreamLanguage.define(imgqlParser);
