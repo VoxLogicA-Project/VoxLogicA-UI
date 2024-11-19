@@ -10,7 +10,7 @@ function createScriptOperations() {
 
 			try {
 				const scripts = await apiRepository.getScripts();
-				mainState.scripts.available = scripts;
+				mainState.scripts.availablePresets = scripts;
 				mainState.scripts.loading = false;
 			} catch (error) {
 				mainState.scripts.loading = false;
@@ -19,13 +19,17 @@ function createScriptOperations() {
 		},
 
 		selectScript(script: Script) {
-			mainState.scripts.selected = script;
+			mainState.scripts.selectedPreset = script;
 			mainState.scripts.error = null;
 		},
 
 		clearScript() {
-			mainState.scripts.selected = null;
+			mainState.scripts.selectedPreset = null;
 			mainState.scripts.error = null;
+		},
+
+		saveScriptContent(content: string) {
+			mainState.scripts.editorContent = content;
 		},
 	};
 }

@@ -31,8 +31,9 @@ interface UIState {
 }
 
 interface ScriptsState {
-	available: Script[];
-	selected: Script | null;
+	availablePresets: Script[];
+	selectedPreset: Script | null;
+	editorContent: string;
 	loading: boolean;
 	error: string | null;
 }
@@ -73,8 +74,9 @@ export const mainState = $state<MainState>({
 		isDarkMode: false,
 	},
 	scripts: {
-		available: [],
-		selected: null,
+		availablePresets: [],
+		selectedPreset: null,
+		editorContent: '',
 		loading: false,
 		error: null,
 	},

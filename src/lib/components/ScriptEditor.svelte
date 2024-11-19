@@ -29,14 +29,37 @@
 		'&.cm-focused .cm-activeLine': {
 			backgroundColor: 'rgba(255, 255, 255, 0.1)',
 		},
+		'.cm-selectionBackground': {
+			backgroundColor: 'rgb(var(--color-primary-500) / 0.2) !important',
+		},
+		'&.cm-focused .cm-selectionBackground': {
+			backgroundColor: 'rgb(var(--color-primary-500) / 0.3) !important',
+		},
 	});
 
-	// Initialize CodeMirror editor
+	// Update the editor content and save to mainState
+	function handleEditorUpdate() {
+		editorContent = editorView.state.doc.toString();
+		scriptOperations.saveScriptContent(editorContent);
+	}
+
+	// Initialize CodeMirror editor and setup auto-save
 	onMount(() => {
 		editorView = new EditorView({
 			state: EditorState.create({
 				doc: editorContent,
-				extensions: [basicSetup, lineNumbers(), darkTheme, EditorView.lineWrapping, imgql()],
+				extensions: [
+					basicSetup,
+					lineNumbers(),
+					darkTheme,
+					EditorView.lineWrapping,
+					imgql(),
+					EditorView.updateListener.of((update) => {
+						if (update.docChanged) {
+							handleEditorUpdate();
+						}
+					}),
+				],
 			}),
 			parent: document.querySelector('#editor') || undefined,
 		});
@@ -59,7 +82,7 @@
 	// Load script from dropdown
 	function handleScriptSelect(event: Event) {
 		const select = event.target as HTMLSelectElement;
-		const script = mainState.scripts.available.find((s) => s.id === select.value);
+		const script = mainState.scripts.availablePresets.find((s) => s.id === select.value);
 		if (script) {
 			scriptOperations.selectScript(script);
 			loadScriptContent(script);
@@ -82,19 +105,32 @@
 		}
 		scriptOperations.clearScript();
 	}
+
+	// Download the current script content
+	function handleSave() {
+		const blob = new Blob([editorContent], { type: 'text/plain' });
+		const url = URL.createObjectURL(blob);
+		const a = document.createElement('a');
+		a.href = url;
+		a.download = `${mainState.scripts.selectedPreset?.id?.replace(/\.imgql$/, '') || 'script'}-${new Date().toISOString()}.imgql`;
+		document.body.appendChild(a);
+		a.click();
+		document.body.removeChild(a);
+		URL.revokeObjectURL(url);
+	}
 </script>
 
 <div class="flex flex-col h-full">
 	<div class="p-4 border-b border-surface-500/30 flex gap-2">
 		<select
 			class="select flex-1"
-			value={mainState.scripts.selected?.id ?? ''}
+			value={mainState.scripts.selectedPreset?.id ?? ''}
 			onchange={handleScriptSelect}
 		>
-			<option value="" disabled selected={!mainState.scripts.selected}
+			<option value="" disabled selected={!mainState.scripts.selectedPreset}
 				>Choose a preset script...</option
 			>
-			{#each mainState.scripts.available as script}
+			{#each mainState.scripts.availablePresets as script}
 				<option value={script.id}>{script.id}</option>
 			{/each}
 		</select>
@@ -120,9 +156,17 @@
 	<div id="editor" class="flex-1 p-4 overflow-auto"></div>
 
 	<!-- Run button at bottom -->
-	<div class="p-4 border-t border-surface-500/30">
+	<div class="p-4 border-t border-surface-500/30 flex gap-2">
 		<button
-			class="btn variant-filled-primary w-full"
+			class="btn variant-filled-surface flex-1"
+			disabled={!editorContent.trim()}
+			onclick={handleSave}
+		>
+			<i class="fa-solid fa-download mr-2"></i>
+			Download
+		</button>
+		<button
+			class="btn variant-filled-primary flex-1"
 			disabled={!editorContent.trim()}
 			onclick={() => console.warn('To be implemented')}
 		>
