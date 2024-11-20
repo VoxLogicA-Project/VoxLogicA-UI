@@ -1,4 +1,4 @@
-import type { Dataset, Case, Layer, LayerStyle, Script } from '$lib/models/types';
+import type { Dataset, Case, Layer, LayerStyle, Script, Run } from '$lib/models/types';
 
 interface DatasetsState {
 	available: Dataset[];
@@ -15,10 +15,10 @@ interface CasesState {
 	error: string | null;
 }
 
-interface LayersState {
+export interface LayersState {
 	availableByCase: Record<string, Layer[]>;
-	selected: Record<string, Layer[]>;
-	styles: Record<string, LayerStyle>;
+	selected: Record<string, Layer[]>; // caseId -> layer(s)
+	styles: Record<string, LayerStyle>; // layerId -> style
 	loading: boolean;
 	error: string | null;
 }
@@ -38,12 +38,20 @@ interface ScriptsState {
 	error: string | null;
 }
 
+interface RunsState {
+	history: Run[][];
+	layersStates: LayersState[];
+	loading: boolean;
+	error: string | null;
+}
+
 export interface MainState {
 	datasets: DatasetsState;
 	cases: CasesState;
 	layers: LayersState;
 	ui: UIState;
 	scripts: ScriptsState;
+	runs: RunsState;
 }
 
 export const mainState = $state<MainState>({
@@ -77,6 +85,12 @@ export const mainState = $state<MainState>({
 		availablePresets: [],
 		selectedPreset: null,
 		editorContent: '',
+		loading: false,
+		error: null,
+	},
+	runs: {
+		history: [],
+		layersStates: [],
 		loading: false,
 		error: null,
 	},

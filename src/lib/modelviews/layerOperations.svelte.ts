@@ -3,7 +3,23 @@ import { apiRepository } from '$lib/models/repository';
 import { mainState } from './mainState.svelte';
 
 function createLayerOperations() {
+	const uniqueLayers = $derived.by(() => {
+		const layerIds = new Set<string>();
+
+		mainState.cases.selected.forEach((caseData) => {
+			const caseLayers = mainState.layers.availableByCase[caseData.id] || [];
+			caseLayers.forEach((layer) => {
+				layerIds.add(layer.id);
+			});
+		});
+
+		return Array.from(layerIds);
+	});
+
 	return {
+		get uniqueLayers() {
+			return uniqueLayers;
+		},
 		async loadLayers(caseData: Case) {
 			if (!mainState.datasets.selected) return;
 
@@ -50,7 +66,7 @@ function createLayerOperations() {
 			}
 		},
 
-		selectLayerIdForAllSelectedCases(layerId: string) {
+		selectLayerForAllSelectedCases(layerId: string) {
 			mainState.cases.selected.forEach((caseData) => {
 				const layer = mainState.layers.availableByCase[caseData.id]?.find((l) => l.id === layerId);
 				if (layer) {
@@ -59,7 +75,7 @@ function createLayerOperations() {
 			});
 		},
 
-		unselectLayerIdForAllSelectedCases(layerId: string) {
+		unselectLayerForAllSelectedCases(layerId: string) {
 			mainState.cases.selected.forEach((caseData) => {
 				const layer = mainState.layers.availableByCase[caseData.id]?.find((l) => l.id === layerId);
 				if (layer) {
@@ -71,18 +87,3 @@ function createLayerOperations() {
 }
 
 export const layerOperations = createLayerOperations();
-
-export function getUniqueLayers() {
-	const layerMap = new Map<string, Layer>();
-
-	mainState.cases.selected.forEach((caseData) => {
-		const caseLayers = mainState.layers.availableByCase[caseData.id] || [];
-		caseLayers.forEach((layer) => {
-			if (!layerMap.has(layer.id)) {
-				layerMap.set(layer.id, layer);
-			}
-		});
-	});
-
-	return Array.from(layerMap.values());
-}

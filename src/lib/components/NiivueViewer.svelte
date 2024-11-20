@@ -38,8 +38,9 @@
 				await nv.attachToCanvas(canvas);
 				isInitialized = true;
 
+				// Load layers if any are selected
 				if (mainState.layers.selected[case_.id]) {
-					await loadCaseLayers();
+					await loadAllLayers();
 				}
 			} catch (error) {
 				console.error('Failed to initialize Niivue:', error);
@@ -47,39 +48,50 @@
 		}
 	});
 
+	// Watch for changes in layer selection across all states
 	$effect(() => {
-		if (isInitialized && mainState.layers.selected[case_.id]) {
-			loadCaseLayers();
+		console.log('NiivueViewer effect');
+		if (isInitialized) {
+			const hasMainLayers = mainState.layers.selected[case_.id];
+			const hasRunLayers = mainState.runs.layersStates.some(
+				(state) => state.selected[case_.id]?.length > 0
+			);
+			if (hasMainLayers || hasRunLayers) {
+				loadAllLayers();
+			}
 		}
 	});
 
+	// Watch for changes in layer styles across all states
 	$effect(() => {
-		if (isInitialized && mainState.layers.styles) {
-			updateLayerStyles();
+		if (isInitialized) {
+			const hasMainStyles = mainState.layers.styles;
+			const hasRunStyles = mainState.runs.layersStates.some((state) => state.styles);
+			if (hasMainStyles || hasRunStyles) {
+				updateAllLayerStyles();
+			}
 		}
 	});
 
-	async function loadCaseLayers() {
-		if (!mainState.datasets.selected || !nv) return;
+	async function loadAllLayers() {
+		if (!nv) return;
 
 		try {
 			nv.volumes = [];
 
-			const selectedLayers = mainState.layers.selected[case_.id] || [];
-			for (const layer of selectedLayers) {
+			// Load main layers
+			const mainLayers = mainState.layers.selected[case_.id] || [];
+			for (const layer of mainLayers) {
 				const rgbaColor = mainState.layers.styles[layer.id]?.color;
-				if (!rgbaColor) {
-					await nv.addVolumeFromUrl({
-						url: layer.path,
-					});
-				} else {
-					const layerColorMap = rgbaColorToColorMap(rgbaColor);
-					nv.addColormap(layer.id, layerColorMap);
-					await nv.addVolumeFromUrl({
-						url: layer.path,
-						opacity: rgbaColor.a,
-						colormap: layer.id,
-					});
+				await loadLayer(layer, rgbaColor);
+			}
+
+			// Load run layers
+			for (const layerState of mainState.runs.layersStates) {
+				const runLayers = layerState.selected[case_.id] || [];
+				for (const layer of runLayers) {
+					const rgbaColor = layerState.styles[layer.id]?.color;
+					await loadLayer(layer, rgbaColor);
 				}
 			}
 
@@ -89,16 +101,51 @@
 		}
 	}
 
-	async function updateLayerStyles() {
-		const selectedLayers = mainState.layers.selected[case_.id] || [];
-		for (const layer of selectedLayers) {
+	async function loadLayer(layer: { id: string; path: string }, rgbaColor?: RgbaColor) {
+		if (!rgbaColor) {
+			await nv.addVolumeFromUrl({
+				url: layer.path,
+			});
+		} else {
+			const layerColorMap = rgbaColorToColorMap(rgbaColor);
+			nv.addColormap(layer.id, layerColorMap);
+			await nv.addVolumeFromUrl({
+				url: layer.path,
+				opacity: rgbaColor.a,
+				colormap: layer.id,
+			});
+		}
+	}
+
+	async function updateAllLayerStyles() {
+		if (!nv) return;
+
+		// Update main layers
+		const mainLayers = mainState.layers.selected[case_.id] || [];
+		for (const layer of mainLayers) {
 			const rgbaColor = mainState.layers.styles[layer.id]?.color;
 			if (rgbaColor) {
-				const layerColorMap = rgbaColorToColorMap(rgbaColor);
-				nv.addColormap(layer.id, layerColorMap);
-				nv.updateGLVolume();
+				updateLayerStyle(layer.id, rgbaColor);
 			}
 		}
+
+		// Update run layers
+		for (const layerState of mainState.runs.layersStates) {
+			const runLayers = layerState.selected[case_.id] || [];
+			for (const layer of runLayers) {
+				const rgbaColor = layerState.styles[layer.id]?.color;
+				if (rgbaColor) {
+					updateLayerStyle(layer.id, rgbaColor);
+				}
+			}
+		}
+
+		nv.updateGLVolume();
+	}
+
+	function updateLayerStyle(layerId: string, rgbaColor: RgbaColor) {
+		const layerColorMap = rgbaColorToColorMap(rgbaColor);
+		nv.addColormap(layerId, layerColorMap);
 	}
 
 	onDestroy(() => {

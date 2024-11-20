@@ -12,6 +12,8 @@ import type { Layer } from '$lib/models/types';
 interface VoxLogicaResult {
 	print: any[];
 	layers: any[];
+	log: string;
+	error: string;
 }
 
 // Script variable substitution and path processing
@@ -84,21 +86,43 @@ const runVoxLogica = async (binaryPath: string, scriptPath: string): Promise<Vox
 			if (code === 0) {
 				try {
 					const parsedOutput = JSON.parse(stdout);
+					// If VoxLogicA returns success but contains error message, treat as error
+					// (should never happen)
+					if (parsedOutput.error) {
+						reject({
+							code,
+							message: parsedOutput.error,
+							voxlogicaResult: parsedOutput,
+						});
+						return;
+					}
 					resolve({
 						print: parsedOutput.print || [],
-						layers: parsedOutput.layers || {},
+						layers: parsedOutput.layers || [],
+						log: parsedOutput.log || '',
+						error: '',
 					});
 				} catch (e) {
 					reject(new Error(`Failed to parse JSON output: ${e}. Output was: ${stdout}`));
 				}
 			} else {
-				reject(new Error(`Process failed with code ${code}. stderr: ${stderr}`));
+				try {
+					// TODO: Clean up error message to remove any local path information
+					const parsedOutput = JSON.parse(stdout);
+					reject({
+						code,
+						message: 'VoxLogicA failed during execution.',
+						voxlogicaResult: parsedOutput,
+					});
+				} catch (e) {
+					reject(new Error(`Failed to parse JSON output: ${e}. Output was: ${stdout}`));
+				}
 			}
 		});
 
 		process.on('error', (err) => {
 			clearTimeout(timeout);
-			reject(new Error(`Failed to start process: ${err.message}. stderr: ${stderr}`));
+			reject(new Error(`Failed to start VoxLogicA: ${err.message}`));
 		});
 	});
 };
@@ -138,14 +162,19 @@ export const POST: RequestHandler = async ({ request, fetch }) => {
 
 		// Verify VoxLogicA binary exists and run the process
 		await fs.access(VOXLOGICA_BINARY_PATH);
-		const result = await runVoxLogica(VOXLOGICA_BINARY_PATH, scriptPath);
+		const voxlogicaResult = await runVoxLogica(VOXLOGICA_BINARY_PATH, scriptPath);
 
-		// TODO: Return the layer files since we are deleting the temp dir
-		await cleanup(tempDir);
+		// Convert VoxLogicA layers to Layer objects
+		const layers = voxlogicaResult.layers.map((layer) => ({
+			id: layer.name,
+			path: `/run/${runId}/layers/${layer.name}.nii.gz`,
+		}));
 
+		// Don't cleanup temp directory as we need it for layer access
 		return json({
 			id: runId,
-			...result,
+			print: voxlogicaResult.print,
+			layers: layers,
 		});
 	} catch (err) {
 		await cleanup(tempDir);
@@ -154,9 +183,27 @@ export const POST: RequestHandler = async ({ request, fetch }) => {
 			throw error(400, 'VoxLogicA binary not found. Please check your installation.');
 		}
 
-		throw error(
-			err instanceof Error && 'status' in err ? (err.status as number) : 500,
-			err instanceof Error ? err.message : 'Unknown error occurred'
-		);
+		console.error(err);
+		if (
+			err &&
+			typeof err === 'object' &&
+			'voxlogicaResult' in err &&
+			err.voxlogicaResult &&
+			typeof err.voxlogicaResult === 'object' &&
+			'print' in err.voxlogicaResult &&
+			'layers' in err.voxlogicaResult &&
+			'log' in err.voxlogicaResult &&
+			'error' in err.voxlogicaResult
+		) {
+			return json({
+				id: runId,
+				print: err.voxlogicaResult.print,
+				layers: err.voxlogicaResult.layers,
+				log: err.voxlogicaResult.log,
+				error: err.voxlogicaResult.error,
+			});
+		}
+
+		throw error(500, err instanceof Error ? err.message : String(err));
 	}
 };

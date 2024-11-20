@@ -27,6 +27,11 @@ export interface Script {
 // TODO: Use this for runOperations
 export interface Run {
 	id: string;
+	timestamp: Date;
 	scriptContent: string;
 	case: Case;
+	outputPrint: string[];
+	outputLayers: Layer[];
+	outputLog?: string;
+	outputError?: string;
 }

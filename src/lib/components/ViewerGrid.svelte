@@ -13,6 +13,12 @@
 					? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'
 					: 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'
 	);
+
+	const isAnyLayerSelectedForCase = $derived(
+		(caseId: string) =>
+			mainState.layers.selected[caseId]?.length > 0 ||
+			mainState.runs.layersStates.some((layerState) => layerState.selected[caseId]?.length > 0)
+	);
 </script>
 
 <div class="h-full p-8">
@@ -42,7 +48,7 @@
 					</button>
 				</div>
 				<div class="aspect-square">
-					{#if mainState.layers.selected[case_.id]?.length > 0}
+					{#if isAnyLayerSelectedForCase(case_.id)}
 						<NiivueViewer {case_} />
 					{:else}
 						<div
