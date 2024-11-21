@@ -58,6 +58,15 @@ const substituteUiPathVariables = async (
 	}
 };
 
+const substituteoutputDir = (str: string, outputDir: string) => {
+	// The idea was to remove any temp dir path information from the log/error
+	// but we would loose the formating this way
+	// Leaving this here for now, but it's not used
+	const strNoNewLines = str.replace(/^\s+/gm, '').replace(/[\r\n]/g, '');
+	const outputDirEscaped = outputDir.replace(/\\/g, '\\\\');
+	return strNoNewLines.replace(new RegExp(outputDirEscaped, 'gm'), '');
+};
+
 // VoxLogicA process execution and output parsing
 const runVoxLogica = async (binaryPath: string, scriptPath: string): Promise<VoxLogicaResult> => {
 	return new Promise((resolve, reject) => {
@@ -107,7 +116,6 @@ const runVoxLogica = async (binaryPath: string, scriptPath: string): Promise<Vox
 				}
 			} else {
 				try {
-					// TODO: Clean up error message to remove any local path information
 					const parsedOutput = JSON.parse(stdout);
 					reject({
 						code,
@@ -128,18 +136,18 @@ const runVoxLogica = async (binaryPath: string, scriptPath: string): Promise<Vox
 };
 
 // Temporary file cleanup
-async function cleanup(tempDir: string): Promise<void> {
+async function cleanup(outputDir: string): Promise<void> {
 	try {
-		await fs.rm(tempDir, { recursive: true, force: true });
+		await fs.rm(outputDir, { recursive: true, force: true });
 	} catch (err) {
-		console.error(`Failed to cleanup temporary directory ${tempDir}:`, err);
+		console.error(`Failed to cleanup output directory ${outputDir}:`, err);
 	}
 }
 
 // Main API endpoint handler
 export const POST: RequestHandler = async ({ request, fetch }) => {
 	const runId = randomUUID();
-	const tempDir = RUN_OUTPUT_PATH(runId);
+	const outputDir = RUN_OUTPUT_PATH(runId);
 
 	try {
 		const body = await request.text();
@@ -150,12 +158,12 @@ export const POST: RequestHandler = async ({ request, fetch }) => {
 		}
 
 		// Create the temporary directory and write the script
-		await fs.mkdir(tempDir, { recursive: true });
-		const scriptPath = path.join(tempDir, 'script.imgql');
+		await fs.mkdir(outputDir, { recursive: true });
+		const scriptPath = path.join(outputDir, 'script.imgql');
 		const substitutedScriptContent = await substituteUiPathVariables(
 			scriptContent,
 			case_,
-			tempDir,
+			outputDir,
 			fetch
 		);
 		await fs.writeFile(scriptPath, substitutedScriptContent);
@@ -177,7 +185,7 @@ export const POST: RequestHandler = async ({ request, fetch }) => {
 			layers: layers,
 		});
 	} catch (err) {
-		await cleanup(tempDir);
+		await cleanup(outputDir);
 
 		if (err instanceof Error && 'code' in err && err.code === 'ENOENT') {
 			throw error(400, 'VoxLogicA binary not found. Please check your installation.');
