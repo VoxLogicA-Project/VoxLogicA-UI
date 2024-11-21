@@ -41,23 +41,16 @@
 	}
 
 	.tabs-container::-webkit-scrollbar-track {
-		background: rgba(0, 0, 0, 0.1);
 		border-radius: 3px;
 	}
 
 	.tabs-container::-webkit-scrollbar-thumb {
-		background: rgba(0, 0, 0, 0.2);
 		border-radius: 3px;
-	}
-
-	.tabs-container::-webkit-scrollbar-thumb:hover {
-		background: rgba(0, 0, 0, 0.3);
 	}
 
 	/* For Firefox */
 	.tabs-container {
 		scrollbar-width: thin;
-		scrollbar-color: rgba(0, 0, 0, 0.2) rgba(0, 0, 0, 0.1);
 	}
 
 	:global(.tab-custom) {
