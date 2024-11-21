@@ -26,7 +26,7 @@
 	}
 </script>
 
-<div class="p-4 border-t border-b border-surface-500/30">
+<div class="p-4 border-b border-surface-500/30">
 	<button
 		class="w-full p-2 bg-surface-200-700-token flex items-center justify-between"
 		onclick={() => (isExpanded = !isExpanded)}

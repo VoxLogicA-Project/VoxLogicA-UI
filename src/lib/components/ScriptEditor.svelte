@@ -199,24 +199,18 @@
 	</div>
 
 	<!-- Header editor with collapse button -->
-	<div class="border-t border-surface-500/30 px-4">
-		<div class="flex items-center justify-between p-2 bg-surface-200-700-token">
-			<span class="text-sm font-medium">Script Header</span>
-			<button
-				class="btn btn-sm variant-ghost"
-				onclick={() => (isHeaderCollapsed = !isHeaderCollapsed)}
-				title={isHeaderCollapsed ? 'Expand' : 'Collapse'}
-				aria-label={isHeaderCollapsed ? 'Expand' : 'Collapse'}
-			>
-				<i class="fa-solid {isHeaderCollapsed ? 'fa-chevron-down' : 'fa-chevron-up'}"></i>
-			</button>
-		</div>
+	<div class="border-t border-surface-500/30 p-4">
+		<button
+			class="w-full p-2 bg-surface-200-700-token flex items-center justify-between"
+			onclick={() => (isHeaderCollapsed = !isHeaderCollapsed)}
+		>
+			<span class="text-sm font-medium flex items-center gap-2"> Script Header </span>
+			<i class="fa-solid {isHeaderCollapsed ? 'fa-chevron-down' : 'fa-chevron-up'}"></i>
+		</button>
 		{#if !isHeaderCollapsed}
 			<div id="header-editor"></div>
 		{/if}
 	</div>
-
-	<hr />
 
 	<!-- Main editor -->
 	<div id="editor" class="flex-1 p-4 overflow-auto"></div>
