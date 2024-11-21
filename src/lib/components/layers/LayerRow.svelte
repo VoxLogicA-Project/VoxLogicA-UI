@@ -1,5 +1,5 @@
 <script lang="ts">
-	import ListButton from './common/ListButton.svelte';
+	import ListButton from '$lib/components/common/ListButton.svelte';
 	import { caseViewModel } from '$lib/viewmodels/case.svelte';
 	import { layerViewModel } from '$lib/viewmodels/layer.svelte';
 	import { runViewModel } from '$lib/viewmodels/run.svelte';

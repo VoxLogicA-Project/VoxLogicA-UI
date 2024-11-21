@@ -3,9 +3,9 @@
 	import { runViewModel } from '$lib/viewmodels/run.svelte';
 	import { caseViewModel } from '$lib/viewmodels/case.svelte';
 	import { getToastStore } from '@skeletonlabs/skeleton';
-	import LayerTabs from './LayerTabs.svelte';
-	import LayerRow from './LayerRow.svelte';
-	import RunPrints from './RunPrints.svelte';
+	import LayerTabs from '$lib/components/layers/LayerTabs.svelte';
+	import LayerRow from '$lib/components/layers/LayerRow.svelte';
+	import RunPrints from '$lib/components/layers/RunPrints.svelte';
 	import { ProgressRadial } from '@skeletonlabs/skeleton';
 	import { uiViewModel } from '$lib/viewmodels/ui.svelte';
 

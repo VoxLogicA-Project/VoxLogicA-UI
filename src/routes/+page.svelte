@@ -1,10 +1,10 @@
 <script lang="ts">
 	import CollapsibleSidebar from '$lib/components/common/CollapsibleSidebar.svelte';
-	import DatasetBrowser from '$lib/components/DatasetBrowser.svelte';
-	import CaseList from '$lib/components/CaseList.svelte';
-	import ViewerGrid from '$lib/components/ViewerGrid.svelte';
-	import LayerMatrix from '$lib/components/LayerMatrix.svelte';
-	import ScriptEditor from '$lib/components/ScriptEditor.svelte';
+	import DatasetBrowser from '$lib/components/navigation/DatasetBrowser.svelte';
+	import CaseList from '$lib/components/navigation/CaseList.svelte';
+	import ViewerGrid from '$lib/components/viewers/ViewerGrid.svelte';
+	import LayerMatrix from '$lib/components/layers/LayerMatrix.svelte';
+	import ScriptEditor from '$lib/components/run/ScriptEditor.svelte';
 	import { datasetViewModel } from '$lib/viewmodels/dataset.svelte';
 	import { caseViewModel } from '$lib/viewmodels/case.svelte';
 	import { layerViewModel } from '$lib/viewmodels/layer.svelte';

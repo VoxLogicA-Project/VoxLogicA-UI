@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { caseViewModel } from '$lib/viewmodels/case.svelte';
 	import { datasetViewModel } from '$lib/viewmodels/dataset.svelte';
-	import ListButton from './common/ListButton.svelte';
+	import ListButton from '$lib/components/common/ListButton.svelte';
 	import { ProgressRadial } from '@skeletonlabs/skeleton';
 
 	let searchQuery = $state('');

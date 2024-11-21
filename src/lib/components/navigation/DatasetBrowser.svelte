@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { datasetViewModel } from '$lib/viewmodels/dataset.svelte';
-	import ListButton from './common/ListButton.svelte';
+	import ListButton from '$lib/components/common/ListButton.svelte';
 	import { onMount } from 'svelte';
 	import { ProgressRadial } from '@skeletonlabs/skeleton';
 	onMount(() => {

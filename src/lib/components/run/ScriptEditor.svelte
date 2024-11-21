@@ -6,7 +6,7 @@
 	import { EditorState } from '@codemirror/state';
 	import { EditorView, basicSetup } from '@codemirror/basic-setup';
 	import { lineNumbers } from '@codemirror/view';
-	import { imgql } from './common/imgql-lang';
+	import { imgql } from './imgql-lang';
 	import type { Case } from '$lib/models/types';
 	import { ProgressRadial } from '@skeletonlabs/skeleton';
 	import { getToastStore } from '@skeletonlabs/skeleton';

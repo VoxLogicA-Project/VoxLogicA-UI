@@ -1,5 +1,5 @@
 <script lang="ts">
-	import NiivueViewer from './NiivueViewer.svelte';
+	import NiivueViewer from '$lib/components/viewers/NiivueViewer.svelte';
 	import { caseViewModel } from '$lib/viewmodels/case.svelte';
 	import { layerViewModel } from '$lib/viewmodels/layer.svelte';
 	import { runViewModel } from '$lib/viewmodels/run.svelte';
