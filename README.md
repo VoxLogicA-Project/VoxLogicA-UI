@@ -67,7 +67,7 @@ mkdir -p static/bin/linux
 
 # Download and extract
 curl https://github.com/vincenzoml/VoxLogicA/releases/download/v1.3.3-experimental/VoxLogicA_1.3.3-experimental_linux-x64.zip -o voxlogica.zip
-tar -xf voxlogica.zip
+unzip voxlogica.zip
 mv VoxLogicA_1.3.3-experimental_linux-x64/* static/bin/linux/
 rm -r VoxLogicA_1.3.3-experimental_linux-x64
 chmod +x static/bin/linux/voxlogica
@@ -82,7 +82,7 @@ mkdir -p static/bin/macos
 
 # Download and extract
 curl https://github.com/vincenzoml/VoxLogicA/releases/download/v1.3.3-experimental/VoxLogicA_1.3.3-experimental_osx-x64.zip -o voxlogica.zip
-tar -xf voxlogica.zip
+unzip voxlogica.zip
 mv VoxLogicA_1.3.3-experimental_osx-x64/* static/bin/macos/
 rm -r VoxLogicA_1.3.3-experimental_osx-x64
 chmod +x static/bin/macos/voxlogica
