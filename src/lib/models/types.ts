@@ -25,13 +25,19 @@ export interface PresetScript {
 	path: string;
 }
 
+export interface PrintOutput {
+	name: string;
+	vltype: string;
+	value: string;
+}
+
 // TODO: Use this for runOperations
 export interface Run {
 	id: string;
 	timestamp: Date;
 	scriptContent: string;
 	case: Case;
-	outputPrint: string[];
+	outputPrint: PrintOutput[];
 	outputLayers: Layer[];
 	outputLog?: string;
 	outputError?: string;

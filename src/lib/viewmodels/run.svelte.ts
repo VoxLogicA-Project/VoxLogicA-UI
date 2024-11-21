@@ -98,6 +98,9 @@ export class RunViewModel extends BaseViewModel {
 			throw new Error(errorMessage);
 		}
 
+		console.log('result.print', result.print);
+		console.log(typeof result.print);
+
 		return {
 			id: result.id,
 			scriptContent: this.fullScriptContent,
@@ -149,7 +152,6 @@ export class RunViewModel extends BaseViewModel {
 				newLayerViewModel.loadLayersFromRun(run.case, run.outputLayers);
 			});
 
-			console.log('newLayerViewModel', newLayerViewModel.getState());
 			this.state.layersStates = [...this.state.layersStates, newLayerViewModel];
 
 			// Set error if any run had an error

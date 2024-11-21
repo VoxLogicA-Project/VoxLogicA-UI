@@ -5,6 +5,7 @@
 	import { getToastStore } from '@skeletonlabs/skeleton';
 	import LayerTabs from './LayerTabs.svelte';
 	import LayerRow from './LayerRow.svelte';
+	import RunPrints from './RunPrints.svelte';
 
 	// Initialize with 'layers' as default
 	let activeTab = $state('layers');
@@ -33,6 +34,11 @@
 
 <div class="bg-surface-100-800-token rounded-lg">
 	<LayerTabs bind:activeTab />
+
+	<!-- RunPrints component -->
+	{#if activeTab !== 'layers'}
+		<RunPrints {activeTab} />
+	{/if}
 
 	<!-- Layer Matrix Table -->
 	<div class="p-4">

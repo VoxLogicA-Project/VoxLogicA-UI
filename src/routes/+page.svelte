@@ -15,7 +15,7 @@
 	// $inspect(datasetViewModel.getState());
 	// $inspect(caseViewModel.getState());
 	// $inspect(layerViewModel.getState());
-	// $inspect(runViewModel.getState());
+	$inspect(runViewModel.getState());
 	// $inspect(uiViewModel.getState());
 </script>
 
