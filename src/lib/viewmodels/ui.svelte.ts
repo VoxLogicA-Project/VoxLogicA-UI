@@ -4,6 +4,7 @@ interface UIState {
 	datasetSidebarCollapsed: boolean;
 	layerSidebarCollapsed: boolean;
 	scriptSidebarCollapsed: boolean;
+	bottomPanelTab: string;
 	isDarkMode: boolean;
 }
 
@@ -12,6 +13,7 @@ export class UIViewModel extends BaseViewModel {
 		datasetSidebarCollapsed: false,
 		layerSidebarCollapsed: false,
 		scriptSidebarCollapsed: false,
+		bottomPanelTab: 'layers',
 		isDarkMode: false,
 	});
 
@@ -41,6 +43,21 @@ export class UIViewModel extends BaseViewModel {
 
 	set scriptSidebarCollapsed(value: boolean) {
 		this.state.scriptSidebarCollapsed = value;
+	}
+
+	get bottomPanelTab() {
+		return this.state.bottomPanelTab;
+	}
+
+	get bottomPanelRunIndex() {
+		if (this.state.bottomPanelTab.startsWith('run-')) {
+			return parseInt(this.state.bottomPanelTab.split('-')[1]);
+		}
+		return -1;
+	}
+
+	set bottomPanelTab(value: string) {
+		this.state.bottomPanelTab = value;
 	}
 
 	get isDarkMode() {

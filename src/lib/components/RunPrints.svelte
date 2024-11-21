@@ -1,15 +1,12 @@
 <script lang="ts">
 	import { runViewModel } from '$lib/viewmodels/run.svelte';
 	import type { PrintOutput } from '$lib/models/types';
-
-	let { activeTab } = $props<{ activeTab: string }>();
+	import { uiViewModel } from '$lib/viewmodels/ui.svelte';
 
 	// Get prints for the current run
 	const prints = $derived.by(() => {
-		if (activeTab === 'layers') return [];
-		const runIndex = parseInt(activeTab.split('-')[1]);
-		if (isNaN(runIndex)) return [];
-		return runViewModel.history[runIndex]?.map((run) => ({
+		if (uiViewModel.bottomPanelRunIndex === -1) return [];
+		return runViewModel.history[uiViewModel.bottomPanelRunIndex]?.map((run) => ({
 			caseId: run.case.id,
 			prints: run.outputPrint,
 			error: run.outputError,

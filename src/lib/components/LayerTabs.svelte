@@ -1,8 +1,7 @@
 <script lang="ts">
 	import { TabGroup, Tab } from '@skeletonlabs/skeleton';
 	import { runViewModel } from '$lib/viewmodels/run.svelte';
-
-	let { activeTab = $bindable('layers') } = $props();
+	import { uiViewModel } from '$lib/viewmodels/ui.svelte';
 
 	// Compute tabs based on run history
 	const tabs = $derived([
@@ -23,7 +22,7 @@
 	>
 		{#each tabs as tab}
 			<Tab
-				bind:group={activeTab}
+				bind:group={uiViewModel.bottomPanelTab}
 				name="layers-tab"
 				value={tab.id}
 				class="px-3 py-1.5 whitespace-nowrap text-sm tab-custom"

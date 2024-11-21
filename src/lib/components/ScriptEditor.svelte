@@ -7,12 +7,10 @@
 	import { EditorView, basicSetup } from '@codemirror/basic-setup';
 	import { lineNumbers } from '@codemirror/view';
 	import { imgql } from './common/imgql-lang';
-	import { getModalStore } from '@skeletonlabs/skeleton';
 	import type { Case } from '$lib/models/types';
 	import { ProgressRadial } from '@skeletonlabs/skeleton';
 	import { getToastStore } from '@skeletonlabs/skeleton';
-
-	const modalStore = getModalStore();
+	import { uiViewModel } from '$lib/viewmodels/ui.svelte';
 	const toastStore = getToastStore();
 
 	let fileInput: HTMLInputElement;
@@ -168,6 +166,10 @@
 					background: 'variant-filled-error',
 				});
 			} else {
+				// Switch to the newly created run tab
+				const newRunIndex = runViewModel.history.length - 1;
+				uiViewModel.bottomPanelTab = `run-${newRunIndex}`;
+
 				toastStore.trigger({
 					message: 'Run completed successfully!',
 					background: 'variant-filled-success',
@@ -188,23 +190,18 @@
 
 			if (runViewModel.currentError) {
 				toastStore.trigger({
-					message: runViewModel.currentError ?? 'Script execution failed',
+					message: runViewModel.currentError ?? 'Single run failed',
 					background: 'variant-filled-error',
 				});
 			} else {
 				toastStore.trigger({
-					message: `Script completed successfully for case ${case_.id}!`,
+					message: `Single run completed successfully for ${case_.id}!`,
 					background: 'variant-filled-success',
 				});
 			}
 		} catch (error) {
-			modalStore.trigger({
-				type: 'alert',
-				title: 'Error',
-				body: `Failed to run script: ${error}`,
-			});
 			toastStore.trigger({
-				message: 'Script execution failed',
+				message: runViewModel.currentError ?? 'Single run failed',
 				background: 'variant-filled-error',
 			});
 		}

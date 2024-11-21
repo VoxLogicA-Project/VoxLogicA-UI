@@ -3,15 +3,16 @@
 	import { caseViewModel } from '$lib/viewmodels/case.svelte';
 	import { layerViewModel } from '$lib/viewmodels/layer.svelte';
 	import { runViewModel } from '$lib/viewmodels/run.svelte';
+	import { uiViewModel } from '$lib/viewmodels/ui.svelte';
 	import ColorPicker from 'svelte-awesome-color-picker';
 
-	let { layerId, activeTab } = $props<{ layerId: string; activeTab: string }>();
+	let { layerId } = $props<{ layerId: string }>();
 
 	// Move both layer state and selection status into derived blocks
 	const layerState = $derived(
-		activeTab === 'layers'
+		uiViewModel.bottomPanelTab === 'layers'
 			? layerViewModel
-			: runViewModel.layerStates[parseInt(activeTab.split('-')[1])]
+			: runViewModel.layerStates[uiViewModel.bottomPanelRunIndex]
 	);
 	$inspect(layerState.getState());
 
@@ -51,11 +52,13 @@
 					label=""
 					rgb={layerState.layerStyle(layerId)?.color}
 					on:input={(e) => {
-						if (activeTab === 'layers') {
+						if (uiViewModel.bottomPanelTab === 'layers') {
 							layerViewModel.setLayerStyleColor(layerId, e.detail.rgb);
 						} else {
-							const runIndex = parseInt(activeTab.split('-')[1]);
-							runViewModel.layerStates[runIndex].setLayerStyleColor(layerId, e.detail.rgb);
+							runViewModel.layerStates[uiViewModel.bottomPanelRunIndex].setLayerStyleColor(
+								layerId,
+								e.detail.rgb
+							);
 						}
 					}}
 				/>

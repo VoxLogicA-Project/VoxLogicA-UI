@@ -7,16 +7,14 @@
 	import LayerRow from './LayerRow.svelte';
 	import RunPrints from './RunPrints.svelte';
 	import { ProgressRadial } from '@skeletonlabs/skeleton';
-
-	// Initialize with 'layers' as default
-	let activeTab = $state('layers');
+	import { uiViewModel } from '$lib/viewmodels/ui.svelte';
 
 	// Show unique layers for the selected tab
 	let uniqueLayers = $derived.by(() => {
-		if (activeTab === 'layers') {
+		if (uiViewModel.bottomPanelTab === 'layers') {
 			return layerViewModel.uniqueLayersIds;
 		}
-		const runIndex = parseInt(activeTab.split('-')[1]);
+		const runIndex = parseInt(uiViewModel.bottomPanelTab.split('-')[1]);
 		if (isNaN(runIndex)) return [];
 		return runViewModel.uniqueLayerIdsByRun(runIndex);
 	});
@@ -34,7 +32,7 @@
 </script>
 
 <div class="bg-surface-100-800-token rounded-lg">
-	<LayerTabs bind:activeTab />
+	<LayerTabs />
 
 	{#if layerViewModel.isLoading}
 		<div class="p-8 flex justify-center">
@@ -42,8 +40,8 @@
 		</div>
 	{:else}
 		<!-- RunPrints component -->
-		{#if activeTab !== 'layers'}
-			<RunPrints {activeTab} />
+		{#if uiViewModel.bottomPanelRunIndex !== -1}
+			<RunPrints />
 		{/if}
 
 		<!-- Layer Matrix Table -->
@@ -66,7 +64,7 @@
 				</thead>
 				<tbody>
 					{#each uniqueLayers as layerId}
-						<LayerRow {layerId} {activeTab} />
+						<LayerRow {layerId} />
 					{/each}
 				</tbody>
 			</table>
