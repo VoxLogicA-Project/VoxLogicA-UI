@@ -8,28 +8,12 @@
 
 	let { layerId } = $props<{ layerId: string }>();
 
-	// Move both layer state and selection status into derived blocks
+	// Derive ayer state based on the bottom panel tab
 	const layerState = $derived(
 		uiViewModel.bottomPanelTab === 'layers'
 			? layerViewModel
 			: runViewModel.layerStates[uiViewModel.bottomPanelRunIndex]
 	);
-
-	const isLayerSelectedForCase = $derived((caseId: string) =>
-		layerState.selectedLayersForCase(caseId)?.some((l) => l.id === layerId)
-	);
-
-	// Watch for theme changes to update the color picker
-	let isDarkMode = $state(false);
-	if (typeof document !== 'undefined') {
-		isDarkMode = document.documentElement.classList.contains('dark');
-		new MutationObserver(() => {
-			isDarkMode = document.documentElement.classList.contains('dark');
-		}).observe(document.documentElement, {
-			attributes: true,
-			attributeFilter: ['class'],
-		});
-	}
 
 	// Handle layer selection for both layers and runs
 	function toggleLayerForAllCases() {
@@ -46,7 +30,7 @@
 <tr class="align-middle h-12">
 	<td class="align-middle w-48 border-b border-surface-500/30">
 		<div class="flex items-center gap-2">
-			<div class:dark={isDarkMode}>
+			<div class:dark={uiViewModel.isDarkMode}>
 				<ColorPicker
 					label=""
 					rgb={layerState.layerStyle(layerId)?.color}
@@ -82,7 +66,10 @@
 			>
 				{#if isAvailable}
 					<i
-						class="fa-solid fa-circle-check text-2xl {isLayerSelectedForCase(case_.id)
+						class="fa-solid fa-circle-check text-2xl {layerState.isLayerSelectedForCase(
+							case_.id,
+							layerId
+						)
 							? 'text-primary-500'
 							: 'text-surface-300/70 hover:text-surface-500 dark:text-surface-400/50 dark:hover:text-surface-300'}"
 					></i>

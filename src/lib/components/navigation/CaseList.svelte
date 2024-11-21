@@ -29,12 +29,10 @@
 		</div>
 
 		{#if caseViewModel.isLoading}
-			<!-- Loading state -->
 			<div class="flex-1 flex items-center justify-center">
 				<ProgressRadial width="w-8" />
 			</div>
 		{:else if caseViewModel.currentError}
-			<!-- Error state -->
 			<div class="p-4">
 				<div class="alert variant-filled-error">
 					{caseViewModel.currentError}

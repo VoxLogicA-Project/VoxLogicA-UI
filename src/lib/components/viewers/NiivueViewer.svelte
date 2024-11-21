@@ -27,9 +27,9 @@
 	onMount(async () => {
 		if (browser) {
 			try {
+				// Import Niivue on browser only
 				const NiivueModule = await import('@niivue/niivue');
 				Niivue = NiivueModule.Niivue;
-
 				nv = new Niivue({
 					backColor: [0, 0, 0, 1],
 					show3Dcrosshair: true,
@@ -52,7 +52,7 @@
 		}
 	});
 
-	// Watch for changes in layer selection
+	// Reload layers when selection changes
 	$effect(() => {
 		if (isInitialized) {
 			const datasetLayers = layerViewModel.selectedLayersForCase(case_.id);
@@ -63,7 +63,7 @@
 		}
 	});
 
-	// Watch for changes in layer styles
+	// Update layer styles when they change
 	$effect(() => {
 		if (isInitialized) {
 			const datasetLayersStyles = layerViewModel.styles;

@@ -113,6 +113,10 @@ export class LayerViewModel extends BaseViewModel {
 		});
 	}
 
+	isLayerSelectedForCase(caseId: string, layerId: string) {
+		return this.state.selected[caseId]?.some((l) => l.id === layerId);
+	}
+
 	isLayerSelectedForAllCases(layerId: string) {
 		return (
 			Object.keys(this.state.selected).length > 0 &&

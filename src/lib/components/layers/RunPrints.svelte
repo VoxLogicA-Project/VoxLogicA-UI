@@ -36,6 +36,7 @@
 	</button>
 
 	{#if isExpanded && prints.length > 0}
+		<!-- Output of the current run -->
 		<div class="p-4 space-y-4">
 			{#each prints as { caseId, prints: casePrints, error }}
 				<div>

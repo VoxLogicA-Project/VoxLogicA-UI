@@ -12,7 +12,6 @@
 
 	let sidebarElement: HTMLElement;
 
-	// Determine if sidebar is vertical (left/right) or horizontal (top/bottom)
 	const isVertical = side === 'left' || side === 'right';
 
 	function initResize(event: MouseEvent) {
@@ -51,7 +50,7 @@
 		if (isCollapsed) {
 			sidebarElement.style[isVertical ? 'width' : 'height'] = defaultSize;
 		} else {
-			sidebarElement.style[isVertical ? 'width' : 'height'] = '40px'; // Increased from 2.5rem for better visibility
+			sidebarElement.style[isVertical ? 'width' : 'height'] = '40px';
 		}
 		isCollapsed = !isCollapsed;
 	}

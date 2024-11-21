@@ -12,7 +12,6 @@
 	<h2 class="font-bold text-2xl pl-4 pr-4 pb-4">Datasets</h2>
 
 	{#if datasetViewModel.isLoading}
-		<!-- Loading state -->
 		<div class="flex-1 flex items-center justify-center">
 			<ProgressRadial width="w-8" />
 		</div>

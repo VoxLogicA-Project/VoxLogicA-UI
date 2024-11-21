@@ -157,6 +157,7 @@
 		URL.revokeObjectURL(url);
 	}
 
+	// Run the script for all selected cases
 	async function handleRun() {
 		try {
 			await runViewModel.runAll(caseViewModel.selectedCases);
@@ -184,6 +185,7 @@
 		}
 	}
 
+	// Run the script for a single case
 	async function handleSingleRun(case_: Case) {
 		showCaseDropdown = false;
 		try {
