@@ -73,7 +73,7 @@
 		{@const isAvailable = layer !== undefined}
 		<td class="w-32 text-center align-middle px-4 border-b border-surface-500/30">
 			<button
-				class="w-8 h-8 rounded-full"
+				class="w-12 h-12 rounded-full transition-all duration-200 hover:scale-110 focus:outline-none"
 				disabled={!isAvailable}
 				onclick={() => {
 					if (isAvailable) {
@@ -83,12 +83,12 @@
 			>
 				{#if isAvailable}
 					<i
-						class="fa-solid fa-circle text-lg {isLayerSelectedForCase(case_.id)
+						class="fa-solid fa-circle-check text-2xl {isLayerSelectedForCase(case_.id)
 							? 'text-primary-500'
-							: 'text-surface-300-600-token'}"
+							: 'text-surface-300/70 hover:text-surface-500 dark:text-surface-400/50 dark:hover:text-surface-300'}"
 					></i>
 				{:else}
-					<i class="fa-solid fa-circle text-lg text-error-500"></i>
+					<i class="fa-solid fa-circle-xmark text-2xl text-error-500"></i>
 				{/if}
 			</button>
 		</td>

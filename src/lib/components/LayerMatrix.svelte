@@ -43,15 +43,13 @@
 				<ProgressRadial width="w-8" />
 			</div>
 		{:else}
-			<!-- RunPrints component -->
-			{#if uiViewModel.bottomPanelRunIndex !== -1}
-				<RunPrints />
-			{/if}
-
-			<!-- Layer Matrix Table -->
 			<div class="px-4 relative h-full flex flex-col">
-				<!-- Table wrapper with sticky horizontal scroll -->
+				<!-- RunPrints component -->
+				{#if uiViewModel.bottomPanelRunIndex !== -1}
+					<RunPrints />
+				{/if}
 				<div class="flex-1 overflow-y-auto">
+					<!-- Layer Matrix Table -->
 					<table class="w-full border-collapse">
 						<thead>
 							<tr>

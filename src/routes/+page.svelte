@@ -13,7 +13,7 @@
 
 	// Log every change to viewmodels
 	// $inspect(datasetViewModel.getState());
-	$inspect(caseViewModel.isLoading);
+	// $inspect(caseViewModel.getState());
 	// $inspect(layerViewModel.getState());
 	// $inspect(runViewModel.getState());
 	// $inspect(uiViewModel.getState());
