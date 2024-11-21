@@ -27,10 +27,14 @@ cd voxlogica-ui
 ```bash
 # Create a .env file
 touch .env
+```
 
-# Add any custom paths (optional)
+2.1. Set the paths to your datasets, scripts and temporary outputs:
+
+```bash
 DATASET_PATH=/path/to/your/datasets
 SCRIPTS_PATH=/path/to/your/scripts
+RUN_OUTPUT_PATH=/path/to/temporary/outputs
 ```
 
 3. Download and install dependencies:
