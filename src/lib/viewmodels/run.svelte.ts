@@ -115,16 +115,13 @@ export class RunViewModel extends BaseViewModel {
 		this.setError(null);
 
 		try {
-			const runs: Run[] = [];
-
-			// Run all cases sequentially (TODO: Run in parallel)
-			for (const case_ of cases) {
+			// Run all cases in parallel
+			const runPromises = cases.map(async (case_) => {
 				try {
-					const run = await this.singleRun(case_);
-					runs.push(run);
+					return await this.singleRun(case_);
 				} catch (error) {
-					// If a single run fails, add the error to the run array
-					const errorRun: Run = {
+					// If a single run fails, return an error run object
+					return {
 						id: '',
 						scriptContent: this.fullScriptContent,
 						case: case_,
@@ -133,10 +130,11 @@ export class RunViewModel extends BaseViewModel {
 						outputLayers: [],
 						outputError: error instanceof Error ? error.message : 'Unknown error',
 						outputLog: '',
-					};
-					runs.push(errorRun);
+					} as Run;
 				}
-			}
+			});
+
+			const runs = await Promise.all(runPromises);
 
 			// Add runs to history and initialize a new layersState
 			this.state.history = [...this.state.history, runs];

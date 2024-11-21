@@ -31,7 +31,6 @@ export interface PrintOutput {
 	value: string;
 }
 
-// TODO: Use this for runOperations
 export interface Run {
 	id: string;
 	timestamp: Date;
