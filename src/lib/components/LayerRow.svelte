@@ -1,8 +1,8 @@
 <script lang="ts">
-	import { mainState } from '$lib/modelviews/mainState.svelte';
-	import { layerOperations } from '$lib/modelviews/layerOperations.svelte';
-	import { runOperations } from '$lib/modelviews/runOperations.svelte';
 	import ListButton from './common/ListButton.svelte';
+	import { caseViewModel } from '$lib/viewmodels/case.svelte';
+	import { layerViewModel } from '$lib/viewmodels/layer.svelte';
+	import { runViewModel } from '$lib/viewmodels/run.svelte';
 	import ColorPicker from 'svelte-awesome-color-picker';
 
 	let { layerId, activeTab } = $props<{ layerId: string; activeTab: string }>();
@@ -10,12 +10,13 @@
 	// Move both layer state and selection status into derived blocks
 	const layerState = $derived(
 		activeTab === 'layers'
-			? mainState.layers
-			: mainState.runs.layersStates[parseInt(activeTab.split('-')[1])]
+			? layerViewModel
+			: runViewModel.layerStates[parseInt(activeTab.split('-')[1])]
 	);
+	$inspect(layerState.getState());
 
 	const isLayerSelectedForCase = $derived((caseId: string) =>
-		layerState.selected[caseId]?.some((l) => l.id === layerId)
+		layerState.selectedLayersForCase(caseId)?.some((l) => l.id === layerId)
 	);
 
 	// Watch for theme changes to update the color picker
@@ -32,23 +33,12 @@
 
 	// Handle layer selection for both layers and runs
 	function toggleLayerForAllCases() {
-		const isLayerSelectedForAllCases =
-			Object.keys(layerState.selected).length > 0 &&
-			Object.values(layerState.selected).every((layers) => layers?.some((l) => l.id === layerId));
+		const isLayerSelectedForAllCases = layerViewModel.isLayerSelectedForAllCases(layerId);
 
-		if (activeTab === 'layers') {
-			if (isLayerSelectedForAllCases) {
-				layerOperations.unselectLayerForAllSelectedCases(layerId);
-			} else {
-				layerOperations.selectLayerForAllSelectedCases(layerId);
-			}
+		if (isLayerSelectedForAllCases) {
+			layerViewModel.unselectLayerForAllSelectedCases(layerId);
 		} else {
-			const runIndex = parseInt(activeTab.split('-')[1]);
-			if (isLayerSelectedForAllCases) {
-				runOperations.unselectLayerForAllRunCases(runIndex, layerId);
-			} else {
-				runOperations.selectLayerForAllRunCases(runIndex, layerId);
-			}
+			layerViewModel.selectLayerForAllSelectedCases(layerId);
 		}
 	}
 </script>
@@ -59,13 +49,13 @@
 			<div class:dark={isDarkMode}>
 				<ColorPicker
 					label=""
-					rgb={layerState.styles[layerId]?.color}
+					rgb={layerState.layerStyle(layerId)?.color}
 					on:input={(e) => {
 						if (activeTab === 'layers') {
-							mainState.layers.styles[layerId].color = e.detail.rgb;
+							layerViewModel.setLayerStyleColor(layerId, e.detail.rgb);
 						} else {
 							const runIndex = parseInt(activeTab.split('-')[1]);
-							mainState.runs.layersStates[runIndex].styles[layerId].color = e.detail.rgb;
+							runViewModel.layerStates[runIndex].setLayerStyleColor(layerId, e.detail.rgb);
 						}
 					}}
 				/>
@@ -75,12 +65,12 @@
 			</ListButton>
 		</div>
 	</td>
-	{#each mainState.cases.selected as case_, caseIndex}
-		{@const layer = layerState.availableByCase[case_.id]?.find((l) => l.id === layerId)}
+	{#each caseViewModel.selectedCases as case_, caseIndex}
+		{@const layer = layerState.getLayerFromId(case_.id, layerId)}
 		{@const isAvailable = layer !== undefined}
 		<td
 			class="w-32 text-center align-middle px-4 border-b border-surface-500/30 {caseIndex !==
-			mainState.cases.selected.length - 1
+			caseViewModel.selectedCases.length - 1
 				? 'border-r'
 				: ''}"
 		>
@@ -89,16 +79,7 @@
 				disabled={!isAvailable}
 				onclick={() => {
 					if (isAvailable) {
-						if (activeTab === 'layers') {
-							if (isLayerSelectedForCase(case_.id)) {
-								layerOperations.unselectLayer(case_.id, layer);
-							} else {
-								layerOperations.selectLayer(case_.id, layer);
-							}
-						} else {
-							const runIndex = parseInt(activeTab.split('-')[1]);
-							runOperations.toggleLayer(runIndex, case_.id, layer);
-						}
+						layerState.toggleLayer(case_.id, layer);
 					}
 				}}
 			>

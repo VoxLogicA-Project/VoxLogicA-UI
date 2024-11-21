@@ -1,29 +1,23 @@
 <script lang="ts">
 	import NiivueViewer from './NiivueViewer.svelte';
-	import { mainState } from '$lib/modelviews/mainState.svelte';
-	import { caseOperations } from '$lib/modelviews/caseOperations.svelte';
-
+	import { caseViewModel } from '$lib/viewmodels/case.svelte';
+	import { layerViewModel } from '$lib/viewmodels/layer.svelte';
+	import { runViewModel } from '$lib/viewmodels/run.svelte';
 	// Compute grid layout based on number of selected cases
 	const gridClass = $derived(
-		mainState.cases.selected.length <= 1
+		caseViewModel.selectedCases.length <= 1
 			? 'grid-cols-1 max-w-4xl mx-auto'
-			: mainState.cases.selected.length === 2
+			: caseViewModel.selectedCases.length === 2
 				? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-2'
-				: mainState.cases.selected.length === 3
+				: caseViewModel.selectedCases.length === 3
 					? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'
 					: 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'
-	);
-
-	const isAnyLayerSelectedForCase = $derived(
-		(caseId: string) =>
-			mainState.layers.selected[caseId]?.length > 0 ||
-			mainState.runs.layersStates.some((layerState) => layerState.selected[caseId]?.length > 0)
 	);
 </script>
 
 <div class="h-full p-8">
 	<section class={`grid gap-4 ${gridClass} pb-8`}>
-		{#each mainState.cases.selected as case_ (case_.id)}
+		{#each caseViewModel.selectedCases as case_ (case_.id)}
 			<div class="card h-fit">
 				<div
 					class="p-2 border-b border-surface-300-600-token bg-surface-100-800-token flex justify-between items-center"
@@ -31,7 +25,7 @@
 					<span class="text-sm font-medium flex items-center flex-1 min-w-0">
 						{#if true}
 							<div class="badge badge-sm variant-filled-primary mr-2 flex-shrink-0">
-								{mainState.cases.selected.findIndex((c) => c.id === case_.id) + 1}
+								{caseViewModel.getSelectionIndex(case_) + 1}
 							</div>
 						{/if}
 						<span class="truncate">
@@ -40,7 +34,7 @@
 					</span>
 					<button
 						class="w-6 h-6 flex items-center justify-center rounded hover:bg-surface-300-600-token transition-colors"
-						onclick={() => caseOperations.deselectCase(case_)}
+						onclick={() => caseViewModel.deselectCase(case_)}
 						title="Close case"
 						aria-label="Close case"
 					>
@@ -48,7 +42,7 @@
 					</button>
 				</div>
 				<div class="aspect-square">
-					{#if isAnyLayerSelectedForCase(case_.id)}
+					{#if layerViewModel.selectedLayersForCase(case_.id).length > 0 || runViewModel.selectedLayersForCase(case_.id).length > 0}
 						<NiivueViewer {case_} />
 					{:else}
 						<div

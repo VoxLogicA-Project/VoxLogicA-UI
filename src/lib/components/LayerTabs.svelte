@@ -1,13 +1,13 @@
 <script lang="ts">
 	import { TabGroup, Tab } from '@skeletonlabs/skeleton';
-	import { mainState } from '$lib/modelviews/mainState.svelte';
+	import { runViewModel } from '$lib/viewmodels/run.svelte';
 
 	let { activeTab = $bindable('layers') } = $props();
 
 	// Compute tabs based on run history
 	const tabs = $derived([
 		{ id: 'layers', label: 'Available Layers' },
-		...mainState.runs.history.map((_, index) => ({
+		...runViewModel.history.map((_, index) => ({
 			id: `run-${index}`,
 			label: `Run ${index + 1}`,
 		})),

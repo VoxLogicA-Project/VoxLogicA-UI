@@ -1,4 +1,4 @@
-import type { Dataset, Case, Layer, Script } from './types';
+import type { Dataset, Case, Layer, PresetScript } from './types';
 
 export class RepositoryError extends Error {
 	constructor(
@@ -15,8 +15,8 @@ export interface IDataRepository {
 	getDatasets(): Promise<Dataset[]>;
 	getCases(dataset: Dataset): Promise<Case[]>;
 	getLayers(dataset: Dataset, caseData: Case): Promise<Layer[]>;
-	getScripts(): Promise<Script[]>;
-	getScriptCode(script: Script): Promise<string>;
+	getPresetScripts(): Promise<PresetScript[]>;
+	getPresetScriptCode(script: PresetScript): Promise<string>;
 }
 
 export function createApiRepository(): IDataRepository {
@@ -58,12 +58,12 @@ export function createApiRepository(): IDataRepository {
 			return response.json();
 		},
 
-		async getScripts(): Promise<Script[]> {
+		async getPresetScripts(): Promise<PresetScript[]> {
 			const response = await fetchWithError('/scripts', 'Failed to fetch scripts');
 			return response.json();
 		},
 
-		async getScriptCode(script: Script): Promise<string> {
+		async getPresetScriptCode(script: PresetScript): Promise<string> {
 			const response = await fetchWithError(script.path, `Failed to fetch script: ${script.id}`);
 			return response.text();
 		},

@@ -4,13 +4,19 @@
 	import CaseList from '$lib/components/CaseList.svelte';
 	import ViewerGrid from '$lib/components/ViewerGrid.svelte';
 	import LayerMatrix from '$lib/components/LayerMatrix.svelte';
-	import { mainState } from '$lib/modelviews/mainState.svelte';
 	import ScriptEditor from '$lib/components/ScriptEditor.svelte';
+	import { datasetViewModel } from '$lib/viewmodels/dataset.svelte';
+	import { caseViewModel } from '$lib/viewmodels/case.svelte';
+	import { layerViewModel } from '$lib/viewmodels/layer.svelte';
+	import { runViewModel } from '$lib/viewmodels/run.svelte';
+	import { uiViewModel } from '$lib/viewmodels/ui.svelte';
 
-	// Log every change to mainState
-	$effect(() => {
-		$inspect(mainState);
-	});
+	// Log every change to viewmodels
+	// $inspect(datasetViewModel.getState());
+	// $inspect(caseViewModel.getState());
+	// $inspect(layerViewModel.getState());
+	// $inspect(runViewModel.getState());
+	// $inspect(uiViewModel.getState());
 </script>
 
 <div class="h-screen w-screen flex overflow-hidden bg-surface-50-900-token">
@@ -18,7 +24,7 @@
 	<CollapsibleSidebar
 		side="left"
 		defaultSize="300px"
-		bind:isCollapsed={mainState.ui.datasetSidebarCollapsed}
+		bind:isCollapsed={uiViewModel.datasetSidebarCollapsed}
 	>
 		<!-- Header -->
 		<div class="flex items-center justify-between p-4 border-b border-surface-500/30">
@@ -35,7 +41,7 @@
 
 			<button
 				class="w-8 h-8 rounded-lg bg-surface-300-600-token hover:bg-surface-400-500-token flex items-center justify-center"
-				onclick={() => (mainState.ui.isDarkMode = !mainState.ui.isDarkMode)}
+				onclick={() => uiViewModel.toggleDarkMode()}
 				title="Toggle dark mode"
 				aria-label="Toggle dark mode"
 			>
@@ -59,7 +65,7 @@
 
 	<!-- Main Content -->
 	<div class="flex-1 flex flex-col overflow-hidden">
-		{#if mainState.datasets.selected}
+		{#if datasetViewModel.selectedDataset}
 			<div class="flex-1 flex flex-col min-h-0">
 				<!-- Viewer Grid -->
 				<div class="flex-1 overflow-auto">
@@ -67,13 +73,13 @@
 				</div>
 
 				<!-- Layer Matrix -->
-				{#if mainState.cases.selected.length > 0}
+				{#if caseViewModel.selectedCases.length > 0}
 					<CollapsibleSidebar
 						side="bottom"
 						defaultSize="250px"
 						minSize={100}
 						maxSize={600}
-						bind:isCollapsed={mainState.ui.layerSidebarCollapsed}
+						bind:isCollapsed={uiViewModel.layerSidebarCollapsed}
 					>
 						<div class="w-full h-full overflow-auto">
 							<LayerMatrix />
@@ -89,11 +95,11 @@
 	</div>
 
 	<!-- Run section -->
-	{#if mainState.cases.selected.length > 0}
+	{#if caseViewModel.selectedCases.length > 0}
 		<CollapsibleSidebar
 			side="right"
 			defaultSize="400px"
-			bind:isCollapsed={mainState.ui.scriptSidebarCollapsed}
+			bind:isCollapsed={uiViewModel.scriptSidebarCollapsed}
 		>
 			<ScriptEditor />
 		</CollapsibleSidebar>

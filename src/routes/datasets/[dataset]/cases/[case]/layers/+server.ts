@@ -47,7 +47,6 @@ export const GET: RequestHandler = async ({ params, fetch }) => {
 
 		layers.push({
 			id: layer_id[1],
-			// path: `/datasets/${params.dataset}/${params.case}/${filename[1]}.nii.gz`,
 			path: `/datasets/${params.dataset}/cases/${params.case}/layers/${file}`,
 		});
 	}

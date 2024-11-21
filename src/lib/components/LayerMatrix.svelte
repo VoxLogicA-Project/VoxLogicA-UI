@@ -1,11 +1,10 @@
 <script lang="ts">
-	import { mainState } from '$lib/modelviews/mainState.svelte';
-	import { layerOperations } from '$lib/modelviews/layerOperations.svelte';
-	import { runOperations } from '$lib/modelviews/runOperations.svelte';
+	import { layerViewModel } from '$lib/viewmodels/layer.svelte';
+	import { runViewModel } from '$lib/viewmodels/run.svelte';
+	import { caseViewModel } from '$lib/viewmodels/case.svelte';
 	import { getToastStore } from '@skeletonlabs/skeleton';
 	import LayerTabs from './LayerTabs.svelte';
 	import LayerRow from './LayerRow.svelte';
-	import { onMount } from 'svelte';
 
 	// Initialize with 'layers' as default
 	let activeTab = $state('layers');
@@ -13,29 +12,19 @@
 	// Show unique layers for the selected tab
 	let uniqueLayers = $derived.by(() => {
 		if (activeTab === 'layers') {
-			return layerOperations.uniqueLayers;
+			return layerViewModel.uniqueLayersIds;
 		}
 		const runIndex = parseInt(activeTab.split('-')[1]);
 		if (isNaN(runIndex)) return [];
-		return runOperations.uniqueLayersByRun(runIndex);
-	});
-
-	$effect(() => {
-		if (mainState.cases.selected.length > 0) {
-			const lastSelectedCase = mainState.cases.selected[mainState.cases.selected.length - 1];
-			const currentLayers = mainState.layers.availableByCase[lastSelectedCase.id];
-			if (!currentLayers) {
-				layerOperations.loadLayers(lastSelectedCase);
-			}
-		}
+		return runViewModel.uniqueLayerIdsByRun(runIndex);
 	});
 
 	// Show error toast if there is an error loading layers
 	const toastStore = getToastStore();
 	$effect(() => {
-		if (mainState.layers.error) {
+		if (layerViewModel.currentError) {
 			toastStore.trigger({
-				message: mainState.layers.error,
+				message: layerViewModel.currentError,
 				background: 'variant-filled-error',
 			});
 		}
@@ -51,10 +40,10 @@
 			<thead>
 				<tr>
 					<th class="text-left w-48 border-r border-b border-surface-500/30">Layers</th>
-					{#each mainState.cases.selected as case_, index}
+					{#each caseViewModel.selectedCases as case_, index}
 						<th
 							class="w-32 text-center px-4 border-b border-surface-500/30 font-normal {index !==
-							mainState.cases.selected.length - 1
+							caseViewModel.selectedCases.length - 1
 								? 'border-r'
 								: ''}"
 						>

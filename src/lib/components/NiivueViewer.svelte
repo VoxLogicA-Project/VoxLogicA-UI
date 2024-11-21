@@ -1,7 +1,8 @@
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte';
 	import { browser } from '$app/environment';
-	import { mainState } from '$lib/modelviews/mainState.svelte';
+	import { layerViewModel } from '$lib/viewmodels/layer.svelte';
+	import { runViewModel } from '$lib/viewmodels/run.svelte';
 	import type { Case } from '$lib/models/types';
 	import type { RgbaColor } from 'svelte-awesome-color-picker';
 
@@ -39,7 +40,10 @@
 				isInitialized = true;
 
 				// Load layers if any are selected
-				if (mainState.layers.selected[case_.id]) {
+				if (
+					layerViewModel.selectedLayersForCase(case_.id).length > 0 ||
+					runViewModel.selectedLayersForCase(case_.id).length > 0
+				) {
 					await loadAllLayers();
 				}
 			} catch (error) {
@@ -48,26 +52,23 @@
 		}
 	});
 
-	// Watch for changes in layer selection across all states
+	// Watch for changes in layer selection
 	$effect(() => {
-		console.log('NiivueViewer effect');
 		if (isInitialized) {
-			const hasMainLayers = mainState.layers.selected[case_.id];
-			const hasRunLayers = mainState.runs.layersStates.some(
-				(state) => state.selected[case_.id]?.length > 0
-			);
-			if (hasMainLayers || hasRunLayers) {
+			const datasetLayers = layerViewModel.selectedLayersForCase(case_.id);
+			const runLayers = runViewModel.selectedLayersForCase(case_.id);
+			if (datasetLayers.length > 0 || runLayers.length > 0) {
 				loadAllLayers();
 			}
 		}
 	});
 
-	// Watch for changes in layer styles across all states
+	// Watch for changes in layer styles
 	$effect(() => {
 		if (isInitialized) {
-			const hasMainStyles = mainState.layers.styles;
-			const hasRunStyles = mainState.runs.layersStates.some((state) => state.styles);
-			if (hasMainStyles || hasRunStyles) {
+			const datasetLayersStyles = layerViewModel.styles;
+			const runLayersStyles = runViewModel.layerStates.map((state) => state.styles);
+			if (datasetLayersStyles || runLayersStyles) {
 				updateAllLayerStyles();
 			}
 		}
@@ -79,20 +80,18 @@
 		try {
 			nv.volumes = [];
 
-			// Load main layers
-			const mainLayers = mainState.layers.selected[case_.id] || [];
-			for (const layer of mainLayers) {
-				const rgbaColor = mainState.layers.styles[layer.id]?.color;
+			// Load dataset layers
+			const datasetLayers = layerViewModel.selectedLayersWithStylesForCase(case_.id);
+			for (const { layer, style } of datasetLayers) {
+				const rgbaColor = style?.color;
 				await loadLayer(layer, rgbaColor);
 			}
 
 			// Load run layers
-			for (const layerState of mainState.runs.layersStates) {
-				const runLayers = layerState.selected[case_.id] || [];
-				for (const layer of runLayers) {
-					const rgbaColor = layerState.styles[layer.id]?.color;
-					await loadLayer(layer, rgbaColor);
-				}
+			const runLayers = runViewModel.selectedLayersWithStylesForCase(case_.id);
+			for (const { layer, style } of runLayers) {
+				const rgbaColor = style?.color;
+				await loadLayer(layer, rgbaColor);
 			}
 
 			nv.drawScene();
@@ -120,22 +119,22 @@
 	async function updateAllLayerStyles() {
 		if (!nv) return;
 
-		// Update main layers
-		const mainLayers = mainState.layers.selected[case_.id] || [];
-		for (const layer of mainLayers) {
-			const rgbaColor = mainState.layers.styles[layer.id]?.color;
+		// Update main layers styles
+		const mainLayersStyles = layerViewModel.styles;
+		for (const [layerId, style] of Object.entries(mainLayersStyles)) {
+			const rgbaColor = style?.color;
 			if (rgbaColor) {
-				updateLayerStyle(layer.id, rgbaColor);
+				updateLayerStyle(layerId, rgbaColor);
 			}
 		}
 
-		// Update run layers
-		for (const layerState of mainState.runs.layersStates) {
-			const runLayers = layerState.selected[case_.id] || [];
-			for (const layer of runLayers) {
-				const rgbaColor = layerState.styles[layer.id]?.color;
+		// Update run layers styles
+		const runLayersStyles = runViewModel.layerStates.map((state) => state.styles);
+		for (const state of runLayersStyles) {
+			for (const [layerId, style] of Object.entries(state)) {
+				const rgbaColor = style?.color;
 				if (rgbaColor) {
-					updateLayerStyle(layer.id, rgbaColor);
+					updateLayerStyle(layerId, rgbaColor);
 				}
 			}
 		}

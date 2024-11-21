@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { mainState } from '$lib/modelviews/mainState.svelte';
-	import { caseOperations } from '$lib/modelviews/caseOperations.svelte';
+	import { caseViewModel } from '$lib/viewmodels/case.svelte';
+	import { datasetViewModel } from '$lib/viewmodels/dataset.svelte';
 	import ListButton from './common/ListButton.svelte';
 
 	let searchQuery = $state('');
@@ -8,21 +8,15 @@
 	// Filters cases based on search query
 	const filteredCases = $derived(
 		searchQuery
-			? mainState.cases.available.filter((caseData) =>
+			? caseViewModel.cases.filter((caseData) =>
 					caseData.id.toLowerCase().includes(searchQuery.toLowerCase())
 				)
-			: mainState.cases.available
+			: caseViewModel.cases
 	);
-
-	$effect(() => {
-		if (mainState.datasets.selected) {
-			caseOperations.loadCases();
-		}
-	});
 </script>
 
 <div class="flex flex-col h-full">
-	{#if mainState.datasets.selected}
+	{#if datasetViewModel.selectedDataset}
 		<!-- Search bar -->
 		<div class="px-4 pb-4">
 			<div class="input-group grid-cols-[auto_1fr]">
@@ -37,16 +31,14 @@
 		<div class="flex-1 overflow-y-auto space-y-0.5">
 			{#if filteredCases.length > 0}
 				{#each filteredCases as caseData (caseData.id)}
-					{@const isSelected = mainState.cases.selected.some((c) => c.id === caseData.id)}
-					{@const isDisabled = !caseOperations.canSelectMore() && !isSelected}
+					{@const isSelected = caseViewModel.isSelected(caseData)}
+					{@const isDisabled = !caseViewModel.canSelectMore && !isSelected}
 					<ListButton
 						selected={isSelected}
 						disabled={isDisabled}
 						showBadge={isSelected}
-						badgeContent={(
-							mainState.cases.selected.findIndex((c) => c.id === caseData.id) + 1
-						).toString()}
-						on:click={() => caseOperations.toggleCase(caseData)}
+						badgeContent={(caseViewModel.getSelectionIndex(caseData) + 1).toString()}
+						on:click={() => caseViewModel.toggleCase(caseData)}
 					>
 						{caseData.id}
 					</ListButton>

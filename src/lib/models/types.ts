@@ -10,6 +10,7 @@ export interface Case {
 	path: string;
 }
 
+// TODO: Add name so that we can fix run having layers with same ID
 export interface Layer {
 	id: string;
 	path: string;
@@ -19,7 +20,7 @@ export interface LayerStyle {
 	color?: RgbaColor;
 }
 
-export interface Script {
+export interface PresetScript {
 	id: string;
 	path: string;
 }

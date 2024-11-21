@@ -1,34 +1,20 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { mainState } from '$lib/modelviews/mainState.svelte';
-	import { scriptOperations } from '$lib/modelviews/scriptsOperations.svelte';
-	import { apiRepository } from '$lib/models/repository';
-	import type { Script } from '$lib/models/types';
+	import { caseViewModel } from '$lib/viewmodels/case.svelte';
+	import { layerViewModel } from '$lib/viewmodels/layer.svelte';
+	import { runViewModel } from '$lib/viewmodels/run.svelte';
 	import { EditorState } from '@codemirror/state';
 	import { EditorView, basicSetup } from '@codemirror/basic-setup';
 	import { lineNumbers } from '@codemirror/view';
 	import { imgql } from './common/imgql-lang';
-	import { layerOperations } from '$lib/modelviews/layerOperations.svelte';
-	import { runOperations } from '$lib/modelviews/runOperations.svelte';
 	import { getModalStore } from '@skeletonlabs/skeleton';
 
 	const modalStore = getModalStore();
 
-	let editorContent = $state('');
 	let fileInput: HTMLInputElement;
 	let editorView: EditorView;
 	let headerView: EditorView | undefined;
-	let headerContent = $derived(generateHeaderContent());
 	let isHeaderCollapsed = $state(false);
-
-	function generateHeaderContent() {
-		const layers = layerOperations.uniqueLayers;
-		return `import "stdlib.imgql"\n\n// Load layers\n${layers
-			.map((layerId) => {
-				return `load ${layerId} = "\$\{LAYER_PATH:${layerId}\}"`;
-			})
-			.join('\n')}`;
-	}
 
 	// Custom theme for the editor to blend better with Skeleton
 	const customTheme = EditorView.theme({
@@ -62,17 +48,11 @@
 		},
 	});
 
-	// Update the editor content and save to mainState
-	function handleEditorUpdate() {
-		editorContent = editorView.state.doc.toString();
-		scriptOperations.saveScriptContent(editorContent);
-	}
-
 	// Function to initialize header editor
 	function initHeaderCodeBlock() {
 		headerView = new EditorView({
 			state: EditorState.create({
-				doc: headerContent,
+				doc: runViewModel.headerContent,
 				extensions: [
 					basicSetup,
 					lineNumbers(),
@@ -89,7 +69,7 @@
 	function initEditor() {
 		editorView = new EditorView({
 			state: EditorState.create({
-				doc: editorContent,
+				doc: runViewModel.editorContent,
 				extensions: [
 					basicSetup,
 					lineNumbers(),
@@ -98,7 +78,7 @@
 					imgql(),
 					EditorView.updateListener.of((update) => {
 						if (update.docChanged) {
-							handleEditorUpdate();
+							runViewModel.saveEditorContent(editorView.state.doc.toString());
 						}
 					}),
 				],
@@ -107,19 +87,15 @@
 		});
 	}
 
-	onMount(() => {
-		scriptOperations.loadScripts();
-		initHeaderCodeBlock();
+	onMount(async () => {
+		await runViewModel.loadPresets();
 		initEditor();
 	});
 
 	// Reinitialize/destroy header editor when uncollapsed/collapsed
 	$effect(() => {
-		if (!isHeaderCollapsed && !headerView) {
-			// Small delay to ensure DOM is updated
-			setTimeout(() => {
-				initHeaderCodeBlock();
-			}, 0);
+		if (!isHeaderCollapsed && !headerView && layerViewModel.uniqueLayersIds.length > 0) {
+			initHeaderCodeBlock();
 		} else if (isHeaderCollapsed && headerView) {
 			headerView.destroy();
 			headerView = undefined;
@@ -130,30 +106,21 @@
 	$effect(() => {
 		if (headerView) {
 			headerView.dispatch({
-				changes: { from: 0, to: headerView.state.doc.length, insert: headerContent },
+				changes: { from: 0, to: headerView.state.doc.length, insert: runViewModel.headerContent },
 			});
 		}
 	});
 
-	// Load script's content
-	async function loadScriptContent(script: Script) {
-		try {
-			const content = await apiRepository.getScriptCode(script);
-			editorView.dispatch({
-				changes: { from: 0, to: editorView.state.doc.length, insert: content },
-			});
-		} catch (error) {
-			console.error('Failed to load script content:', error);
-		}
-	}
-
 	// Load script from dropdown
-	function handleScriptSelect(event: Event) {
+	async function handleScriptSelect(event: Event) {
 		const select = event.target as HTMLSelectElement;
-		const script = mainState.scripts.availablePresets.find((s) => s.id === select.value);
+		const scriptId = select.value;
+		const script = runViewModel.availablePresets.find((p) => p.id === scriptId);
 		if (script) {
-			scriptOperations.selectScript(script);
-			loadScriptContent(script);
+			await runViewModel.loadPresetScript(script);
+			editorView.dispatch({
+				changes: { from: 0, to: editorView.state.doc.length, insert: runViewModel.editorContent },
+			});
 		}
 	}
 
@@ -171,28 +138,24 @@
 			};
 			reader.readAsText(file);
 		}
-		scriptOperations.clearScript();
 	}
 
 	// Download the current script content
 	function handleSave() {
-		const fullContent = `${headerContent}\n\n${editorContent}`;
-		const blob = new Blob([fullContent], { type: 'text/plain' });
+		const blob = new Blob([runViewModel.fullScriptContent], { type: 'text/plain' });
 		const url = URL.createObjectURL(blob);
 		const a = document.createElement('a');
 		a.href = url;
-		a.download = `${mainState.scripts.selectedPreset?.id?.replace(/\.imgql$/, '') || 'script'}-${new Date().toISOString()}.imgql`;
+		a.download = `script-${new Date().toISOString()}.imgql`;
 		document.body.appendChild(a);
 		a.click();
 		document.body.removeChild(a);
 		URL.revokeObjectURL(url);
 	}
 
-	// Add this function to handle the run button click
 	async function handleRun() {
 		try {
-			const fullScriptContent = `${headerContent}\n\n${editorContent}`;
-			await runOperations.run(fullScriptContent, mainState.cases.selected);
+			await runViewModel.runAll(caseViewModel.selectedCases);
 		} catch (error) {
 			modalStore.trigger({
 				type: 'alert',
@@ -207,13 +170,13 @@
 	<div class="p-4 border-b border-surface-500/30 flex gap-2">
 		<select
 			class="select flex-1"
-			value={mainState.scripts.selectedPreset?.id ?? ''}
+			value={runViewModel.availablePresets[0]?.id ?? ''}
 			onchange={handleScriptSelect}
 		>
-			<option value="" disabled selected={!mainState.scripts.selectedPreset}
+			<option value="" disabled selected={!runViewModel.availablePresets[0]}
 				>Choose a preset script...</option
 			>
-			{#each mainState.scripts.availablePresets as script}
+			{#each runViewModel.availablePresets as script}
 				<option value={script.id}>{script.id}</option>
 			{/each}
 		</select>
@@ -262,7 +225,7 @@
 	<div class="p-4 border-t border-surface-500/30 flex gap-2">
 		<button
 			class="btn variant-filled-surface flex-1"
-			disabled={!editorContent.trim()}
+			disabled={!runViewModel.editorContent.trim()}
 			onclick={handleSave}
 		>
 			<i class="fa-solid fa-download mr-2"></i>
@@ -270,7 +233,7 @@
 		</button>
 		<button
 			class="btn variant-filled-primary flex-1"
-			disabled={!editorContent.trim()}
+			disabled={!runViewModel.editorContent.trim()}
 			onclick={handleRun}
 		>
 			<i class="fa-solid fa-play mr-2"></i>
