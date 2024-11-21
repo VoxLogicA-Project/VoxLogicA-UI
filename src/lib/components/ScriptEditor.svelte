@@ -8,6 +8,7 @@
 	import { lineNumbers } from '@codemirror/view';
 	import { imgql } from './common/imgql-lang';
 	import { getModalStore } from '@skeletonlabs/skeleton';
+	import type { Case } from '$lib/models/types';
 
 	const modalStore = getModalStore();
 
@@ -15,6 +16,7 @@
 	let editorView: EditorView;
 	let headerView: EditorView | undefined;
 	let isHeaderCollapsed = $state(false);
+	let showCaseDropdown = $state(false);
 
 	// Custom theme for the editor to blend better with Skeleton
 	const customTheme = EditorView.theme({
@@ -164,6 +166,19 @@
 			});
 		}
 	}
+
+	async function handleSingleRun(case_: Case) {
+		showCaseDropdown = false;
+		try {
+			await runViewModel.runAll([case_]);
+		} catch (error) {
+			modalStore.trigger({
+				type: 'alert',
+				title: 'Error',
+				body: `Failed to run script: ${error}`,
+			});
+		}
+	}
 </script>
 
 <div class="flex flex-col h-full">
@@ -215,7 +230,7 @@
 	<!-- Main editor -->
 	<div id="editor" class="flex-1 p-4 overflow-auto"></div>
 
-	<!-- Run button at bottom -->
+	<!-- Run buttons at bottom -->
 	<div class="p-4 border-t border-surface-500/30 flex gap-2">
 		<button
 			class="btn variant-filled-surface flex-1"
@@ -225,13 +240,42 @@
 			<i class="fa-solid fa-download mr-2"></i>
 			Download
 		</button>
-		<button
-			class="btn variant-filled-primary flex-1"
-			disabled={!runViewModel.editorContent.trim()}
-			onclick={handleRun}
-		>
-			<i class="fa-solid fa-play mr-2"></i>
-			Run Script
-		</button>
+		<div class="flex gap-1 flex-1">
+			<button
+				class="btn variant-filled-primary flex-1"
+				disabled={!runViewModel.editorContent.trim()}
+				onclick={handleRun}
+			>
+				<i class="fa-solid fa-play mr-2"></i>
+				Run All
+			</button>
+			<button
+				class="btn variant-filled-primary p-1"
+				disabled={!runViewModel.editorContent.trim()}
+				onclick={() => (showCaseDropdown = !showCaseDropdown)}
+				aria-label="Run Script for Selected Case"
+			>
+				<i class="fa-solid fa-chevron-up text-sm"></i>
+			</button>
+			{#if showCaseDropdown}
+				<div
+					class="absolute bottom-[4.5rem] right-4 w-48 rounded-md shadow-lg bg-white dark:bg-gray-800 ring-1 ring-black/10 dark:ring-white/10 shadow-surface-900/20"
+				>
+					<div class="py-1" role="menu">
+						{#each caseViewModel.selectedCases as case_}
+							<button
+								class="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700"
+								onclick={() => handleSingleRun(case_)}
+							>
+								Run Case <strong>{case_.id}</strong>
+							</button>
+							{#if caseViewModel.selectedCases.length - 1 !== caseViewModel.selectedCases.indexOf(case_)}
+								<hr class="border-surface-500/30" />
+							{/if}
+						{/each}
+					</div>
+				</div>
+			{/if}
+		</div>
 	</div>
 </div>
