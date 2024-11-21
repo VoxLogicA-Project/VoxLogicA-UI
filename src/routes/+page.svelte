@@ -81,9 +81,7 @@
 						maxSize={600}
 						bind:isCollapsed={uiViewModel.layerSidebarCollapsed}
 					>
-						<div class="w-full h-full overflow-auto">
-							<LayerMatrix />
-						</div>
+						<LayerMatrix />
 					</CollapsibleSidebar>
 				{/if}
 			</div>

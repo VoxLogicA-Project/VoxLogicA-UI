@@ -157,7 +157,7 @@ export class RunViewModel extends BaseViewModel {
 			// Set error if any run had an error
 			const anyError = runs.find((run) => run.outputError);
 			if (anyError) {
-				this.setError('Some runs failed.');
+				this.setError('Some (or all) runs failed.');
 			}
 
 			return runs;

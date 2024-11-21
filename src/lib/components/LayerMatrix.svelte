@@ -31,43 +31,51 @@
 	});
 </script>
 
-<div class="bg-surface-100-800-token rounded-lg">
-	<LayerTabs />
+<div class="bg-surface-100-800-token rounded-lg h-full flex flex-col">
+	<div class="flex-none">
+		<LayerTabs />
+	</div>
 
-	{#if layerViewModel.isLoading}
-		<div class="p-8 flex justify-center">
-			<ProgressRadial width="w-8" />
-		</div>
-	{:else}
-		<!-- RunPrints component -->
-		{#if uiViewModel.bottomPanelRunIndex !== -1}
-			<RunPrints />
+	<!-- Scrollable content -->
+	<div class="flex-1 overflow-y-auto min-h-0">
+		{#if layerViewModel.isLoading}
+			<div class="p-8 flex justify-center">
+				<ProgressRadial width="w-8" />
+			</div>
+		{:else}
+			<!-- RunPrints component -->
+			{#if uiViewModel.bottomPanelRunIndex !== -1}
+				<RunPrints />
+			{/if}
+
+			<!-- Layer Matrix Table -->
+			<div class="px-4 relative h-full flex flex-col">
+				<!-- Table wrapper with sticky horizontal scroll -->
+				<div class="flex-1 overflow-y-auto">
+					<table class="w-full border-collapse">
+						<thead>
+							<tr>
+								<th class="text-left w-48 border-b border-surface-500/30"> Layers </th>
+								{#each caseViewModel.selectedCases as case_, index}
+									<th class="text-center p-2 border-b border-surface-500/30 font-medium">
+										<div
+											class="px-4 py-1 rounded bg-surface-200-700-token/50 truncate"
+											title={case_.id}
+										>
+											{case_.id.length > 20 ? '...' + case_.id.slice(-20) : case_.id}
+										</div>
+									</th>
+								{/each}
+							</tr>
+						</thead>
+						<tbody>
+							{#each uniqueLayers as layerId}
+								<LayerRow {layerId} />
+							{/each}
+						</tbody>
+					</table>
+				</div>
+			</div>
 		{/if}
-
-		<!-- Layer Matrix Table -->
-		<div class="p-4">
-			<table class="w-full">
-				<thead>
-					<tr>
-						<th class="text-left w-48 border-r border-b border-surface-500/30">Layers</th>
-						{#each caseViewModel.selectedCases as case_, index}
-							<th
-								class="w-32 text-center px-4 border-b border-surface-500/30 font-normal {index !==
-								caseViewModel.selectedCases.length - 1
-									? 'border-r'
-									: ''}"
-							>
-								{case_.id}
-							</th>
-						{/each}
-					</tr>
-				</thead>
-				<tbody>
-					{#each uniqueLayers as layerId}
-						<LayerRow {layerId} />
-					{/each}
-				</tbody>
-			</table>
-		</div>
-	{/if}
+	</div>
 </div>

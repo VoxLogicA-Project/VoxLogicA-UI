@@ -45,7 +45,7 @@
 </script>
 
 <tr class="align-middle h-12">
-	<td class="align-middle w-48 border-r border-b border-surface-500/30">
+	<td class="align-middle w-48 border-b border-surface-500/30">
 		<div class="flex items-center gap-2">
 			<div class:dark={isDarkMode}>
 				<ColorPicker
@@ -71,12 +71,7 @@
 	{#each caseViewModel.selectedCases as case_, caseIndex}
 		{@const layer = layerState.getLayerFromId(case_.id, layerId)}
 		{@const isAvailable = layer !== undefined}
-		<td
-			class="w-32 text-center align-middle px-4 border-b border-surface-500/30 {caseIndex !==
-			caseViewModel.selectedCases.length - 1
-				? 'border-r'
-				: ''}"
-		>
+		<td class="w-32 text-center align-middle px-4 border-b border-surface-500/30">
 			<button
 				class="w-8 h-8 rounded-full"
 				disabled={!isAvailable}
