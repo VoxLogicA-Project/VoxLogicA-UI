@@ -17,7 +17,7 @@
 <div class="tabs-container overflow-x-auto">
 	<TabGroup
 		justify="justify-start"
-		border="border-b border-surface-500/30"
+		border="border-0"
 		active="variant-filled-primary"
 		class="min-w-fit"
 	>
@@ -26,7 +26,7 @@
 				bind:group={activeTab}
 				name="layers-tab"
 				value={tab.id}
-				class="px-4 py-2 whitespace-nowrap"
+				class="px-3 py-1.5 whitespace-nowrap text-sm tab-custom"
 			>
 				{tab.label}
 			</Tab>
@@ -58,5 +58,18 @@
 	.tabs-container {
 		scrollbar-width: thin;
 		scrollbar-color: rgba(0, 0, 0, 0.2) rgba(0, 0, 0, 0.1);
+	}
+
+	:global(.tab-custom) {
+		border-radius: 0 0 0.375rem 0.375rem !important;
+		margin-right: 0.2rem !important;
+	}
+
+	:global(.tab-custom:last-child) {
+		margin-right: 0 !important;
+	}
+
+	:global(.tab-custom:not(.variant-filled-primary)) {
+		background-color: rgb(var(--color-surface-400) / 0.2);
 	}
 </style>

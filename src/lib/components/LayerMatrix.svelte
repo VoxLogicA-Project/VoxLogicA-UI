@@ -31,11 +31,11 @@
 	});
 </script>
 
-<div class="p-4 bg-surface-100-800-token rounded-lg">
+<div class="bg-surface-100-800-token rounded-lg">
 	<LayerTabs bind:activeTab />
 
 	<!-- Layer Matrix Table -->
-	<div class="pt-4">
+	<div class="p-4">
 		<table class="w-full">
 			<thead>
 				<tr>
