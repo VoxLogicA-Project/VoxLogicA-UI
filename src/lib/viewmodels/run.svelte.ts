@@ -98,9 +98,6 @@ export class RunViewModel extends BaseViewModel {
 			throw new Error(errorMessage);
 		}
 
-		console.log('result.print', result.print);
-		console.log(typeof result.print);
-
 		return {
 			id: result.id,
 			scriptContent: this.fullScriptContent,

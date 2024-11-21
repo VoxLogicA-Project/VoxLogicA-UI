@@ -14,7 +14,6 @@
 			? layerViewModel
 			: runViewModel.layerStates[uiViewModel.bottomPanelRunIndex]
 	);
-	$inspect(layerState.getState());
 
 	const isLayerSelectedForCase = $derived((caseId: string) =>
 		layerState.selectedLayersForCase(caseId)?.some((l) => l.id === layerId)
@@ -34,12 +33,12 @@
 
 	// Handle layer selection for both layers and runs
 	function toggleLayerForAllCases() {
-		const isLayerSelectedForAllCases = layerViewModel.isLayerSelectedForAllCases(layerId);
+		const isLayerSelectedForAllCases = layerState.isLayerSelectedForAllCases(layerId);
 
 		if (isLayerSelectedForAllCases) {
-			layerViewModel.unselectLayerForAllSelectedCases(layerId);
+			layerState.unselectLayerForAllSelectedCases(layerId);
 		} else {
-			layerViewModel.selectLayerForAllSelectedCases(layerId);
+			layerState.selectLayerForAllSelectedCases(layerId);
 		}
 	}
 </script>
