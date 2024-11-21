@@ -44,15 +44,11 @@ export class DatasetViewModel extends BaseViewModel {
 	selectDataset(dataset: Dataset) {
 		this.state.selected = dataset;
 		caseViewModel.loadCases();
-		this.notifyDatasetChanged();
+		layerViewModel.reset();
 	}
 
 	clearDataset() {
 		this.state.selected = null;
-		this.notifyDatasetChanged();
-	}
-
-	private notifyDatasetChanged() {
 		caseViewModel.reset();
 		layerViewModel.reset();
 	}

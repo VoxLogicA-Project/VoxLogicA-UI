@@ -1,4 +1,4 @@
-import { json } from '@sveltejs/kit';
+import { json, error, isHttpError } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import fs from 'fs/promises';
 import path from 'path';
@@ -16,7 +16,7 @@ export const GET: RequestHandler = async ({ params }: { params: { dataset: strin
 			entries = await fs.readdir(datasetPath, { withFileTypes: true });
 		} catch (err) {
 			console.error(`Error reading dataset directory: ${err}`);
-			return new Response('Failed to read dataset directory', { status: 500 });
+			throw error(500, 'Failed to read dataset directory. Check server console for details.');
 		}
 
 		// Map directories to cases
@@ -28,12 +28,15 @@ export const GET: RequestHandler = async ({ params }: { params: { dataset: strin
 			}));
 
 		if (cases.length === 0) {
-			return new Response('No cases found in dataset', { status: 404 });
+			throw error(404, 'No cases found in dataset');
 		}
 
 		return json(cases);
-	} catch (error) {
-		console.error('Unexpected error loading cases:', error);
-		return new Response('Internal server error', { status: 500 });
+	} catch (err) {
+		if (isHttpError(err)) {
+			throw err;
+		}
+		console.error('Unexpected error loading cases:', err);
+		throw error(500, 'Internal server error. Check server console for details.');
 	}
 };

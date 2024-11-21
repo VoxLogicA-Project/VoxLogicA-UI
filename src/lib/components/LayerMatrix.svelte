@@ -6,6 +6,7 @@
 	import LayerTabs from './LayerTabs.svelte';
 	import LayerRow from './LayerRow.svelte';
 	import RunPrints from './RunPrints.svelte';
+	import { ProgressRadial } from '@skeletonlabs/skeleton';
 
 	// Initialize with 'layers' as default
 	let activeTab = $state('layers');
@@ -35,34 +36,40 @@
 <div class="bg-surface-100-800-token rounded-lg">
 	<LayerTabs bind:activeTab />
 
-	<!-- RunPrints component -->
-	{#if activeTab !== 'layers'}
-		<RunPrints {activeTab} />
-	{/if}
+	{#if layerViewModel.isLoading}
+		<div class="p-8 flex justify-center">
+			<ProgressRadial width="w-8" />
+		</div>
+	{:else}
+		<!-- RunPrints component -->
+		{#if activeTab !== 'layers'}
+			<RunPrints {activeTab} />
+		{/if}
 
-	<!-- Layer Matrix Table -->
-	<div class="p-4">
-		<table class="w-full">
-			<thead>
-				<tr>
-					<th class="text-left w-48 border-r border-b border-surface-500/30">Layers</th>
-					{#each caseViewModel.selectedCases as case_, index}
-						<th
-							class="w-32 text-center px-4 border-b border-surface-500/30 font-normal {index !==
-							caseViewModel.selectedCases.length - 1
-								? 'border-r'
-								: ''}"
-						>
-							{case_.id}
-						</th>
+		<!-- Layer Matrix Table -->
+		<div class="p-4">
+			<table class="w-full">
+				<thead>
+					<tr>
+						<th class="text-left w-48 border-r border-b border-surface-500/30">Layers</th>
+						{#each caseViewModel.selectedCases as case_, index}
+							<th
+								class="w-32 text-center px-4 border-b border-surface-500/30 font-normal {index !==
+								caseViewModel.selectedCases.length - 1
+									? 'border-r'
+									: ''}"
+							>
+								{case_.id}
+							</th>
+						{/each}
+					</tr>
+				</thead>
+				<tbody>
+					{#each uniqueLayers as layerId}
+						<LayerRow {layerId} {activeTab} />
 					{/each}
-				</tr>
-			</thead>
-			<tbody>
-				{#each uniqueLayers as layerId}
-					<LayerRow {layerId} {activeTab} />
-				{/each}
-			</tbody>
-		</table>
-	</div>
+				</tbody>
+			</table>
+		</div>
+	{/if}
 </div>

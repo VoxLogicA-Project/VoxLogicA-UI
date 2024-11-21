@@ -34,6 +34,8 @@ export class CaseViewModel extends BaseViewModel {
 	}
 
 	async loadCases() {
+		this.reset();
+
 		const dataset = datasetViewModel.selectedDataset;
 		if (!dataset) return;
 

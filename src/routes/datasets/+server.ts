@@ -1,4 +1,4 @@
-import { json } from '@sveltejs/kit';
+import { json, error } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import fs from 'fs/promises';
 import path from 'path';
@@ -18,13 +18,15 @@ export const GET: RequestHandler = async () => {
 						if (response.status === 200) {
 							return await response.json();
 						}
+						console.error(`Error loading dataset: ${entry.name}. Skipping. Response:`, response);
 						return null;
 					})
 			)
 		).filter((dataset): dataset is NonNullable<typeof dataset> => dataset !== null);
 
 		return json(datasets);
-	} catch (error) {
-		return new Response('Failed to load datasets', { status: 500 });
+	} catch (err) {
+		console.error('Error loading datasets:', err);
+		throw error(500, 'Failed to load datasets. Check server console for details.');
 	}
 };

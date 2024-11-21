@@ -1,4 +1,4 @@
-import { json } from '@sveltejs/kit';
+import { json, error, isHttpError } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import fs from 'fs/promises';
 import path from 'path';
@@ -15,7 +15,7 @@ export const GET: RequestHandler = async ({ params }) => {
 			await fs.access(datasetPath);
 		} catch (err) {
 			console.error(`Dataset directory not found: ${datasetPath}`);
-			return new Response('Dataset not found', { status: 404 });
+			throw error(404, `Dataset not found: ${params.dataset}`);
 		}
 
 		// Read and parse config file
@@ -23,19 +23,19 @@ export const GET: RequestHandler = async ({ params }) => {
 		try {
 			const configData = await fs.readFile(configPath, 'utf-8');
 			config = JSON.parse(configData);
-		} catch (error) {
-			if (error instanceof Error && 'code' in error && error.code === 'ENOENT') {
+		} catch (err) {
+			if (err instanceof Error && 'code' in err && err.code === 'ENOENT') {
 				console.error(`Dataset config file not found: ${configPath}`);
-				return new Response('Dataset configuration not found', { status: 404 });
+				throw error(404, `Dataset configuration not found: ${params.dataset}`);
 			}
-			console.error(`Error reading dataset config: ${error}`);
-			return new Response('Invalid dataset configuration', { status: 400 });
+			console.error(`Error reading dataset config: ${err}`);
+			throw error(400, 'Invalid dataset configuration');
 		}
 
 		// Validate required fields
 		if (!config.name || !config.layout) {
 			console.error('Dataset config missing required "name" or "layout" field(s)');
-			return new Response('Invalid dataset configuration: missing name or layout', { status: 400 });
+			throw error(400, 'Invalid dataset configuration: missing name or layout');
 		}
 
 		const { layout } = config;
@@ -45,8 +45,11 @@ export const GET: RequestHandler = async ({ params }) => {
 		};
 
 		return json(dataset);
-	} catch (error) {
-		console.error('Unexpected error loading dataset:', error);
-		return new Response('Internal server error', { status: 500 });
+	} catch (err) {
+		if (isHttpError(err)) {
+			throw err;
+		}
+		console.error('Unexpected error loading dataset:', err);
+		throw error(500, 'Internal server error. Check server console for details.');
 	}
 };

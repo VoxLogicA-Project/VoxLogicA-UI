@@ -1,3 +1,4 @@
+import { error } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import fs from 'fs/promises';
 import path from 'path';
@@ -15,10 +16,11 @@ export const GET: RequestHandler = async ({ params }) => {
 				'Cache-Control': 'public, max-age=31536000, immutable',
 			},
 		});
-	} catch (error) {
-		if (error instanceof Error && 'code' in error && error.code === 'ENOENT') {
-			return new Response('Layer file not found', { status: 404 });
+	} catch (err) {
+		if (err instanceof Error && 'code' in err && err.code === 'ENOENT') {
+			throw error(404, `Layer file '${params.layer}' not found.`);
 		}
-		return new Response('Failed to load layer file', { status: 500 });
+		console.error('Error loading layer file:', err);
+		throw error(500, 'Failed to load layer file. Check server console for details.');
 	}
 };

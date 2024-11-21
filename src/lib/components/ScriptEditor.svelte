@@ -9,8 +9,11 @@
 	import { imgql } from './common/imgql-lang';
 	import { getModalStore } from '@skeletonlabs/skeleton';
 	import type { Case } from '$lib/models/types';
+	import { ProgressRadial } from '@skeletonlabs/skeleton';
+	import { getToastStore } from '@skeletonlabs/skeleton';
 
 	const modalStore = getModalStore();
+	const toastStore = getToastStore();
 
 	let fileInput: HTMLInputElement;
 	let editorView: EditorView;
@@ -158,11 +161,22 @@
 	async function handleRun() {
 		try {
 			await runViewModel.runAll(caseViewModel.selectedCases);
+
+			if (runViewModel.currentError) {
+				toastStore.trigger({
+					message: runViewModel.currentError ?? 'Run failed',
+					background: 'variant-filled-error',
+				});
+			} else {
+				toastStore.trigger({
+					message: 'Run completed successfully!',
+					background: 'variant-filled-success',
+				});
+			}
 		} catch (error) {
-			modalStore.trigger({
-				type: 'alert',
-				title: 'Error',
-				body: `Failed to run script: ${error}`,
+			toastStore.trigger({
+				message: runViewModel.currentError ?? 'Run failed',
+				background: 'variant-filled-error',
 			});
 		}
 	}
@@ -171,17 +185,43 @@
 		showCaseDropdown = false;
 		try {
 			await runViewModel.runAll([case_]);
+
+			if (runViewModel.currentError) {
+				toastStore.trigger({
+					message: runViewModel.currentError ?? 'Script execution failed',
+					background: 'variant-filled-error',
+				});
+			} else {
+				toastStore.trigger({
+					message: `Script completed successfully for case ${case_.id}!`,
+					background: 'variant-filled-success',
+				});
+			}
 		} catch (error) {
 			modalStore.trigger({
 				type: 'alert',
 				title: 'Error',
 				body: `Failed to run script: ${error}`,
 			});
+			toastStore.trigger({
+				message: 'Script execution failed',
+				background: 'variant-filled-error',
+			});
 		}
 	}
 </script>
 
 <div class="flex flex-col h-full">
+	{#if runViewModel.isLoading}
+		<div
+			class="absolute inset-0 bg-surface-900/50 backdrop-blur-[1px] z-50 flex items-center justify-center"
+		>
+			<div class="flex flex-col items-center gap-4">
+				<ProgressRadial width="w-12" />
+				<p class="text-surface-50">Running script...</p>
+			</div>
+		</div>
+	{/if}
 	<div class="p-4 border-b border-surface-500/30 flex gap-2">
 		<select
 			class="select flex-1"
