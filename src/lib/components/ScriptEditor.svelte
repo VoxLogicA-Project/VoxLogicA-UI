@@ -115,7 +115,7 @@
 	});
 
 	// Load script from dropdown
-	async function handleScriptSelect(event: Event) {
+	async function handlePresetScriptSelect(event: Event) {
 		const select = event.target as HTMLSelectElement;
 		const scriptId = select.value;
 		const script = runViewModel.availablePresets.find((p) => p.id === scriptId);
@@ -124,6 +124,7 @@
 			editorView.dispatch({
 				changes: { from: 0, to: editorView.state.doc.length, insert: runViewModel.editorContent },
 			});
+			select.value = '';
 		}
 	}
 
@@ -144,7 +145,7 @@
 	}
 
 	// Download the current script content
-	function handleSave() {
+	function handleScriptDownload() {
 		const blob = new Blob([runViewModel.fullScriptContent], { type: 'text/plain' });
 		const url = URL.createObjectURL(blob);
 		const a = document.createElement('a');
@@ -222,12 +223,10 @@
 	<div class="p-4 border-b border-surface-500/30 flex gap-2">
 		<select
 			class="select flex-1"
-			value={runViewModel.availablePresets[0]?.id ?? ''}
-			onchange={handleScriptSelect}
+			value="Load a preset script template..."
+			onchange={handlePresetScriptSelect}
 		>
-			<option value="" disabled selected={!runViewModel.availablePresets[0]}
-				>Choose a preset script...</option
-			>
+			<option value="" disabled>Load a preset script template...</option>
 			{#each runViewModel.availablePresets as script}
 				<option value={script.id}>{script.id}</option>
 			{/each}
@@ -235,8 +234,8 @@
 
 		<button
 			class="btn btn-icon variant-ghost-surface"
-			title="Open File"
-			aria-label="Open File"
+			title="Open local .imgql script"
+			aria-label="Open local .imgql script"
 			onclick={() => fileInput.click()}
 		>
 			<i class="fa-solid fa-folder-open"></i>
@@ -272,7 +271,9 @@
 		<button
 			class="btn variant-filled-surface flex-1"
 			disabled={!runViewModel.editorContent.trim()}
-			onclick={handleSave}
+			title="Download the current script content"
+			aria-label="Download the current script content"
+			onclick={handleScriptDownload}
 		>
 			<i class="fa-solid fa-download mr-2"></i>
 			Download
@@ -281,6 +282,8 @@
 			<button
 				class="btn variant-filled-primary flex-1"
 				disabled={!runViewModel.editorContent.trim()}
+				title="Run the script for all opened cases"
+				aria-label="Run the script for all opened cases"
 				onclick={handleRun}
 			>
 				<i class="fa-solid fa-play mr-2"></i>
@@ -290,7 +293,8 @@
 				class="btn variant-filled-primary p-1"
 				disabled={!runViewModel.editorContent.trim()}
 				onclick={() => (showCaseDropdown = !showCaseDropdown)}
-				aria-label="Run Script for Selected Case"
+				title="Run Script for a single case"
+				aria-label="Run Script for a single case"
 			>
 				<i class="fa-solid fa-chevron-up text-sm"></i>
 			</button>
@@ -302,6 +306,8 @@
 						{#each caseViewModel.selectedCases as case_}
 							<button
 								class="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700"
+								title={`Run script for ${case_.id}`}
+								aria-label={`Run script for ${case_.id}`}
 								onclick={() => handleSingleRun(case_)}
 							>
 								Run Case <strong>{case_.id}</strong>
