@@ -57,10 +57,13 @@
 								{#each caseViewModel.selectedCases as case_, index}
 									<th class="text-center p-2 border-b border-surface-500/30 font-medium">
 										<div
-											class="px-4 py-1 rounded bg-surface-200-700-token/50 truncate"
+											class="px-4 py-1 rounded bg-surface-200-700-token/50 truncate flex items-center justify-center gap-2"
 											title={case_.id}
 										>
-											{case_.id.length > 20 ? '...' + case_.id.slice(-20) : case_.id}
+											<div class="badge-container">
+												<span class="badge variant-filled-primary">{index + 1}</span>
+											</div>
+											<span>{case_.id.length > 20 ? '...' + case_.id.slice(-20) : case_.id}</span>
 										</div>
 									</th>
 								{/each}
