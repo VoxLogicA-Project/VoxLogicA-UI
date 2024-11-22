@@ -21,6 +21,8 @@
 		const startSize = isVertical ? sidebarElement.offsetWidth : sidebarElement.offsetHeight;
 
 		function onMouseMove(e: MouseEvent) {
+			if (isCollapsed) return;
+
 			const currentPos = isVertical ? e.pageX : e.pageY;
 			const size =
 				side === 'left' || side === 'top'
