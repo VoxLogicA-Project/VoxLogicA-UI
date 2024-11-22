@@ -28,19 +28,19 @@
 	>
 		<!-- Header -->
 		<div class="flex items-center justify-between p-4 border-b border-surface-500/30">
-			<div class="flex items-center gap-3">
-				<a href="/" class="flex items-center gap-3" onclick={() => (window.location.href = '/')}>
+			<div class="flex items-center">
+				<a href="/" class="flex items-center" onclick={() => (window.location.href = '/')}>
 					<div
 						class="w-8 h-8 h3 bg-primary-500 rounded-lg flex items-center justify-center text-white font-bold"
 					>
 						V
 					</div>
-					<h3 class="h3">VoxLogicA</h3>
+					<h3 class="h3 px-3">VoxLogicA</h3>
 				</a>
 			</div>
 
 			<button
-				class="w-8 h-8 rounded-lg bg-surface-300-600-token hover:bg-surface-400-500-token flex items-center justify-center"
+				class="w-8 h-8 min-w-[2rem] min-h-[2rem] flex-shrink-0 rounded-lg bg-surface-300-600-token hover:bg-surface-400-500-token flex items-center justify-center"
 				onclick={() => uiViewModel.toggleDarkMode()}
 				title="Toggle dark mode"
 				aria-label="Toggle dark mode"

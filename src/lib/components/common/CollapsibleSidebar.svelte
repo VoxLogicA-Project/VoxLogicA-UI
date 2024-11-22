@@ -64,19 +64,14 @@
 
 <aside
 	bind:this={sidebarElement}
-	class="sidebar bg-surface-100-800-token relative border-surface-500/30 {isVertical
-		? 'flex flex-col'
-		: 'w-full'}"
+	class="sidebar bg-surface-100-800-token relative border-surface-500/30 flex flex-col}"
 	class:border-r={side === 'left'}
 	class:border-l={side === 'right'}
 	class:border-t={side === 'bottom'}
 	class:border-b={side === 'top'}
 >
 	<!-- Content container -->
-	<div
-		class="overflow-hidden relative {isVertical ? 'flex-1 flex flex-col pr-1' : 'w-full h-full'}"
-		class:hidden={isCollapsed}
-	>
+	<div class="overflow-hidden relative flex-1 flex flex-col pr-1" class:hidden={isCollapsed}>
 		{@render children?.()}
 	</div>
 
@@ -105,8 +100,8 @@
 	{#if !isCollapsed}
 		<button
 			class="absolute {isVertical
-				? 'w-1 h-full cursor-col-resize'
-				: 'w-full h-1 cursor-row-resize'} hover:bg-primary-500"
+				? 'w-1.5 h-full cursor-col-resize'
+				: 'w-full h-1.5 cursor-row-resize'} hover:bg-primary-500"
 			class:right-0={side === 'left'}
 			class:left-0={side === 'right'}
 			class:bottom-0={side === 'top'}
