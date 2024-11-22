@@ -13,6 +13,7 @@
 	let nv: any;
 	let Niivue: any;
 	let isInitialized = $state(false);
+	let loadingOperationCounter = $state(0);
 
 	function rgbaColorToColorMap(rgbaColor: RgbaColor) {
 		return {
@@ -44,7 +45,7 @@
 					layerViewModel.selectedLayersForCase(case_.id).length > 0 ||
 					runViewModel.selectedLayersForCase(case_.id).length > 0
 				) {
-					await loadAllLayers();
+					await loadAllLayers(++loadingOperationCounter);
 				}
 			} catch (error) {
 				console.error('Failed to initialize Niivue:', error);
@@ -52,13 +53,19 @@
 		}
 	});
 
-	// Reload layers when selection changes
 	$effect(() => {
 		if (isInitialized) {
 			const datasetLayers = layerViewModel.selectedLayersForCase(case_.id);
 			const runLayers = runViewModel.selectedLayersForCase(case_.id);
 			if (datasetLayers.length > 0 || runLayers.length > 0) {
-				loadAllLayers();
+				// Debounce loading layers to avoid multiple re-renders
+				const timeoutId = setTimeout(() => {
+					loadAllLayers(++loadingOperationCounter);
+				}, 500);
+
+				return () => {
+					clearTimeout(timeoutId);
+				};
 			}
 		}
 	});
@@ -74,8 +81,10 @@
 		}
 	});
 
-	async function loadAllLayers() {
+	async function loadAllLayers(operationId: number) {
+		// TODO: we can still further improve it by not re-loading layers that didn't change
 		if (!nv) return;
+		if (operationId !== loadingOperationCounter) return;
 
 		try {
 			nv.volumes = [];
