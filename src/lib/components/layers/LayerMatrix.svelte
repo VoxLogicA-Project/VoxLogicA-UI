@@ -78,8 +78,8 @@
 															layerState.selectLayerForAllSelectedCases(layerId);
 														}
 													}}
-													title="Select/Deselect layer for all cases"
-													aria-label="Select/Deselect layer for all cases"
+													title="Toggle layer visibility for all cases"
+													aria-label="Toggle layer visibility for all cases"
 												>
 													<span
 														class="truncate text-surface-900 dark:text-surface-50"
@@ -88,7 +88,7 @@
 														{layerId.length > 20 ? '...' + layerId.slice(-20) : layerId}
 													</span>
 													<i
-														class="fa-solid fa-check-to-slot text-sm {layerState.isLayerSelectedForAllCases(
+														class="fa-solid fa-check-to-slot text-sm transition-colors duration-200 {layerState.isLayerSelectedForAllCases(
 															layerId
 														)
 															? 'text-primary-500'
@@ -121,18 +121,20 @@
 										{@const isAvailable = layer !== undefined}
 										<td class="w-32 text-center align-middle px-4 border-b border-surface-500/30">
 											<button
-												class="w-12 h-12 rounded-full transition-all duration-200 hover:scale-110 focus:outline-none"
+												title="Toggle layer visibility"
+												aria-label="Toggle layer visibility"
+												class="w-12 h-12 rounded-full transition-all duration-200 hover:scale-110 focus:outline-none group"
 												disabled={!isAvailable}
 												onclick={() => layer && layerState.toggleLayer(case_.id, layer)}
 											>
 												{#if isAvailable}
 													<i
-														class="fa-solid fa-circle-check text-2xl {layerState.isLayerSelectedForCase(
+														class="fa-solid fa-circle-check text-2xl transition-colors duration-200 {layerState.isLayerSelectedForCase(
 															case_.id,
 															layerId
 														)
-															? 'text-primary-500'
-															: 'text-surface-300/70 hover:text-surface-500 dark:text-surface-400/50 dark:hover:text-surface-300'}"
+															? 'text-primary-500 group-hover:text-primary-400'
+															: 'text-surface-300/70 group-hover:text-surface-500 dark:text-surface-400/50 dark:group-hover:text-surface-300'}"
 													></i>
 												{:else}
 													<i class="fa-solid fa-circle-xmark text-2xl text-error-500"></i>
