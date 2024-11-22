@@ -69,7 +69,18 @@
 			<div class="flex-1 flex flex-col min-h-0">
 				<!-- Viewer Grid -->
 				<div class="flex-1 overflow-auto">
-					<ViewerGrid />
+					{#if caseViewModel.selectedCases.length > 0}
+						<ViewerGrid />
+					{:else}
+						<div class="flex h-full items-center justify-center">
+							<div class="flex items-center gap-3 text-surface-600-300-token">
+								<i class="fa-solid fa-arrow-left text-2xl animate-pulse"></i>
+								<p>
+									Select up to {caseViewModel.maxCases} cases from the list on the left to begin viewing
+								</p>
+							</div>
+						</div>
+					{/if}
 				</div>
 
 				<!-- Layer Matrix -->
@@ -87,7 +98,10 @@
 			</div>
 		{:else}
 			<div class="flex h-full items-center justify-center">
-				<p class="text-surface-600-300-token">Select a dataset to begin</p>
+				<div class="flex items-center gap-3 text-surface-600-300-token">
+					<i class="fa-solid fa-arrow-left text-2xl animate-pulse"></i>
+					<p>Select a dataset from the sidebar on the left to begin</p>
+				</div>
 			</div>
 		{/if}
 	</div>
