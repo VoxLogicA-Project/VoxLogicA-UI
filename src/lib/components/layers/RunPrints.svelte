@@ -42,11 +42,13 @@
 				<div>
 					<h3 class="text-sm font-medium mb-2">Case: {caseId}</h3>
 					{#if error}
-						<div class="bg-error-500/20 p-3 rounded text-sm font-mono whitespace-pre-wrap">
+						<div
+							class="bg-error-500/20 p-3 rounded text-sm font-mono whitespace-pre-wrap select-text"
+						>
 							{error}
 						</div>
 					{:else if casePrints.length > 0}
-						<div class="bg-surface-200-700-token/50 px-3 rounded text-sm font-mono">
+						<div class="bg-surface-200-700-token/50 px-3 rounded text-sm font-mono select-text">
 							{#each casePrints as print}
 								<div>{formatPrint(print)}</div>
 							{/each}
