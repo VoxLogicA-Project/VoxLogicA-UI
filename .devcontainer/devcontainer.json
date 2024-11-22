@@ -1,0 +1,16 @@
+{
+	"name": "VoxLogica UI Dev",
+	"build": {
+		"dockerfile": "Dockerfile",
+		"context": ".."
+	},
+	"workspaceFolder": "/workspaces/VoxLogica-UI",
+	"customizations": {
+		"vscode": {
+			"extensions": ["svelte.svelte-vscode", "dbaeumer.vscode-eslint", "esbenp.prettier-vscode"]
+		}
+	},
+	"forwardPorts": [3000],
+	"postCreateCommand": "bash .devcontainer/setup.sh",
+	"remoteUser": "node"
+}

@@ -8,16 +8,12 @@ export const DATASET_PATH = process.env.DATASET_PATH || path.join(STATIC_PATH, '
 export const SCRIPTS_PATH = process.env.SCRIPTS_PATH || path.join(STATIC_PATH, 'scripts');
 
 export const VOXLOGICA_BINARY_PATH = (() => {
-	const binPath = path.join(STATIC_PATH, 'bin');
+	const binPath = path.join(STATIC_PATH, 'bin', 'VoxLogicA');
 	switch (platform()) {
 		case 'win32':
-			return path.join(binPath, 'windows', 'voxlogica.exe');
-		case 'darwin':
-			return path.join(binPath, 'macos', 'voxlogica');
-		case 'linux':
-			return path.join(binPath, 'linux', 'voxlogica');
+			return path.join(binPath, 'VoxLogicA.exe');
 		default:
-			throw new Error(`Unsupported platform: ${platform()}`);
+			return path.join(binPath, 'VoxLogicA');
 	}
 })();
 

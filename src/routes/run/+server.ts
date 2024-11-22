@@ -111,7 +111,7 @@ const runVoxLogica = async (binaryPath: string, scriptPath: string): Promise<Vox
 						error: '',
 					});
 				} catch (e) {
-					reject(new Error(`Failed to parse JSON output: ${e}. Output was: ${stdout}`));
+					reject(new Error(`Failed to parse JSON output: ${e}. Output was: ${stdout}, ${stderr}`));
 				}
 			} else {
 				try {
@@ -122,7 +122,7 @@ const runVoxLogica = async (binaryPath: string, scriptPath: string): Promise<Vox
 						voxlogicaResult: parsedOutput,
 					});
 				} catch (e) {
-					reject(new Error(`Failed to parse JSON output: ${e}. Output was: ${stdout}`));
+					reject(new Error(`Failed to parse JSON output: ${e}. Output was: ${stdout}, ${stderr}`));
 				}
 			}
 		});
