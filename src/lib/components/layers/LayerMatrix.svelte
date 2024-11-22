@@ -60,7 +60,7 @@
 											use:popup={{
 												event: 'hover',
 												target: 'layer-matrix-help',
-												placement: 'bottom',
+												placement: 'top',
 											}}
 										>
 											<i class="fa-solid fa-circle-info text-sm"></i>
@@ -167,7 +167,11 @@
 </div>
 
 <!-- Popup content -->
-<div class="card p-4 variant-filled-surface shadow-xl" data-popup="layer-matrix-help">
+<div
+	class="card p-4 variant-filled-surface shadow-xl fixed"
+	data-popup="layer-matrix-help"
+	style="z-index: 1000;"
+>
 	<div class="flex flex-col gap-2">
 		<div class="flex items-center gap-3">
 			<div class="w-6 flex justify-center">
