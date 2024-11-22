@@ -7,6 +7,7 @@
 	import { ProgressRadial } from '@skeletonlabs/skeleton';
 	import { uiViewModel } from '$lib/viewmodels/ui.svelte';
 	import ColorPicker from 'svelte-awesome-color-picker';
+	import { popup } from '@skeletonlabs/skeleton';
 
 	// Show unique layers for the selected tab
 	let uniqueLayers = $derived.by(() => {
@@ -47,11 +48,29 @@
 					<table class="w-full border-collapse">
 						<thead>
 							<tr>
-								<th class="w-48 border-b border-surface-500/30"></th>
+								<th class="w-48 border-b border-surface-500/30 p-2">
+									<div class="flex items-center gap-2">
+										<div class="flex items-center gap-2">
+											<i class="fa-solid fa-layer-group text-surface-500"></i>
+											<span class="text-sm font-medium">Add layers</span>
+										</div>
+										<button
+											class="p-1 hover:text-primary-500 transition-colors"
+											aria-label="Layer Selection Guide"
+											use:popup={{
+												event: 'hover',
+												target: 'layer-matrix-help',
+												placement: 'bottom',
+											}}
+										>
+											<i class="fa-solid fa-circle-info text-sm"></i>
+										</button>
+									</div>
+								</th>
 								{#each uniqueLayers as layerId}
 									<th class="text-center p-2 border-b border-surface-500/30 font-medium">
 										<div class="flex flex-col items-center">
-											<div class:dark={uiViewModel.isDarkMode}>
+											<div class:dark={uiViewModel.isDarkMode} title="Click to change layer color">
 												<ColorPicker
 													label=""
 													rgb={layerState.layerStyle(layerId)?.color}
@@ -78,19 +97,14 @@
 															layerState.selectLayerForAllSelectedCases(layerId);
 														}
 													}}
-													title="Toggle layer visibility for all cases"
-													aria-label="Toggle layer visibility for all cases"
+													title="Click to toggle layer visibility for all cases"
 												>
-													<span
-														class="truncate text-surface-900 dark:text-surface-50"
-														title={layerId}
-													>
+													<span class="truncate text-surface-900 dark:text-surface-50">
 														{layerId.length > 20 ? '...' + layerId.slice(-20) : layerId}
 													</span>
 													<i
-														class="fa-solid fa-check-to-slot text-sm transition-colors duration-200 {layerState.isLayerSelectedForAllCases(
-															layerId
-														)
+														class="fa-solid fa-check-to-slot text-sm transition-colors duration-200
+														{layerState.isLayerSelectedForAllCases(layerId)
 															? 'text-primary-500'
 															: 'text-surface-300/70 group-hover:text-surface-500 dark:text-surface-400/50 dark:group-hover:text-surface-300'}"
 													></i>
@@ -150,6 +164,40 @@
 			</div>
 		{/if}
 	</div>
+</div>
+
+<!-- Popup content -->
+<div class="card p-4 variant-filled-surface shadow-xl" data-popup="layer-matrix-help">
+	<div class="flex flex-col gap-2">
+		<div class="flex items-center gap-3">
+			<div class="w-6 flex justify-center">
+				<i class="fa-solid fa-circle-check text-primary-500"></i>
+			</div>
+			<span>Layer is visible, click to hide</span>
+		</div>
+
+		<div class="flex items-center gap-3">
+			<div class="w-6 flex justify-center">
+				<i class="fa-solid fa-circle-check text-surface-300/70"></i>
+			</div>
+			<span>Layer is hidden, click to show</span>
+		</div>
+
+		<div class="flex items-center gap-3">
+			<div class="w-6 flex justify-center">
+				<i class="fa-solid fa-circle-xmark text-error-500"></i>
+			</div>
+			<span>Layer is not available</span>
+		</div>
+
+		<div class="flex items-center gap-3">
+			<div class="w-6 flex justify-center">
+				<i class="fa-solid fa-check-to-slot text-primary-500"></i>
+			</div>
+			<span>Click to toggle layer visibility for all cases</span>
+		</div>
+	</div>
+	<div class="arrow variant-filled-surface"></div>
 </div>
 
 <style>

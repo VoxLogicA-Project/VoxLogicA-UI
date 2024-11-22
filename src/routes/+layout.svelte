@@ -3,9 +3,12 @@
 	import { AppShell } from '@skeletonlabs/skeleton';
 	import { onMount } from 'svelte';
 	import { initializeStores, Toast } from '@skeletonlabs/skeleton';
+	import { computePosition, autoUpdate, offset, shift, flip, arrow } from '@floating-ui/dom';
+	import { storePopup } from '@skeletonlabs/skeleton';
 	import { uiViewModel } from '$lib/viewmodels/ui.svelte';
 
 	initializeStores();
+	storePopup.set({ computePosition, autoUpdate, offset, shift, flip, arrow });
 
 	// Initialize theme based on system preference
 	$effect(() => {
