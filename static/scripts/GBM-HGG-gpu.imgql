@@ -1,21 +1,16 @@
-import "stdlib.imgql"
-
 let dice(x,y) = (2 .*. volume(x & y)) ./. (volume(x) .+. volume(y))
 let distlt(x,y) = dt(y) <. x
 let grow(a,b) = (a|touch(b,a))
 let flt(r,a) = distlt(r,distgeq(r,!a))
 
-load imgFLAIR = "$INPUTDIR/$NAME_flair.nii.gz"
-let flair = intensity(imgFLAIR)
-
-load imgManualSeg = "$INPUTDIR/$NAME_seg.nii.gz"
-let manualContouringGTV = intensity(imgManualSeg) >. 0
+let intensityFlair = intensity(flair)
+let manualContouringGTV = intensity(seg) >. 0
 
 let diceM(x) = dice(x,manualContouringGTV)
 
-let background = touch(flair <. 0.1,border)
+let background = touch(intensityFlair <. 0.1,border)
 let brain = !background
-let pflair = percentiles(flair,brain,0.5)
+let pflair = percentiles(intensityFlair,brain,0.5)
 
 let hI = pflair >. 0.95 
 let vI = pflair >. 0.86 

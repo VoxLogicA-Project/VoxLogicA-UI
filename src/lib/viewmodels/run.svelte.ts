@@ -12,10 +12,10 @@ interface RunState {
 
 export class RunViewModel extends BaseViewModel {
 	private state = $state<RunState>({
-		history: [],
-		layersStates: [],
 		availablePresets: [],
 		editorContent: '',
+		history: [],
+		layersStates: [],
 	});
 
 	getState() {

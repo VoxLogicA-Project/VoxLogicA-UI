@@ -5,8 +5,7 @@ import path from 'path';
 import { spawn } from 'child_process';
 import { DATASET_PATH, RUN_OUTPUT_PATH, VOXLOGICA_BINARY_PATH } from '../config';
 import { randomUUID } from 'crypto';
-import type { Case, Run } from '$lib/models/types';
-import type { Layer } from '$lib/models/types';
+import type { Case } from '$lib/models/types';
 
 // Types for API responses and internal data structures
 interface VoxLogicaResult {
@@ -43,7 +42,7 @@ const substituteUiPathVariables = async (
 			);
 		}
 
-		// Process output paths with improved regex
+		// Process output paths
 		return processedScript.replace(/save\s+"([^"]+)"/g, (match, filepath) => {
 			if (filepath.match(/\$\{?OUTPUT_?DIR\}?/)) {
 				return match.replace(/[\\,/]/g, path.sep).replace(/\$\{?OUTPUT_?DIR\}?/g, outputDir);
@@ -203,6 +202,7 @@ export const POST: RequestHandler = async ({ request, fetch }) => {
 			'log' in err.voxlogicaResult &&
 			'error' in err.voxlogicaResult
 		) {
+			// TODO: Type check this is a Run object, layers will need to be substituted
 			return json({
 				id: runId,
 				print: err.voxlogicaResult.print,

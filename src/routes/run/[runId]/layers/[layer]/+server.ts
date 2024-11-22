@@ -7,7 +7,6 @@ import { RUN_OUTPUT_PATH } from '../../../../config';
 export const GET: RequestHandler = async ({ params }) => {
 	const { runId, layer } = params;
 	const layerPath = path.join(RUN_OUTPUT_PATH(runId), layer);
-	console.log(layerPath);
 
 	try {
 		const fileContent = Uint8Array.from(await fs.readFile(layerPath));
@@ -18,10 +17,10 @@ export const GET: RequestHandler = async ({ params }) => {
 				'Cache-Control': 'no-cache', // Don't cache run outputs as they're temporary
 			},
 		});
-	} catch (error) {
-		if (error instanceof Error && 'code' in error && error.code === 'ENOENT') {
-			return new Response('Layer file not found', { status: 404 });
+	} catch (err) {
+		if (err instanceof Error && 'code' in err && err.code === 'ENOENT') {
+			throw error(404, 'Layer file not found');
 		}
-		return new Response('Failed to load layer file', { status: 500 });
+		throw error(500, 'Failed to load layer file');
 	}
 };

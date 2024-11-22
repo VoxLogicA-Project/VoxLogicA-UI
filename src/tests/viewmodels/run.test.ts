@@ -1,8 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { runViewModel } from '$lib/viewmodels/run.svelte';
 import { apiRepository } from '$lib/models/repository';
-import type { Case, PresetScript, Run } from '$lib/models/types';
-import { layerViewModel } from '$lib/viewmodels/layer.svelte';
+import type { Case, PresetScript } from '$lib/models/types';
 
 // Mock the repository, fetch and layerViewModel
 vi.mock('$lib/models/repository', () => ({

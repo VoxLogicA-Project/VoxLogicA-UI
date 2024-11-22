@@ -1,5 +1,3 @@
-import "stdlib.imgql"
-
 //Function for computing the Dice-Soerensen index
 let dice(x,y) = (2 .*. volume(x & y)) ./. (volume(x) .+. volume(y))
 
@@ -15,15 +13,11 @@ let grow(a,b) = (a|touch(b,a))
 // -- note that ! is complement -- then enlarge by "r" again.
 let flt(r,a) = distlt(r,distgeq(r,!a))
 
-// Load data
-load imgFLAIR = "$INPUTDIR/$NAME_flair.nii.gz"
-
 // An image could have many attributes (e.g. RGB). We extract the intensity.
-let flair = intensity(imgFLAIR)
+let intensityFlair = intensity(flair)
 
 // Load the manual segmentation for comparison
-load imgManualSeg = "$INPUTDIR/$NAME_seg.nii.gz"
-let manualContouringGTV = intensity(imgManualSeg) >. 0
+let manualContouringGTV = intensity(seg) >. 0
 
 // Function diceM(x) computes the Dice-Soerensen score against the manual segmentation
 let diceM(x) = dice(x,manualContouringGTV)
@@ -32,14 +26,14 @@ let diceM(x) = dice(x,manualContouringGTV)
 // computes the local statistical similarity score (namely cross-correlation 
 // of a local histogram w.r.t. that of "target region" a) at each point.
 // We just fix some parameters (radius, number of bins, minimum and maximum values).
-let similarFLAIRTo(a) = crossCorrelation(3,flair,flair,a,min(flair),max(flair),20)
+let similarFLAIRTo(a) = crossCorrelation(3,intensityFlair,intensityFlair,a,min(intensityFlair),max(intensityFlair),20)
 
 // The actual analysis session starts here
 
 // 1. Normalisation
-let background = touch(flair <. 0.1,border)
+let background = touch(intensityFlair <. 0.1,border)
 let brain = !background
-let pflair = percentiles(flair,brain,0.5)
+let pflair = percentiles(intensityFlair,brain,0.5)
 
 // 2. Thresholding
 let hI = pflair >. 0.95 
@@ -64,7 +58,7 @@ print "04_dice_gtv" diceM(gtv)
 
 // Save the results growTum and gtv (uncomment the other lines to get the 
 // intermediate steps, keep them commented to save disk space).
-// save "$OUTPUTDIR/flair.nii.gz" flair
+// save "$OUTPUTDIR/intensityFlair.nii.gz" intensityFlair
 // save "$OUTPUTDIR/pflair.nii.gz" pflair
 // save "$OUTPUTDIR/hyperIntense.nii.gz" hyperIntense
 // save "$OUTPUTDIR/veryIntense.nii.gz" veryIntense

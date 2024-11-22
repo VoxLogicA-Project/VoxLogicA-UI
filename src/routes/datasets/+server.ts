@@ -1,7 +1,6 @@
 import { json, error } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import fs from 'fs/promises';
-import path from 'path';
 import { DATASET_PATH } from '../config';
 
 export const GET: RequestHandler = async () => {

@@ -1,8 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { layerViewModel } from '$lib/viewmodels/layer.svelte';
 import { apiRepository } from '$lib/models/repository';
-import { datasetViewModel } from '$lib/viewmodels/dataset.svelte';
-import { caseViewModel } from '$lib/viewmodels/case.svelte';
 import type { Case, Dataset, Layer } from '$lib/models/types';
 
 // Mock dependencies
