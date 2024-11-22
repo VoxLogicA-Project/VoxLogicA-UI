@@ -28,6 +28,8 @@ export class DatasetViewModel extends BaseViewModel {
 	}
 
 	async loadDatasets() {
+		this.reset();
+
 		this.setLoading(true);
 		this.setError(null);
 
@@ -35,6 +37,7 @@ export class DatasetViewModel extends BaseViewModel {
 			const datasets = await apiRepository.getDatasets();
 			this.state.available = datasets;
 		} catch (error) {
+			this.state.available = [];
 			this.setError(error instanceof Error ? error.message : 'Failed to load datasets');
 		} finally {
 			this.setLoading(false);
@@ -47,7 +50,8 @@ export class DatasetViewModel extends BaseViewModel {
 		layerViewModel.reset();
 	}
 
-	clearDataset() {
+	reset() {
+		this.state.available = [];
 		this.state.selected = null;
 		caseViewModel.reset();
 		layerViewModel.reset();

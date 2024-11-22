@@ -73,6 +73,7 @@ export class RunViewModel extends BaseViewModel {
 			const code = await apiRepository.getPresetScriptCode(preset);
 			this.state.editorContent = code;
 		} catch (error) {
+			this.state.availablePresets = [];
 			this.setError(error instanceof Error ? error.message : 'Failed to load preset script');
 		} finally {
 			this.setLoading(false);
@@ -190,6 +191,8 @@ export class RunViewModel extends BaseViewModel {
 	reset() {
 		this.state.history = [];
 		this.state.layersStates = [];
+		this.state.availablePresets = [];
+		this.state.editorContent = '';
 		this.setError(null);
 		this.setLoading(false);
 	}

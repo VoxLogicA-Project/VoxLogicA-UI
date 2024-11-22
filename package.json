@@ -9,16 +9,23 @@
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
 		"format": "prettier --write .",
-		"format:check": "prettier --check ."
+		"format:check": "prettier --check .",
+		"test": "vitest",
+		"test:coverage": "vitest run --coverage",
+		"test:ui": "vitest --ui"
 	},
 	"devDependencies": {
-		"@skeletonlabs/skeleton": "2.10.3",
-		"@skeletonlabs/tw-plugin": "0.4.0",
+		"@skeletonlabs/skeleton": "^2.10.3",
+		"@skeletonlabs/tw-plugin": "^0.4.0",
 		"@sveltejs/adapter-auto": "^3.3.1",
 		"@sveltejs/kit": "^2.8.1",
 		"@sveltejs/vite-plugin-svelte": "^4.0.1",
+		"@testing-library/jest-dom": "^6.6.3",
+		"@testing-library/svelte": "^5.2.6",
 		"@types/node": "22.9.0",
+		"@vitest/coverage-v8": "2.1.5",
 		"autoprefixer": "10.4.20",
+		"jsdom": "^25.0.1",
 		"postcss": "8.4.49",
 		"prettier": "^3.3.3",
 		"prettier-plugin-svelte": "^3.2.8",
@@ -27,7 +34,7 @@
 		"tailwindcss": "3.4.15",
 		"typescript": "^5.6.3",
 		"vite": "^5.4.11",
-		"vite-plugin-tailwind-purgecss": "0.3.3"
+		"vitest": "^2.1.5"
 	},
 	"type": "module",
 	"packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e",
@@ -36,6 +43,7 @@
 		"@lezer/highlight": "^1.2.1",
 		"@niivue/niivue": "^0.46.0",
 		"codemirror": "^6.0.1",
-		"svelte-awesome-color-picker": "^3.1.4"
+		"svelte-awesome-color-picker": "^3.1.4",
+		"vite-plugin-tailwind-purgecss": "^0.3.3"
 	}
 }
