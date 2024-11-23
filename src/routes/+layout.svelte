@@ -29,6 +29,15 @@
 				uiViewModel.isDarkMode = false;
 			}
 		});
+
+		// Add beforeunload event listener
+		window.addEventListener('beforeunload', (event) => {
+			// Check if there are unsaved changes
+			if (uiViewModel.hasUnsavedChanges) {
+				event.preventDefault();
+				event.returnValue = ''; // This is required for Chrome to show the warning
+			}
+		});
 	});
 
 	let { children } = $props();

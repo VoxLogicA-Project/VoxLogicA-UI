@@ -6,6 +6,7 @@ interface UIState {
 	scriptSidebarCollapsed: boolean;
 	bottomPanelTab: string;
 	isDarkMode: boolean;
+	hasUnsavedChanges: boolean;
 }
 
 export class UIViewModel extends BaseViewModel {
@@ -15,11 +16,20 @@ export class UIViewModel extends BaseViewModel {
 		scriptSidebarCollapsed: false,
 		bottomPanelTab: 'layers',
 		isDarkMode: false,
+		hasUnsavedChanges: false,
 	});
 
 	// State Access Methods
 	getState() {
 		return this.state;
+	}
+
+	get hasUnsavedChanges() {
+		return this.state.hasUnsavedChanges;
+	}
+
+	set hasUnsavedChanges(value: boolean) {
+		this.state.hasUnsavedChanges = value;
 	}
 
 	// Sidebar Collapse State Management

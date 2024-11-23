@@ -11,12 +11,30 @@
 	import { runViewModel } from '$lib/viewmodels/run.svelte';
 	import { uiViewModel } from '$lib/viewmodels/ui.svelte';
 
-	// Log every change to viewmodels
-	// $inspect(datasetViewModel.getState());
-	// $inspect(caseViewModel.getState());
-	// $inspect(layerViewModel.getState());
-	// $inspect(runViewModel.getState());
-	// $inspect(uiViewModel.getState());
+	// Check for unsaved changes. Might be improved by editing the UI state changes in the viewmodels themselves.
+	$effect(() => {
+		const datasetSelected = datasetViewModel.selectedDataset;
+		const caseSelected = caseViewModel.selectedCases.length > 0;
+		const layerSelected = Object.values(layerViewModel.getState().selected).some(
+			(layers) => layers.length > 0
+		);
+		const editorChanged = runViewModel.editorContent;
+		const runHistory = runViewModel.history.length > 0;
+		const runLayersStates = runViewModel.layerStates.some((state) =>
+			Object.values(state.getState().selected).some((layers) => layers.length > 0)
+		);
+
+		if (
+			datasetSelected ||
+			caseSelected ||
+			layerSelected ||
+			editorChanged ||
+			runHistory ||
+			runLayersStates
+		) {
+			uiViewModel.hasUnsavedChanges = true;
+		}
+	});
 </script>
 
 <div class="h-screen w-screen flex overflow-hidden bg-surface-50-900-token">
