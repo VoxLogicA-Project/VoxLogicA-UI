@@ -163,16 +163,16 @@
 	<div class="flex flex-col gap-2">
 		<div class="flex items-center gap-3">
 			<div class="w-6 flex justify-center">
-				<i class="fa-solid fa-circle-check text-primary-500"></i>
+				<i class="fa-solid fa-circle-check text-surface-300/70"></i>
 			</div>
-			<span>Layer is visible, click to hide</span>
+			<span>Layer is hidden, click to show</span>
 		</div>
 
 		<div class="flex items-center gap-3">
 			<div class="w-6 flex justify-center">
-				<i class="fa-solid fa-circle-check text-surface-300/70"></i>
+				<i class="fa-solid fa-circle-check text-primary-500"></i>
 			</div>
-			<span>Layer is hidden, click to show</span>
+			<span>Layer is visible, click to hide</span>
 		</div>
 
 		<div class="flex items-center gap-3">

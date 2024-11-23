@@ -55,9 +55,10 @@
 								class="w-full h-full variant-soft-surface flex flex-col items-center justify-center gap-2"
 							>
 								<i class="fa-solid fa-layer-group text-4xl text-surface-400-500-token"></i>
-								<p class="text-sm text-surface-400-500-token text-center px-4">
-									Add layers to this case to view images
-								</p>
+								<div class="flex items-center gap-3 text-surface-600-300-token text-center px-4">
+									<p>Add layers from the below panel to view images</p>
+									<i class="fa-solid fa-arrow-down text-2xl animate-pulse"></i>
+								</div>
 							</div>
 						{/if}
 					</div>
