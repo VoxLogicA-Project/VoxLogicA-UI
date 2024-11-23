@@ -97,7 +97,7 @@
 
 	// Reinitialize/destroy header editor when uncollapsed/collapsed
 	$effect(() => {
-		if (!isHeaderCollapsed && !headerView && layerViewModel.uniqueLayersNames) {
+		if (!isHeaderCollapsed && !headerView && layerViewModel.uniqueLayersIds) {
 			initHeaderCodeBlock();
 		} else if (isHeaderCollapsed && headerView) {
 			headerView.destroy();

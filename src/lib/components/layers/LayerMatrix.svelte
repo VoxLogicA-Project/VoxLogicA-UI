@@ -184,7 +184,7 @@
 
 		<div class="flex items-center gap-3">
 			<div class="w-6 flex justify-center">
-				<i class="fa-solid fa-check-to-slot text-primary-500"></i>
+				<i class="fa-solid fa-check-to-slot text-surface-300/70"></i>
 			</div>
 			<span>Click to toggle layer visibility for all cases</span>
 		</div>
