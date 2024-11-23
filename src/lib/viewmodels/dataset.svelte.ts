@@ -15,6 +15,7 @@ export class DatasetViewModel extends BaseViewModel {
 		selected: null,
 	});
 
+	// State Access Methods
 	getState() {
 		return this.state;
 	}
@@ -27,9 +28,9 @@ export class DatasetViewModel extends BaseViewModel {
 		return this.state.selected;
 	}
 
+	// Dataset Loading Methods
 	async loadDatasets() {
 		this.reset();
-
 		this.setLoading(true);
 		this.setError(null);
 
@@ -44,12 +45,14 @@ export class DatasetViewModel extends BaseViewModel {
 		}
 	}
 
+	// Dataset Selection Methods
 	selectDataset(dataset: Dataset) {
 		this.state.selected = dataset;
 		caseViewModel.loadCases();
 		layerViewModel.reset();
 	}
 
+	// State Management
 	reset() {
 		this.state.available = [];
 		this.state.selected = null;

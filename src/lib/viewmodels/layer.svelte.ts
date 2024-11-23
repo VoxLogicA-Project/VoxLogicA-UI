@@ -19,11 +19,17 @@ export class LayerViewModel extends BaseViewModel {
 		styles: {},
 	});
 
+	// State Access Methods
 	getState() {
 		return this.state;
 	}
 
-	getLayerFromId(caseId: string, layerId: string) {
+	get styles() {
+		return this.state.styles;
+	}
+
+	// Layer Lookup Methods
+	getAvailableLayerFromId(caseId: string, layerId: string) {
 		return this.state.availableByCase[caseId]?.find((l) => l.id === layerId);
 	}
 
@@ -31,11 +37,7 @@ export class LayerViewModel extends BaseViewModel {
 		return this.state.selected[caseId]?.find((l) => l.id === layerId);
 	}
 
-	get styles() {
-		// For the colorPicker to bind
-		return this.state.styles;
-	}
-
+	// Derived Properties
 	uniqueLayersIds = $derived.by(() => {
 		const layerIds = new Set<string>();
 		caseViewModel.selectedCases.forEach((caseData) => {
@@ -47,6 +49,17 @@ export class LayerViewModel extends BaseViewModel {
 		return Array.from(layerIds);
 	});
 
+	selectedLayersForCase = $derived((caseId: string) => this.state.selected[caseId] || []);
+
+	selectedLayersWithColorMapsForCase = $derived((caseId: string) => {
+		const layers = this.selectedLayersForCase(caseId);
+		return layers.map((layer) => ({
+			layer,
+			colorMap: this.state.styles[layer.id],
+		}));
+	});
+
+	// Layer Loading Methods
 	async loadLayersFromDataset(caseData: Case) {
 		const dataset = datasetViewModel.selectedDataset;
 		if (!dataset) return;
@@ -80,6 +93,7 @@ export class LayerViewModel extends BaseViewModel {
 		this.state.availableByCase[caseData.id] = runOutputLayers;
 	}
 
+	// Layer Selection Methods
 	selectLayer(caseId: string, layer: Layer) {
 		this.state.selected[caseId] = [...(this.state.selected[caseId] || []), layer];
 	}
@@ -118,6 +132,7 @@ export class LayerViewModel extends BaseViewModel {
 		});
 	}
 
+	// Layer State Check Methods
 	isLayerSelectedForCase(caseId: string, layerId: string) {
 		return this.state.selected[caseId]?.some((l) => l.id === layerId);
 	}
@@ -129,25 +144,15 @@ export class LayerViewModel extends BaseViewModel {
 		);
 	}
 
-	selectedLayersForCase = $derived((caseId: string) => this.state.selected[caseId] || []);
+	// Style Management Methods
+	setLayerStyleColor(layerId: string, colorMap: ColorMap) {
+		this.state.styles[layerId] = colorMap;
+	}
 
-	selectedLayersWithColorMapsForCase = $derived((caseId: string) => {
-		const layers = this.selectedLayersForCase(caseId);
-		return layers.map((layer) => ({
-			layer,
-			colorMap: this.layerStyle(layer.id),
-		}));
-	});
-
+	// Cleanup Methods
 	removeCaseLayers(caseId: string) {
 		delete this.state.availableByCase[caseId];
 		delete this.state.selected[caseId];
-	}
-
-	layerStyle = $derived((layerId: string) => this.state.styles[layerId]);
-
-	setLayerStyleColor(layerId: string, colorMap: ColorMap) {
-		this.state.styles[layerId] = colorMap;
 	}
 
 	reset() {

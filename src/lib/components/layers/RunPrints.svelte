@@ -4,7 +4,7 @@
 	import { uiViewModel } from '$lib/viewmodels/ui.svelte';
 
 	// Get prints for the current run
-	const prints = $derived.by(() => {
+	const runPrints = $derived.by(() => {
 		if (uiViewModel.bottomPanelRunIndex === -1) return [];
 		return runViewModel.history[uiViewModel.bottomPanelRunIndex]?.map((run) => ({
 			caseId: run.case.id,
@@ -35,10 +35,10 @@
 		<i class="fa-solid {isExpanded ? 'fa-chevron-up' : 'fa-chevron-down'}"></i>
 	</button>
 
-	{#if isExpanded && prints.length > 0}
+	{#if isExpanded && runPrints.length > 0}
 		<!-- Output of the current run -->
 		<div class="p-4 space-y-4">
-			{#each prints as { caseId, prints: casePrints, error }}
+			{#each runPrints as { caseId, prints, error }}
 				<div>
 					<h3 class="text-sm font-medium mb-2">Case: {caseId}</h3>
 					{#if error}
@@ -47,9 +47,9 @@
 						>
 							{error}
 						</div>
-					{:else if casePrints.length > 0}
+					{:else if prints.length > 0}
 						<div class="bg-surface-200-700-token/50 px-3 rounded text-sm font-mono select-text">
-							{#each casePrints as print}
+							{#each prints as print}
 								<div>{formatPrint(print)}</div>
 							{/each}
 						</div>

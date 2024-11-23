@@ -17,10 +17,12 @@ export class UIViewModel extends BaseViewModel {
 		isDarkMode: false,
 	});
 
+	// State Access Methods
 	getState() {
 		return this.state;
 	}
 
+	// Sidebar Collapse State Management
 	get datasetSidebarCollapsed() {
 		return this.state.datasetSidebarCollapsed;
 	}
@@ -45,8 +47,13 @@ export class UIViewModel extends BaseViewModel {
 		this.state.scriptSidebarCollapsed = value;
 	}
 
+	// Bottom Panel Management
 	get bottomPanelTab() {
 		return this.state.bottomPanelTab;
+	}
+
+	set bottomPanelTab(value: string) {
+		this.state.bottomPanelTab = value;
 	}
 
 	get bottomPanelRunIndex() {
@@ -56,10 +63,7 @@ export class UIViewModel extends BaseViewModel {
 		return -1;
 	}
 
-	set bottomPanelTab(value: string) {
-		this.state.bottomPanelTab = value;
-	}
-
+	// Theme Management
 	get isDarkMode() {
 		return this.state.isDarkMode;
 	}
@@ -69,12 +73,10 @@ export class UIViewModel extends BaseViewModel {
 	}
 
 	toggleDarkMode() {
-		this.state.isDarkMode = !this.state.isDarkMode;
-		if (typeof document !== 'undefined') {
-			document.documentElement.classList.toggle('dark', this.state.isDarkMode);
-		}
+		this.isDarkMode = !this.isDarkMode;
 	}
 
+	// State Management
 	reset() {
 		this.state.datasetSidebarCollapsed = false;
 		this.state.layerSidebarCollapsed = false;

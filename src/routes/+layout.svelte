@@ -10,13 +10,9 @@
 	initializeStores();
 	storePopup.set({ computePosition, autoUpdate, offset, shift, flip, arrow });
 
-	// Initialize theme based on system preference
+	// Change theme based on system preference
 	$effect(() => {
-		if (uiViewModel.isDarkMode) {
-			document.documentElement.classList.add('dark');
-		} else {
-			document.documentElement.classList.remove('dark');
-		}
+		document.documentElement.classList.toggle('dark', uiViewModel.isDarkMode);
 	});
 
 	onMount(() => {

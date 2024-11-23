@@ -18,6 +18,7 @@ export class RunViewModel extends BaseViewModel {
 		layersStates: [],
 	});
 
+	// State Access Methods
 	getState() {
 		return this.state;
 	}
@@ -38,6 +39,7 @@ export class RunViewModel extends BaseViewModel {
 		return this.state.editorContent;
 	}
 
+	// Script Content Management
 	headerContent = $derived.by(() => {
 		const layersIds = layerViewModel.uniqueLayersIds;
 		return `import "stdlib.imgql"\n\n// Load layers\n${layersIds
@@ -51,6 +53,11 @@ export class RunViewModel extends BaseViewModel {
 		return this.headerContent + '\n\n' + this.state.editorContent;
 	}
 
+	saveEditorContent(content: string) {
+		this.state.editorContent = content;
+	}
+
+	// Preset Management
 	async loadPresets() {
 		this.setLoading(true);
 		this.setError(null);
@@ -80,10 +87,7 @@ export class RunViewModel extends BaseViewModel {
 		}
 	}
 
-	saveEditorContent(content: string) {
-		this.state.editorContent = content;
-	}
-
+	// Run Execution Methods
 	private async singleRun(case_: Case): Promise<Run> {
 		const response = await fetch('/run', {
 			method: 'POST',
@@ -166,6 +170,7 @@ export class RunViewModel extends BaseViewModel {
 		}
 	}
 
+	// Layer Selection Derived Properties
 	selectedLayersForCase = $derived((caseId: string) => {
 		const allSelectedLayers: Layer[] = [];
 		this.state.layersStates.forEach((state) => {
@@ -197,6 +202,7 @@ export class RunViewModel extends BaseViewModel {
 		return this.state.layersStates[runIndex]?.uniqueLayersIds || [];
 	});
 
+	// State Management
 	reset() {
 		this.state.history = [];
 		this.state.layersStates = [];

@@ -17,6 +17,7 @@ export class CaseViewModel extends BaseViewModel {
 		maxCases: 16,
 	});
 
+	// State Access Methods
 	getState() {
 		return this.state;
 	}
@@ -33,6 +34,7 @@ export class CaseViewModel extends BaseViewModel {
 		return this.state.maxCases;
 	}
 
+	// Case Loading Methods
 	async loadCases() {
 		this.reset();
 
@@ -52,6 +54,7 @@ export class CaseViewModel extends BaseViewModel {
 		}
 	}
 
+	// Case Selection Methods
 	selectCase(caseData: Case) {
 		if (this.state.selected.length >= this.state.maxCases) {
 			this.setError(`Cannot select more than ${this.state.maxCases} cases`);
@@ -83,6 +86,7 @@ export class CaseViewModel extends BaseViewModel {
 		}
 	}
 
+	// Selection State Derived Properties
 	canSelectMore = $derived(() => this.state.selected.length < this.state.maxCases);
 
 	isSelected = $derived((caseData: Case) => this.state.selected.some((c) => c.id === caseData.id));
@@ -91,6 +95,7 @@ export class CaseViewModel extends BaseViewModel {
 		this.state.selected.findIndex((c) => c.id === caseData.id)
 	);
 
+	// State Management
 	reset() {
 		this.state.available = [];
 		this.state.selected = [];

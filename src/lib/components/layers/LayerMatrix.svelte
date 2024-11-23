@@ -119,7 +119,7 @@
 										</div>
 									</td>
 									{#each uniqueLayers as layerId}
-										{@const layer = layerState.getLayerFromId(case_.id, layerId)}
+										{@const layer = layerState.getAvailableLayerFromId(case_.id, layerId)}
 										{@const isAvailable = layer !== undefined}
 										<td class="w-32 text-center align-middle px-4 border-b border-surface-500/30">
 											<button
