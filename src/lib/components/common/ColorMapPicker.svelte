@@ -7,7 +7,22 @@
 	const popupId = `colormap-picker-${id}`;
 
 	// Predefined colormap names (Niivue compatible)
-	const presetColorMaps = ['gray', 'red'];
+	const presetColorMaps = [
+		// Structural/Anatomical data
+		'gray',
+		'bone',
+		// Diverging/Emphasizing layers
+		'blue2red',
+		'green2orange',
+		'cool',
+		'hot',
+		// Functional data
+		'viridis',
+		'plasma',
+		'magma',
+		'inferno',
+		'cividis',
+	];
 	function createCustomColorMap(r: number, g: number, b: number) {
 		const colorMap = {
 			R: [0, 1, r],
