@@ -145,7 +145,7 @@
 		updateLayerStyles(layerViewModel.selectedLayersWithColorMapsForCase(case_.id));
 		updateLayerStyles(runViewModel.selectedLayersWithColorMapsForCase(case_.id));
 
-		nv.updateGLVolume();
+		nv.updateColormaps();
 	}
 
 	onDestroy(() => {
