@@ -38,6 +38,15 @@
 			<div class="p-8 flex justify-center">
 				<ProgressRadial width="w-8" />
 			</div>
+		{:else if uniqueLayers.length === 0}
+			<div
+				class="p-8 flex justify-center items-center text-center text-surface-600 dark:text-surface-400"
+			>
+				<div class="flex flex-col gap-2">
+					<i class="fa-solid fa-layer-group text-3xl"></i>
+					<p>No layers available. Try loading different cases to view their layers.</p>
+				</div>
+			</div>
 		{:else}
 			<div class="px-4 relative h-full flex flex-col">
 				{#if uiViewModel.bottomPanelRunIndex !== -1}
