@@ -23,6 +23,27 @@
 		'inferno',
 		'cividis',
 	];
+
+	// Add mapping for preset colors with gradients
+	const presetColorMapping: Record<string, string> = {
+		gray: 'linear-gradient(to right, #666666B3, #ffffffB3)',
+		bone: 'linear-gradient(to right, #5b7ba5B3, #e8f0ffB3)',
+		blue2red: 'linear-gradient(to right, #0000ffB3, #ff0000B3)',
+		green2orange: 'linear-gradient(to right, #00ff00B3, #ffa500B3)',
+		cool: 'linear-gradient(to right, #00ffffB3, #ff00ffB3)',
+		hot: 'linear-gradient(to right, #000000B3, #ff0000B3, #ffff00B3, #ffffffB3)',
+		viridis:
+			'linear-gradient(to right, #440154B3, #414487B3, #2a788eB3, #22a884B3, #7ad151B3, #fde725B3)',
+		plasma:
+			'linear-gradient(to right, #0d0887B3, #6a00a8B3, #b12a90B3, #e16462B3, #fca636B3, #f0f921B3)',
+		magma:
+			'linear-gradient(to right, #000004B3, #3b0f70B3, #8c2981B3, #de4968B3, #fe9f6dB3, #fcfdbfB3)',
+		inferno:
+			'linear-gradient(to right, #000004B3, #420a68B3, #932667B3, #dd513aB3, #fca50aB3, #fcffa4B3)',
+		cividis:
+			'linear-gradient(to right, #002051B3, #322682B3, #6b4c9fB3, #9b7abaB3, #cabfd6B3, #fde4a6B3)',
+	};
+
 	function createCustomColorMap(r: number, g: number, b: number) {
 		const colorMap = {
 			R: [0, 1, r],
@@ -63,7 +84,9 @@
 			closeQuery: '.popup-close',
 		}}
 		class="btn-icon variant-soft hover:!bg-gradient-to-r hover:!from-[#8B0000B3] hover:!via-[#006400B3] hover:!to-[#00008BB3] hover:!text-white w-8 h-8 !rounded-md"
-		style="background: rgb({value?.R?.[2] ?? 255}, {value?.G?.[2] ?? 255}, {value?.B?.[2] ?? 255})"
+		style="background: {typeof value === 'string'
+			? (presetColorMapping[value] ?? 'rgb(255, 255, 255)')
+			: `rgb(${value?.R?.[2] ?? 255}, ${value?.G?.[2] ?? 255}, ${value?.B?.[2] ?? 255})`}"
 		aria-label="Color Map Picker"
 	>
 		<i
