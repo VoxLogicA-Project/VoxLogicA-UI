@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { layerViewModel } from '$lib/viewmodels/layer.svelte';
 import { apiRepository } from '$lib/models/repository';
-import type { Case, Dataset, Layer } from '$lib/models/types';
+import type { Case, ColorMap, Dataset, Layer } from '$lib/models/types';
 
 // Mock dependencies
 vi.mock('$lib/models/repository', () => ({
@@ -59,9 +59,7 @@ describe('LayerViewModel', () => {
 
 			// Assert
 			mockLayers.forEach((layer) => {
-				expect(layerViewModel.layerStyle(layer.id)).toEqual({
-					color: { r: 255, g: 255, b: 255, a: 1 },
-				});
+				expect(layerViewModel.styles[layer.id]).toBe('gray');
 			});
 		});
 	});
@@ -106,14 +104,20 @@ describe('LayerViewModel', () => {
 		it('should set and get layer style color', () => {
 			// Arrange
 			const layerId = 'layer1';
-			const newColor = { r: 100, g: 150, b: 200, a: 0.5 };
-			layerViewModel.getState().styles[layerId] = { color: { r: 255, g: 255, b: 255, a: 1 } };
+			const newColorMap: ColorMap = {
+				R: [100],
+				G: [150],
+				B: [200],
+				A: [0.5],
+				I: [1.0],
+			};
+			layerViewModel.getState().styles[layerId] = 'gray';
 
 			// Act
-			layerViewModel.setLayerStyleColor(layerId, newColor);
+			layerViewModel.setLayerStyleColor(layerId, newColorMap);
 
 			// Assert
-			expect(layerViewModel.layerStyle(layerId).color).toEqual(newColor);
+			expect(layerViewModel.styles[layerId]).toEqual(newColorMap);
 		});
 	});
 
