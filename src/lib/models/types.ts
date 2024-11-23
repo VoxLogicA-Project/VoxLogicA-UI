@@ -1,5 +1,3 @@
-import type { RgbaColor } from 'svelte-awesome-color-picker';
-
 export interface Dataset {
 	id: string;
 	layout: string;
@@ -10,14 +8,18 @@ export interface Case {
 	path: string;
 }
 
-// TODO: Add name so that we can fix run having layers with same ID
 export interface Layer {
 	id: string;
+	name: string;
 	path: string;
 }
 
-export interface LayerStyle {
-	color?: RgbaColor;
+export interface ColorMap {
+	R: number[];
+	G: number[];
+	B: number[];
+	A: number[];
+	I: number[];
 }
 
 export interface PresetScript {

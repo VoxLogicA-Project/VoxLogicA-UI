@@ -1,5 +1,5 @@
 import { BaseViewModel } from './base.svelte';
-import type { Case, Layer, LayerStyle, PresetScript, Run } from '$lib/models/types';
+import type { Case, ColorMap, Layer, PresetScript, Run } from '$lib/models/types';
 import { LayerViewModel, layerViewModel } from './layer.svelte';
 import { apiRepository } from '$lib/models/repository';
 
@@ -39,10 +39,10 @@ export class RunViewModel extends BaseViewModel {
 	}
 
 	headerContent = $derived.by(() => {
-		const layersIds = layerViewModel.uniqueLayersIds;
-		return `import "stdlib.imgql"\n\n// Load layers\n${layersIds
-			.map((layerId) => {
-				return `load ${layerId} = "\$\{LAYER_PATH:${layerId}\}"`;
+		const layersNames = layerViewModel.uniqueLayersNames;
+		return `import "stdlib.imgql"\n\n// Load layers\n${layersNames
+			.map((layerName) => {
+				return `load ${layerName} = "\$\{LAYER_PATH:${layerName}\}"`;
 			})
 			.join('\n')}`;
 	});
@@ -175,17 +175,17 @@ export class RunViewModel extends BaseViewModel {
 		return allSelectedLayers;
 	});
 
-	selectedLayersWithStylesForCase = $derived((caseId: string) => {
-		const allSelectedLayersWithStyles: { layer: Layer; style: LayerStyle }[] = [];
+	selectedLayersWithColorMapsForCase = $derived((caseId: string) => {
+		const allSelectedLayersWithColorMaps: { layer: Layer; colorMap: ColorMap | string }[] = [];
 		this.state.layersStates.forEach((state) => {
-			const layersWithStyles = state.selectedLayersWithStylesForCase(caseId);
-			allSelectedLayersWithStyles.push(...layersWithStyles);
+			const layersWithColorMaps = state.selectedLayersWithColorMapsForCase(caseId);
+			allSelectedLayersWithColorMaps.push(...layersWithColorMaps);
 		});
-		return allSelectedLayersWithStyles;
+		return allSelectedLayersWithColorMaps;
 	});
 
-	uniqueLayerIdsByRun = $derived((runIndex: number) => {
-		return this.state.layersStates[runIndex]?.uniqueLayersIds || [];
+	uniqueLayerNamesByRun = $derived((runIndex: number) => {
+		return this.state.layersStates[runIndex]?.uniqueLayersNames || [];
 	});
 
 	reset() {

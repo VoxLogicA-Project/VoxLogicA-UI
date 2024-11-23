@@ -33,20 +33,21 @@ export const GET: RequestHandler = async ({ params, fetch }) => {
 	// Parse the layers
 	const layers: Layer[] = [];
 	for (const file of files.filter((file) => file.endsWith('.nii.gz'))) {
-		let layer_id = file.match(new RegExp(`${params.case}_(.+)\\.nii\\.gz$`));
+		let displayName = file.match(new RegExp(`${params.case}_(.+)\\.nii\\.gz$`));
 		let filename = file.match(/(.+)\.nii\.gz$/);
 
-		if (!layer_id) {
-			layer_id = filename;
+		if (!displayName) {
+			displayName = filename;
 		}
 
-		if (!layer_id || !filename) {
+		if (!displayName || !filename) {
 			console.error(`Skipping invalid filename format: ${file}`);
 			continue;
 		}
 
 		layers.push({
-			id: layer_id[1],
+			id: filename[1],
+			name: displayName[1],
 			path: `/datasets/${params.dataset}/cases/${params.case}/layers/${file}`,
 		});
 	}

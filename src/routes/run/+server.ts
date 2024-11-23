@@ -173,7 +173,8 @@ export const POST: RequestHandler = async ({ request, fetch }) => {
 
 		// Convert VoxLogicA layers to Layer objects
 		const layers = voxlogicaResult.layers.map((layer) => ({
-			id: layer.name,
+			id: `${runId}_${layer.name}`,
+			name: layer.name,
 			path: `/run/${runId}/layers/${layer.name}.nii.gz`,
 		}));
 

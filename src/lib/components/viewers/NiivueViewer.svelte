@@ -3,8 +3,7 @@
 	import { browser } from '$app/environment';
 	import { layerViewModel } from '$lib/viewmodels/layer.svelte';
 	import { runViewModel } from '$lib/viewmodels/run.svelte';
-	import type { Case } from '$lib/models/types';
-	import type { RgbaColor } from 'svelte-awesome-color-picker';
+	import type { Case, ColorMap } from '$lib/models/types';
 
 	const { case_ } = $props<{ case_: Case }>();
 
@@ -15,14 +14,12 @@
 	let isInitialized = $state(false);
 	let loadingOperationCounter = $state(0);
 
-	function rgbaColorToColorMap(rgbaColor: RgbaColor) {
-		return {
-			R: [0, 1, rgbaColor.r],
-			G: [0, 1, rgbaColor.g],
-			B: [0, 1, rgbaColor.b],
-			A: [0, 255, 255],
-			I: [0, 1, 255],
-		};
+	function setColorMap(layerId: string, colorMap: ColorMap | string) {
+		if (!isInitialized) return;
+
+		if (typeof colorMap === 'string') return colorMap;
+		nv.addColormap(layerId, colorMap);
+		return layerId;
 	}
 
 	onMount(async () => {
@@ -61,7 +58,7 @@
 				// Debounce loading layers to avoid multiple re-renders
 				const timeoutId = setTimeout(() => {
 					loadAllLayers(++loadingOperationCounter);
-				}, 500);
+				}, 1000);
 
 				return () => {
 					clearTimeout(timeoutId);
@@ -82,25 +79,32 @@
 	});
 
 	async function loadAllLayers(operationId: number) {
-		// TODO: we can still further improve it by not re-loading layers that didn't change
 		if (!nv) return;
 		if (operationId !== loadingOperationCounter) return;
 
 		try {
-			nv.volumes = [];
+			// Get current and desired layers
+			const currentVolumes = nv.volumes.map((vol: any) => vol.url);
+			const datasetLayers = layerViewModel.selectedLayersWithColorMapsForCase(case_.id);
+			const runLayers = runViewModel.selectedLayersWithColorMapsForCase(case_.id);
+			const desiredLayers = [...datasetLayers, ...runLayers];
 
-			// Load dataset layers
-			const datasetLayers = layerViewModel.selectedLayersWithStylesForCase(case_.id);
-			for (const { layer, style } of datasetLayers) {
-				const rgbaColor = style?.color;
-				await loadLayer(layer, rgbaColor);
+			// Remove layers that are no longer needed
+			const layersToRemove = currentVolumes.filter(
+				(url: string) => !desiredLayers.some((layer: any) => layer.layer.path === url)
+			);
+			for (const url of layersToRemove) {
+				const volumeIndex = nv.volumes.findIndex((vol: any) => vol.url === url);
+				if (volumeIndex !== -1) {
+					nv.removeVolumeByIndex(volumeIndex);
+				}
 			}
 
-			// Load run layers
-			const runLayers = runViewModel.selectedLayersWithStylesForCase(case_.id);
-			for (const { layer, style } of runLayers) {
-				const rgbaColor = style?.color;
-				await loadLayer(layer, rgbaColor);
+			// Add only new layers
+			for (const { layer, colorMap } of desiredLayers) {
+				if (!currentVolumes.includes(layer.path)) {
+					await loadLayer(layer, colorMap);
+				}
 			}
 
 			nv.drawScene();
@@ -109,18 +113,18 @@
 		}
 	}
 
-	async function loadLayer(layer: { id: string; path: string }, rgbaColor?: RgbaColor) {
-		if (!rgbaColor) {
+	async function loadLayer(layer: { id: string; path: string }, colorMap?: ColorMap | string) {
+		if (!colorMap) {
 			await nv.addVolumeFromUrl({
 				url: layer.path,
+				id: layer.id,
 			});
 		} else {
-			const layerColorMap = rgbaColorToColorMap(rgbaColor);
-			nv.addColormap(layer.id, layerColorMap);
+			const colorMapId = setColorMap(layer.id, colorMap);
 			await nv.addVolumeFromUrl({
 				url: layer.path,
-				opacity: rgbaColor.a,
-				colormap: layer.id,
+				colormap: colorMapId,
+				id: layer.id,
 			});
 		}
 	}
@@ -128,32 +132,20 @@
 	async function updateAllLayerStyles() {
 		if (!nv) return;
 
-		// Update main layers styles
-		const mainLayersStyles = layerViewModel.styles;
-		for (const [layerId, style] of Object.entries(mainLayersStyles)) {
-			const rgbaColor = style?.color;
-			if (rgbaColor) {
-				updateLayerStyle(layerId, rgbaColor);
-			}
-		}
-
-		// Update run layers styles
-		const runLayersStyles = runViewModel.layerStates.map((state) => state.styles);
-		for (const state of runLayersStyles) {
-			for (const [layerId, style] of Object.entries(state)) {
-				const rgbaColor = style?.color;
-				if (rgbaColor) {
-					updateLayerStyle(layerId, rgbaColor);
+		const updateLayerStyles = (layersWithColorMaps: any[]) => {
+			for (const { layer, colorMap } of layersWithColorMaps) {
+				const volumeIndex = nv.volumes.findIndex((vol: any) => vol.url === layer.path);
+				if (volumeIndex !== -1) {
+					const colorMapId = setColorMap(layer.id, colorMap);
+					nv.setColormap(nv.volumes[volumeIndex].id, colorMapId);
 				}
 			}
-		}
+		};
+
+		updateLayerStyles(layerViewModel.selectedLayersWithColorMapsForCase(case_.id));
+		updateLayerStyles(runViewModel.selectedLayersWithColorMapsForCase(case_.id));
 
 		nv.updateGLVolume();
-	}
-
-	function updateLayerStyle(layerId: string, rgbaColor: RgbaColor) {
-		const layerColorMap = rgbaColorToColorMap(rgbaColor);
-		nv.addColormap(layerId, layerColorMap);
 	}
 
 	onDestroy(() => {

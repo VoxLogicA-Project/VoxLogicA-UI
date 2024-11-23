@@ -1,15 +1,16 @@
 import { BaseViewModel } from './base.svelte';
 import { datasetViewModel } from './dataset.svelte';
-import type { Case, Layer, LayerStyle } from '$lib/models/types';
+import type { Case, Layer, ColorMap } from '$lib/models/types';
 import { apiRepository } from '$lib/models/repository';
 import { caseViewModel } from './case.svelte';
-import type { RgbaColor } from 'svelte-awesome-color-picker';
 
 export interface LayerState {
 	availableByCase: Record<string, Layer[]>;
 	selected: Record<string, Layer[]>;
-	styles: Record<string, LayerStyle>;
+	styles: Record<string, ColorMap | string>; // string is the name of the preset colormap
 }
+
+const defaultColorMap = 'gray';
 
 export class LayerViewModel extends BaseViewModel {
 	private state = $state<LayerState>({
@@ -22,20 +23,35 @@ export class LayerViewModel extends BaseViewModel {
 		return this.state;
 	}
 
+	getLayerIdFromName(layerName: string) {
+		// We trust that for each layer name there is only one layer id
+		// Remember: layer names were introduced to allow ids to be distinguished between runs.
+		const layerId = Object.values(this.state.availableByCase)
+			.flat()
+			.find((l) => l.name === layerName)?.id;
+		console.log('layerName', layerName);
+		console.log('layerId', layerId);
+		return layerId;
+	}
+
+	getSelectedLayerFromIds(caseId: string, layerId: string) {
+		return this.state.selected[caseId]?.find((l) => l.id === layerId);
+	}
+
 	get styles() {
 		// For the colorPicker to bind
 		return this.state.styles;
 	}
 
-	uniqueLayersIds = $derived.by(() => {
-		const layerIds = new Set<string>();
+	uniqueLayersNames = $derived.by(() => {
+		const layerNames = new Set<string>();
 		caseViewModel.selectedCases.forEach((caseData) => {
 			const caseLayers = this.state.availableByCase[caseData.id] || [];
 			caseLayers.forEach((layer) => {
-				layerIds.add(layer.id);
+				layerNames.add(layer.name);
 			});
 		});
-		return Array.from(layerIds);
+		return Array.from(layerNames);
 	});
 
 	async loadLayersFromDataset(caseData: Case) {
@@ -51,9 +67,7 @@ export class LayerViewModel extends BaseViewModel {
 			// Initialize default styles for new layers
 			layers.forEach((layer) => {
 				if (!this.state.styles[layer.id]) {
-					this.state.styles[layer.id] = {
-						color: { r: 255, g: 255, b: 255, a: 1 },
-					};
+					this.state.styles[layer.id] = defaultColorMap;
 				}
 			});
 
@@ -68,9 +82,7 @@ export class LayerViewModel extends BaseViewModel {
 	async loadLayersFromRun(caseData: Case, runOutputLayers: Layer[]) {
 		// Initialize default styles for new layers
 		runOutputLayers.forEach((layer) => {
-			this.state.styles[layer.id] = {
-				color: { r: 255, g: 255, b: 255, a: 1 },
-			};
+			this.state.styles[layer.id] = defaultColorMap;
 		});
 		this.state.availableByCase[caseData.id] = runOutputLayers;
 	}
@@ -126,11 +138,11 @@ export class LayerViewModel extends BaseViewModel {
 
 	selectedLayersForCase = $derived((caseId: string) => this.state.selected[caseId] || []);
 
-	selectedLayersWithStylesForCase = $derived((caseId: string) => {
+	selectedLayersWithColorMapsForCase = $derived((caseId: string) => {
 		const layers = this.selectedLayersForCase(caseId);
 		return layers.map((layer) => ({
 			layer,
-			style: this.layerStyle(layer.id),
+			colorMap: this.layerStyle(layer.id),
 		}));
 	});
 
@@ -141,8 +153,8 @@ export class LayerViewModel extends BaseViewModel {
 
 	layerStyle = $derived((layerId: string) => this.state.styles[layerId]);
 
-	setLayerStyleColor(layerId: string, color: RgbaColor | undefined) {
-		this.state.styles[layerId].color = color;
+	setLayerStyleColor(layerId: string, colorMap: ColorMap) {
+		this.state.styles[layerId] = colorMap;
 	}
 
 	getLayerFromId(caseId: string, layerId: string) {

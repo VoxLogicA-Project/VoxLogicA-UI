@@ -6,17 +6,17 @@
 	import RunPrints from '$lib/components/layers/RunPrints.svelte';
 	import { ProgressRadial } from '@skeletonlabs/skeleton';
 	import { uiViewModel } from '$lib/viewmodels/ui.svelte';
-	import ColorPicker from 'svelte-awesome-color-picker';
+	import ColorMapPicker from '$lib/components/common/ColorMapPicker.svelte';
 	import { popup } from '@skeletonlabs/skeleton';
 
 	// Show unique layers for the selected tab
 	let uniqueLayers = $derived.by(() => {
 		if (uiViewModel.bottomPanelTab === 'layers') {
-			return layerViewModel.uniqueLayersIds;
+			return layerViewModel.uniqueLayersNames;
 		}
 		const runIndex = parseInt(uiViewModel.bottomPanelTab.split('-')[1]);
 		if (isNaN(runIndex)) return [];
-		return runViewModel.uniqueLayerIdsByRun(runIndex);
+		return runViewModel.uniqueLayerNamesByRun(runIndex);
 	});
 
 	// Derive layer state based on the bottom panel tab
@@ -67,23 +67,12 @@
 										</button>
 									</div>
 								</th>
-								{#each uniqueLayers as layerId}
+								{#each uniqueLayers as layerName}
+									{@const layerId = layerState.getLayerIdFromName(layerName) || ''}
 									<th class="text-center p-2 border-b border-surface-500/30 font-medium">
 										<div class="flex flex-col items-center">
 											<div class:dark={uiViewModel.isDarkMode} title="Click to change layer color">
-												<ColorPicker
-													label=""
-													rgb={layerState.layerStyle(layerId)?.color}
-													on:input={(e) => {
-														if (uiViewModel.bottomPanelTab === 'layers') {
-															layerViewModel.setLayerStyleColor(layerId, e.detail.rgb);
-														} else {
-															runViewModel.layerStates[
-																uiViewModel.bottomPanelRunIndex
-															].setLayerStyleColor(layerId, e.detail.rgb);
-														}
-													}}
-												/>
+												<ColorMapPicker bind:value={layerState.styles[layerId]} id={layerId} />
 											</div>
 											<div class="flex items-center gap-1">
 												<button
@@ -100,7 +89,7 @@
 													title="Click to toggle layer visibility for all cases"
 												>
 													<span class="truncate text-surface-900 dark:text-surface-50">
-														{layerId.length > 20 ? '...' + layerId.slice(-20) : layerId}
+														{layerName.length > 20 ? '...' + layerName.slice(-20) : layerName}
 													</span>
 													<i
 														class="fa-solid fa-check-to-slot text-sm transition-colors duration-200
@@ -130,7 +119,8 @@
 											</span>
 										</div>
 									</td>
-									{#each uniqueLayers as layerId}
+									{#each uniqueLayers as layerName}
+										{@const layerId = layerState.getLayerIdFromName(layerName) || ''}
 										{@const layer = layerState.getLayerFromId(case_.id, layerId)}
 										{@const isAvailable = layer !== undefined}
 										<td class="w-32 text-center align-middle px-4 border-b border-surface-500/30">
@@ -203,13 +193,3 @@
 	</div>
 	<div class="arrow variant-filled-surface"></div>
 </div>
-
-<style>
-	.dark {
-		--cp-bg-color: #333;
-		--cp-border-color: white;
-		--cp-text-color: white;
-		--cp-input-color: #555;
-		--cp-button-hover-color: #777;
-	}
-</style>
