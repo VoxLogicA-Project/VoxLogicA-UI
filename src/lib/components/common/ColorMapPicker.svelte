@@ -49,10 +49,15 @@
 			placement: 'top',
 			closeQuery: '.popup-close',
 		}}
-		class="w-8 h-8 rounded-lg shadow-sm hover:shadow-md border border-surface-300-600-token"
+		class="w-8 h-8 rounded-lg shadow-sm hover:shadow-md border border-surface-300-600-token relative flex items-center justify-center group"
 		style="background: rgb({value?.R?.[2] ?? 255}, {value?.G?.[2] ?? 255}, {value?.B?.[2] ?? 255})"
 		aria-label="Color Map Picker"
 	>
+		<!-- Colored icon -->
+		<i
+			class="fa-solid fa-palette opacity-0 group-hover:opacity-80 transition-opacity absolute text-base p-0.5"
+			style="background: linear-gradient(135deg, #8B4513, #D2691E); -webkit-background-clip: text; -webkit-text-fill-color: transparent; transform: scale(1.1);"
+		></i>
 	</button>
 
 	<div class="card p-4 w-72 shadow-xl fixed" data-popup={popupId} style="z-index: 1000;">
