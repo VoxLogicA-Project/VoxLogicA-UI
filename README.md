@@ -8,17 +8,31 @@ This UI provides an intuitive way to work with neuroimaging data, currently supp
 
 ### Prerequisites
 
-- Node.js (v18 or later)
-- Yarn package manager
+- Node.js (v20 or later)
+- Yarn package manager (v1.22.22 or later)
 - curl (for downloading VoxLogicA binaries)
-- tar or unzip (depending on your OS)
+- unzip or tar (depending on your OS)
 
-### Installation
+### Development Environment
+
+If you have Docker installed, the easiest way to get started is using the provided Dev Container configuration:
+
+1. Install [Visual Studio Code](https://code.visualstudio.com/) and the [Dev Containers extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers)
+2. Clone the repository and open it in VS Code
+3. When prompted, click "Reopen in Container"
+4. The container will automatically:
+   - Set up the correct Node.js environment
+   - Install dependencies
+   - Download the appropriate VoxLogicA binary
+   - Configure VS Code with recommended extensions
+5. Run the development server with `yarn dev`
+
+### Manual Installation
 
 1. Clone the repository:
 
 ```bash
-git clone <repository-url>
+git clone https://github.com/CoffeeStraw/VoxLogica-UI/
 cd voxlogica-ui
 ```
 
@@ -29,7 +43,7 @@ cd voxlogica-ui
 touch .env
 ```
 
-2.1. Set the paths to your datasets, scripts and temporary outputs:
+Then set the paths to your datasets, scripts and temporary outputs in the `.env` file:
 
 ```bash
 DATASET_PATH=/path/to/your/datasets
@@ -45,49 +59,7 @@ yarn install
 
 4. Set up VoxLogicA binary:
 
-**Windows:**
-
-```powershell
-# Create directories
-mkdir -p static/bin/windows
-
-# Download and extract
-curl https://github.com/vincenzoml/VoxLogicA/releases/download/v1.3.3-experimental/VoxLogicA_1.3.3-experimental_win-x64.zip -o voxlogica.zip
-tar -xf voxlogica.zip
-mv VoxLogicA_1.3.3-experimental_win-x64/* static/bin/windows/
-rm -r VoxLogicA_1.3.3-experimental_win-x64
-rm voxlogica.zip
-```
-
-**Linux:**
-
-```bash
-# Create directories
-mkdir -p static/bin/linux
-
-# Download and extract
-curl https://github.com/vincenzoml/VoxLogicA/releases/download/v1.3.3-experimental/VoxLogicA_1.3.3-experimental_linux-x64.zip -o voxlogica.zip
-unzip voxlogica.zip
-mv VoxLogicA_1.3.3-experimental_linux-x64/* static/bin/linux/
-rm -r VoxLogicA_1.3.3-experimental_linux-x64
-chmod +x static/bin/linux/voxlogica
-rm voxlogica.zip
-```
-
-**macOS:**
-
-```bash
-# Create directories
-mkdir -p static/bin/macos
-
-# Download and extract
-curl https://github.com/vincenzoml/VoxLogicA/releases/download/v1.3.3-experimental/VoxLogicA_1.3.3-experimental_osx-x64.zip -o voxlogica.zip
-unzip voxlogica.zip
-mv VoxLogicA_1.3.3-experimental_osx-x64/* static/bin/macos/
-rm -r VoxLogicA_1.3.3-experimental_osx-x64
-chmod +x static/bin/macos/voxlogica
-rm voxlogica.zip
-```
+Download the appropriate VoxLogicA binary from the [VoxLogicA releases page](https://github.com/vincenzoml/VoxLogicA/releases) and extract the content of the folder inside the archive into `static/bin/VoxLogicA` directory.
 
 5. Start the development server:
 
@@ -101,11 +73,11 @@ yarn dev
 
 ### Tech Stack
 
-- [SvelteKit](https://svelte.dev/) - Web framework
-- [Skeleton UI](https://www.skeleton.dev/) - UI components
+- [SvelteKit](https://svelte.dev/) (v5) - Web framework
+- [Skeleton UI](https://www.skeleton.dev/) (v2) - UI components
 - [TailwindCSS](https://tailwindcss.com/) - Styling
 - [NiiVue](https://niivue.github.io/niivue/) - Neuroimaging visualization
-- [VoxLogicA](https://github.com/vincenzoml/VoxLogicA) - Image analysis engine
+- [VoxLogicA](https://github.com/vincenzoml/VoxLogicA) (v1.3.3-experimental) - Image analysis engine
 
 ### Scripts
 
@@ -114,6 +86,8 @@ yarn dev
 - `yarn preview` - Preview production build
 - `yarn check` - Type-check the codebase
 - `yarn format` - Format code with Prettier
+- `yarn test` - Run tests
+- `yarn test:coverage` - Run tests with coverage report
 
 ### Troubleshooting
 
