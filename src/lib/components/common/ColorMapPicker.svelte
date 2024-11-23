@@ -135,7 +135,7 @@
 			<div class="h-[60px] flex items-center justify-center">
 				{#if activeTab === 'preset'}
 					<div class="w-full">
-						<select class="select w-full" bind:value>
+						<select name="colormap_preset" class="select w-full" bind:value>
 							<option value="" disabled>Choose a colormap...</option>
 							{#each presetColorMaps as name}
 								<option value={name}>{name}</option>
@@ -145,6 +145,7 @@
 				{:else}
 					<div class="w-full">
 						<input
+							name="colormap_custom"
 							type="color"
 							class="w-full h-10 rounded-container-token cursor-pointer appearance-none border-0 !p-0 hover:scale-[1.02] transition-transform"
 							style="background-color: transparent;"

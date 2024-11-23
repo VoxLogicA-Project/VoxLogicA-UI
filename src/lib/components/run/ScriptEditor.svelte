@@ -224,6 +224,7 @@
 	{/if}
 	<div class="p-4 border-b border-surface-500/30 flex gap-2">
 		<select
+			name="script_preset"
 			class="select flex-1"
 			value="Load a preset script template..."
 			onchange={handlePresetScriptSelect}

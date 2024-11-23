@@ -24,7 +24,13 @@
 				<div class="input-group-shim">
 					<i class="fa-solid fa-search"></i>
 				</div>
-				<input class="p-1" type="search" placeholder="Search cases..." bind:value={searchQuery} />
+				<input
+					name="search_cases"
+					class="p-1"
+					type="search"
+					placeholder="Search cases..."
+					bind:value={searchQuery}
+				/>
 			</div>
 		</div>
 
