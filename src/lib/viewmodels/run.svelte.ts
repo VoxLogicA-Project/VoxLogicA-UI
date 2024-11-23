@@ -103,16 +103,18 @@ export class RunViewModel extends BaseViewModel {
 			throw new Error(errorMessage);
 		}
 
-		return {
+		const run: Run = {
 			id: result.id,
-			scriptContent: this.fullScriptContent,
-			case: case_,
-			timestamp: new Date(),
-			outputPrint: result.print,
-			outputLayers: result.layers,
-			outputError: result.error,
-			outputLog: result.log,
+			scriptContent: result.scriptContent,
+			case: result.case,
+			timestamp: result.timestamp,
+			outputPrint: result.outputPrint,
+			outputLayers: result.outputLayers,
+			outputError: result.outputError,
+			outputLog: result.outputLog,
 		};
+
+		return run;
 	}
 
 	async runAll(cases: Case[]) {
@@ -126,7 +128,7 @@ export class RunViewModel extends BaseViewModel {
 					return await this.singleRun(case_);
 				} catch (error) {
 					// If a single run fails, return an error run object
-					return {
+					const errorRun: Run = {
 						id: '',
 						scriptContent: this.fullScriptContent,
 						case: case_,
@@ -135,7 +137,8 @@ export class RunViewModel extends BaseViewModel {
 						outputLayers: [],
 						outputError: error instanceof Error ? error.message : 'Unknown error',
 						outputLog: '',
-					} as Run;
+					};
+					return errorRun;
 				}
 			});
 

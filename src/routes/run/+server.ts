@@ -5,7 +5,7 @@ import path from 'path';
 import { spawn } from 'child_process';
 import { DATASET_PATH, RUN_OUTPUT_PATH, VOXLOGICA_BINARY_PATH } from '../config';
 import { randomUUID } from 'crypto';
-import type { Case } from '$lib/models/types';
+import type { Case, Layer, PrintOutput, Run } from '$lib/models/types';
 
 // Types for API responses and internal data structures
 interface VoxLogicaResult {
@@ -148,14 +148,18 @@ export const POST: RequestHandler = async ({ request, fetch }) => {
 	const runId = randomUUID();
 	const outputDir = RUN_OUTPUT_PATH(runId);
 
+	let scriptContent: string;
+	let case_: Case;
+
 	try {
-		const body = await request.text();
-		const { scriptContent, case_ } = JSON.parse(body);
+		const body = await request.json();
+		scriptContent = body.scriptContent;
+		case_ = body.case_;
+	} catch (err) {
+		throw error(400, 'Missing required fields: scriptContent or case_');
+	}
 
-		if (!scriptContent || !case_) {
-			throw error(400, 'Missing required fields: scriptContent or case_');
-		}
-
+	try {
 		// Create the temporary directory and write the script
 		await fs.mkdir(outputDir, { recursive: true });
 		const scriptPath = path.join(outputDir, 'script.imgql');
@@ -177,12 +181,23 @@ export const POST: RequestHandler = async ({ request, fetch }) => {
 			path: `/run/${runId}/layers/${layer.name}.nii.gz`,
 		}));
 
-		// Don't cleanup temp directory as we need it for layer access
-		return json({
+		// Create a Run object using the Run type
+		const run: Run = {
 			id: runId,
-			print: voxlogicaResult.print,
-			layers: layers,
-		});
+			timestamp: new Date(),
+			scriptContent: scriptContent,
+			case: case_,
+			outputPrint: voxlogicaResult.print,
+			outputLayers: layers,
+			outputLog: voxlogicaResult.log,
+			outputError: voxlogicaResult.error,
+		};
+
+		// Dump the run into a file
+		await fs.writeFile(path.join(outputDir, 'run.json'), JSON.stringify(run, null, 2));
+
+		// Don't cleanup temp directory as we need it for layer access
+		return json(run);
 	} catch (err) {
 		await cleanup(outputDir);
 
@@ -202,14 +217,17 @@ export const POST: RequestHandler = async ({ request, fetch }) => {
 			'log' in err.voxlogicaResult &&
 			'error' in err.voxlogicaResult
 		) {
-			// TODO: Type check this is a Run object, layers will need to be substituted
-			return json({
+			const run: Run = {
 				id: runId,
-				print: err.voxlogicaResult.print,
-				layers: err.voxlogicaResult.layers,
-				log: err.voxlogicaResult.log,
-				error: err.voxlogicaResult.error,
-			});
+				timestamp: new Date(),
+				scriptContent: scriptContent || '',
+				case: case_ || null,
+				outputPrint: err.voxlogicaResult.print as PrintOutput[],
+				outputLayers: err.voxlogicaResult.layers as Layer[],
+				outputLog: err.voxlogicaResult.log as string,
+				outputError: err.voxlogicaResult.error as string,
+			};
+			return json(run);
 		}
 
 		throw error(500, err instanceof Error ? err.message : String(err));
