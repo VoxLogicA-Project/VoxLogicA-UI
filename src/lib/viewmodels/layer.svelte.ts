@@ -29,8 +29,6 @@ export class LayerViewModel extends BaseViewModel {
 		const layerId = Object.values(this.state.availableByCase)
 			.flat()
 			.find((l) => l.name === layerName)?.id;
-		console.log('layerName', layerName);
-		console.log('layerId', layerId);
 		return layerId;
 	}
 

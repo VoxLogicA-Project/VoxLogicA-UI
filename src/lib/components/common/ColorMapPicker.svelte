@@ -41,7 +41,6 @@
 		<div class="flex flex-col gap-2">
 			<h3 class="h4">Preset Colormaps</h3>
 			<select class="select" onchange={(e) => (value = e.currentTarget.value)}>
-				<option value="">Custom</option>
 				{#each presetColorMaps as name}
 					<option value={name}>{name}</option>
 				{/each}

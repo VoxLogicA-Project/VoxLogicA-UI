@@ -37,7 +37,7 @@ const substituteUiPathVariables = async (
 			}
 
 			processedScript = processedScript.replace(
-				new RegExp(`\\$\\{LAYER_PATH:${layer.id}\\}`, 'g'),
+				new RegExp(`\\$\\{LAYER_PATH:${layer.name}\\}`, 'g'),
 				path.join(DATASET_PATH, datasetId, case_.id, layerFilename)
 			);
 		}
