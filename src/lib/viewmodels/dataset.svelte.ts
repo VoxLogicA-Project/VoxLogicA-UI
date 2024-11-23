@@ -3,6 +3,7 @@ import type { Dataset } from '$lib/models/types';
 import { apiRepository } from '$lib/models/repository';
 import { caseViewModel } from './case.svelte';
 import { layerViewModel } from './layer.svelte';
+import { stateManager } from './statemanager.svelte';
 
 interface DatasetState {
 	available: Dataset[];
@@ -50,6 +51,7 @@ export class DatasetViewModel extends BaseViewModel {
 		this.state.selected = dataset;
 		caseViewModel.loadCases();
 		layerViewModel.reset();
+		stateManager.markAsUnsaved();
 	}
 
 	// State Management

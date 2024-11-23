@@ -3,6 +3,7 @@ import type { Case } from '$lib/models/types';
 import { apiRepository } from '$lib/models/repository';
 import { datasetViewModel } from './dataset.svelte';
 import { layerViewModel } from './layer.svelte';
+import { stateManager } from './statemanager.svelte';
 
 interface CaseState {
 	available: Case[];
@@ -69,12 +70,14 @@ export class CaseViewModel extends BaseViewModel {
 
 		this.state.selected = [...this.state.selected, caseData];
 		this.setError(null);
+		stateManager.markAsUnsaved();
 	}
 
 	deselectCase(caseData: Case) {
 		this.state.selected = this.state.selected.filter((c) => c.id !== caseData.id);
 		this.setError(null);
 		layerViewModel.removeCaseLayers(caseData.id);
+		stateManager.markAsUnsaved();
 	}
 
 	toggleCase(caseData: Case) {

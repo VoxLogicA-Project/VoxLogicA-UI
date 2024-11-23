@@ -10,38 +10,54 @@
 	import { layerViewModel } from '$lib/viewmodels/layer.svelte';
 	import { runViewModel } from '$lib/viewmodels/run.svelte';
 	import { uiViewModel } from '$lib/viewmodels/ui.svelte';
+	import { stateManager } from '$lib/viewmodels/statemanager.svelte';
+	import { getToastStore } from '@skeletonlabs/skeleton';
 
-	// Check for unsaved changes. Might be improved by editing the UI state changes in the viewmodels themselves.
-	$effect(() => {
-		const datasetSelected = datasetViewModel.selectedDataset;
-		const caseSelected = caseViewModel.selectedCases.length > 0;
-		const layerSelected = Object.values(layerViewModel.getState().selected).some(
-			(layers) => layers.length > 0
-		);
-		const editorChanged = runViewModel.editorContent;
-		const runHistory = runViewModel.history.length > 0;
-		const runLayersStates = runViewModel.layerStates.some((state) =>
-			Object.values(state.getState().selected).some((layers) => layers.length > 0)
-		);
+	const toastStore = getToastStore();
 
-		if (
-			datasetSelected ||
-			caseSelected ||
-			layerSelected ||
-			editorChanged ||
-			runHistory ||
-			runLayersStates
-		) {
-			uiViewModel.hasUnsavedChanges = true;
+	// Add reactive class based on unsaved changes
+	const saveButtonClass = $derived(
+		stateManager.hasChanges()
+			? 'bg-primary-500 hover:bg-primary-600' // Highlighted state when there are unsaved changes
+			: 'bg-surface-300-600-token hover:bg-surface-400-500-token' // Default state
+	);
+
+	function handleSave() {
+		try {
+			stateManager.saveToLocalStorage();
+			toastStore.trigger({
+				message: 'Application state saved successfully',
+				background: 'variant-filled-success',
+			});
+		} catch (error) {
+			toastStore.trigger({
+				message: 'Failed to save application state',
+				background: 'variant-filled-error',
+			});
 		}
-	});
+	}
+
+	function handleLoad() {
+		try {
+			stateManager.loadFromLocalStorage();
+			toastStore.trigger({
+				message: 'Application state restored successfully',
+				background: 'variant-filled-success',
+			});
+		} catch (error) {
+			toastStore.trigger({
+				message: 'Failed to load application state',
+				background: 'variant-filled-error',
+			});
+		}
+	}
 </script>
 
 <div class="h-screen w-screen flex overflow-hidden bg-surface-50-900-token">
 	<!-- Left Sidebar -->
 	<CollapsibleSidebar
 		side="left"
-		defaultSize="300px"
+		defaultSize="330px"
 		bind:isCollapsed={uiViewModel.datasetSidebarCollapsed}
 	>
 		<!-- Header -->
@@ -77,15 +93,42 @@
 				</a>
 			</div>
 
-			<button
-				class="w-8 h-8 min-w-[2rem] min-h-[2rem] flex-shrink-0 rounded-lg bg-surface-300-600-token hover:bg-surface-400-500-token flex items-center justify-center"
-				onclick={() => uiViewModel.toggleDarkMode()}
-				title="Toggle dark mode"
-				aria-label="Toggle dark mode"
-			>
-				<i class="fa-solid fa-sun text-lg hidden dark:block"></i>
-				<i class="fa-solid fa-moon text-lg block dark:hidden"></i>
-			</button>
+			<div class="flex gap-2">
+				<!-- Save State Button -->
+				<button
+					class="w-8 h-8 min-w-[2rem] min-h-[2rem] flex-shrink-0 rounded-lg {saveButtonClass} flex items-center justify-center transition-colors duration-200"
+					onclick={handleSave}
+					title={stateManager.hasChanges() ? 'Save changes' : 'No unsaved changes'}
+					aria-label={stateManager.hasChanges() ? 'Save changes' : 'No unsaved changes'}
+				>
+					<i
+						class="fa-solid fa-floppy-disk text-lg {stateManager.hasChanges()
+							? 'animate-pulse'
+							: ''}"
+					></i>
+				</button>
+
+				<!-- Load State Button -->
+				<button
+					class="w-8 h-8 min-w-[2rem] min-h-[2rem] flex-shrink-0 rounded-lg bg-surface-300-600-token hover:bg-surface-400-500-token flex items-center justify-center"
+					onclick={handleLoad}
+					title="Load saved state"
+					aria-label="Load saved state"
+				>
+					<i class="fa-solid fa-folder-open text-lg"></i>
+				</button>
+
+				<!-- Existing Dark Mode Button -->
+				<button
+					class="w-8 h-8 min-w-[2rem] min-h-[2rem] flex-shrink-0 rounded-lg bg-surface-300-600-token hover:bg-surface-400-500-token flex items-center justify-center"
+					onclick={() => uiViewModel.toggleDarkMode()}
+					title="Toggle dark mode"
+					aria-label="Toggle dark mode"
+				>
+					<i class="fa-solid fa-sun text-lg hidden dark:block"></i>
+					<i class="fa-solid fa-moon text-lg block dark:hidden"></i>
+				</button>
+			</div>
 		</div>
 
 		<!-- Dataset Browser -->

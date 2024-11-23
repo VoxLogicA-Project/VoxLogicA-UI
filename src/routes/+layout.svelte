@@ -6,6 +6,7 @@
 	import { computePosition, autoUpdate, offset, shift, flip, arrow } from '@floating-ui/dom';
 	import { storePopup } from '@skeletonlabs/skeleton';
 	import { uiViewModel } from '$lib/viewmodels/ui.svelte';
+	import { stateManager } from '$lib/viewmodels/statemanager.svelte';
 
 	initializeStores();
 	storePopup.set({ computePosition, autoUpdate, offset, shift, flip, arrow });
@@ -33,7 +34,7 @@
 		// Add beforeunload event listener
 		window.addEventListener('beforeunload', (event) => {
 			// Check if there are unsaved changes
-			if (uiViewModel.hasUnsavedChanges) {
+			if (stateManager.hasChanges()) {
 				event.preventDefault();
 				event.returnValue = ''; // This is required for Chrome to show the warning
 			}

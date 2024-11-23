@@ -3,6 +3,7 @@ import { datasetViewModel } from './dataset.svelte';
 import type { Case, Layer, ColorMap } from '$lib/models/types';
 import { apiRepository } from '$lib/models/repository';
 import { caseViewModel } from './case.svelte';
+import { stateManager } from './statemanager.svelte';
 
 export interface LayerState {
 	availableByCase: Record<string, Layer[]>;
@@ -91,16 +92,19 @@ export class LayerViewModel extends BaseViewModel {
 			this.state.styles[layer.id] = defaultColorMap;
 		});
 		this.state.availableByCase[caseData.id] = runOutputLayers;
+		stateManager.markAsUnsaved();
 	}
 
 	// Layer Selection Methods
 	selectLayer(caseId: string, layer: Layer) {
 		this.state.selected[caseId] = [...(this.state.selected[caseId] || []), layer];
+		stateManager.markAsUnsaved();
 	}
 
 	unselectLayer(caseId: string, layer: Layer) {
 		const currentLayers = this.state.selected[caseId] || [];
 		this.state.selected[caseId] = currentLayers.filter((l) => l.id !== layer.id);
+		stateManager.markAsUnsaved();
 	}
 
 	toggleLayer(caseId: string, layer: Layer) {
@@ -147,6 +151,7 @@ export class LayerViewModel extends BaseViewModel {
 	// Style Management Methods
 	setLayerStyleColor(layerId: string, colorMap: ColorMap) {
 		this.state.styles[layerId] = colorMap;
+		stateManager.markAsUnsaved();
 	}
 
 	// Cleanup Methods

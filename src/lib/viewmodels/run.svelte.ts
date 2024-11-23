@@ -2,6 +2,7 @@ import { BaseViewModel } from './base.svelte';
 import type { Case, ColorMap, Layer, PresetScript, Run } from '$lib/models/types';
 import { LayerViewModel, layerViewModel } from './layer.svelte';
 import { apiRepository } from '$lib/models/repository';
+import { stateManager } from './statemanager.svelte';
 
 interface RunState {
 	availablePresets: PresetScript[];
@@ -55,6 +56,7 @@ export class RunViewModel extends BaseViewModel {
 
 	saveEditorContent(content: string) {
 		this.state.editorContent = content;
+		stateManager.markAsUnsaved();
 	}
 
 	// Preset Management
@@ -156,6 +158,7 @@ export class RunViewModel extends BaseViewModel {
 			});
 
 			this.state.layersStates = [...this.state.layersStates, newLayerViewModel];
+			stateManager.markAsUnsaved();
 
 			// Set error if any run had an error
 			const anyError = runs.find((run) => run.outputError);
