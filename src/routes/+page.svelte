@@ -30,12 +30,32 @@
 		<div class="flex items-center justify-between p-4 border-b border-surface-500/30">
 			<div class="flex items-center">
 				<a href="/" class="flex items-center" onclick={() => (window.location.href = '/')}>
-					<div
-						class="w-8 h-8 h3 bg-primary-500 rounded-lg flex items-center justify-center text-white font-bold"
-					>
-						V
+					<!-- SVG Logo -->
+					<div class="theme-container">
+						<svg
+							class="w-8 h-8"
+							viewBox="0 0 100 100"
+							xmlns="http://www.w3.org/2000/svg"
+							fill="currentColor"
+							stroke="currentColor"
+						>
+							<path
+								d="M50 90 L15 10 L50 40 L85 10 Z
+							   M15 10 L85 10 
+							   M50 40 L50 10 
+							   M35 25 L65 25"
+								fill="var(--color-primary-900-50-token)"
+								fill-rule="evenodd"
+							/>
+						</svg>
 					</div>
-					<h3 class="h3 px-3">VoxLogicA</h3>
+
+					<h3
+						class="h3 px-2"
+						style="font-family: 'Urbanist', sans-serif; font-weight: 700; color: var(--color-primary-900-50-token); letter-spacing: 0.05em;"
+					>
+						V<span style="opacity: 0.7;">ox</span>Log<span style="opacity: 0.7;">ic</span>A
+					</h3>
 				</a>
 			</div>
 
