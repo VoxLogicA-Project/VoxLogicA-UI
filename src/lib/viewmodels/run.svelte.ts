@@ -39,10 +39,10 @@ export class RunViewModel extends BaseViewModel {
 	}
 
 	headerContent = $derived.by(() => {
-		const layersNames = layerViewModel.uniqueLayersNames;
-		return `import "stdlib.imgql"\n\n// Load layers\n${layersNames
-			.map((layerName) => {
-				return `load ${layerName} = "\$\{LAYER_PATH:${layerName}\}"`;
+		const layersIds = layerViewModel.uniqueLayersIds;
+		return `import "stdlib.imgql"\n\n// Load layers\n${layersIds
+			.map((layerId) => {
+				return `load ${layerId} = "\$\{LAYER_PATH:${layerId}\}"`;
 			})
 			.join('\n')}`;
 	});
@@ -176,16 +176,25 @@ export class RunViewModel extends BaseViewModel {
 	});
 
 	selectedLayersWithColorMapsForCase = $derived((caseId: string) => {
-		const allSelectedLayersWithColorMaps: { layer: Layer; colorMap: ColorMap | string }[] = [];
-		this.state.layersStates.forEach((state) => {
+		const allSelectedLayersWithColorMaps: {
+			runIndex: number;
+			layer: Layer;
+			colorMap: ColorMap | string;
+		}[] = [];
+		this.state.layersStates.forEach((state, index) => {
 			const layersWithColorMaps = state.selectedLayersWithColorMapsForCase(caseId);
-			allSelectedLayersWithColorMaps.push(...layersWithColorMaps);
+			allSelectedLayersWithColorMaps.push(
+				...layersWithColorMaps.map((item) => ({
+					...item,
+					runIndex: index,
+				}))
+			);
 		});
 		return allSelectedLayersWithColorMaps;
 	});
 
-	uniqueLayerNamesByRun = $derived((runIndex: number) => {
-		return this.state.layersStates[runIndex]?.uniqueLayersNames || [];
+	uniqueLayerIdsByRun = $derived((runIndex: number) => {
+		return this.state.layersStates[runIndex]?.uniqueLayersIds || [];
 	});
 
 	reset() {

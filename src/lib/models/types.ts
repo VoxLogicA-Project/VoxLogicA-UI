@@ -10,7 +10,6 @@ export interface Case {
 
 export interface Layer {
 	id: string;
-	name: string;
 	path: string;
 }
 

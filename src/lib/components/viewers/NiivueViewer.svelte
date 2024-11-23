@@ -3,7 +3,7 @@
 	import { browser } from '$app/environment';
 	import { layerViewModel } from '$lib/viewmodels/layer.svelte';
 	import { runViewModel } from '$lib/viewmodels/run.svelte';
-	import type { Case, ColorMap } from '$lib/models/types';
+	import type { Case, Layer, ColorMap } from '$lib/models/types';
 
 	const { case_ } = $props<{ case_: Case }>();
 
@@ -132,18 +132,23 @@
 	async function updateAllLayerStyles() {
 		if (!nv) return;
 
-		const updateLayerStyles = (layersWithColorMaps: any[]) => {
-			for (const { layer, colorMap } of layersWithColorMaps) {
-				const volumeIndex = nv.volumes.findIndex((vol: any) => vol.url === layer.path);
-				if (volumeIndex !== -1) {
-					const colorMapId = setColorMap(layer.id, colorMap);
-					nv.setColormap(nv.volumes[volumeIndex].id, colorMapId);
-				}
+		for (const { layer, colorMap } of layerViewModel.selectedLayersWithColorMapsForCase(case_.id)) {
+			const volumeIndex = nv.volumes.findIndex((vol: any) => vol.url === layer.path);
+			if (volumeIndex !== -1) {
+				const colorMapId = setColorMap(layer.id, colorMap);
+				nv.setColormap(nv.volumes[volumeIndex].id, colorMapId);
 			}
-		};
+		}
 
-		updateLayerStyles(layerViewModel.selectedLayersWithColorMapsForCase(case_.id));
-		updateLayerStyles(runViewModel.selectedLayersWithColorMapsForCase(case_.id));
+		for (const { runIndex, layer, colorMap } of runViewModel.selectedLayersWithColorMapsForCase(
+			case_.id
+		)) {
+			const volumeIndex = nv.volumes.findIndex((vol: any) => vol.url === layer.path);
+			if (volumeIndex !== -1) {
+				const colorMapId = setColorMap(`${runIndex}-${layer.id}`, colorMap);
+				nv.setColormap(nv.volumes[volumeIndex].id, colorMapId);
+			}
+		}
 	}
 
 	onDestroy(() => {

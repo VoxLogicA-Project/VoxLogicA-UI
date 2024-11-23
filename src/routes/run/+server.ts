@@ -37,7 +37,7 @@ const substituteUiPathVariables = async (
 			}
 
 			processedScript = processedScript.replace(
-				new RegExp(`\\$\\{LAYER_PATH:${layer.name}\\}`, 'g'),
+				new RegExp(`\\$\\{LAYER_PATH:${layer.id}\\}`, 'g'),
 				path.join(DATASET_PATH, datasetId, case_.id, layerFilename)
 			);
 		}
@@ -173,8 +173,7 @@ export const POST: RequestHandler = async ({ request, fetch }) => {
 
 		// Convert VoxLogicA layers to Layer objects
 		const layers = voxlogicaResult.layers.map((layer) => ({
-			id: `${runId}_${layer.name}`,
-			name: layer.name,
+			id: layer.name,
 			path: `/run/${runId}/layers/${layer.name}.nii.gz`,
 		}));
 

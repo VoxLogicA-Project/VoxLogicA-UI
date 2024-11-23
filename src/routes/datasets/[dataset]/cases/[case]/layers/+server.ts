@@ -46,8 +46,7 @@ export const GET: RequestHandler = async ({ params, fetch }) => {
 		}
 
 		layers.push({
-			id: filename[1],
-			name: displayName[1],
+			id: displayName[1],
 			path: `/datasets/${params.dataset}/cases/${params.case}/layers/${file}`,
 		});
 	}

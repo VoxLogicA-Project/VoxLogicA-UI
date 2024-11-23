@@ -23,13 +23,8 @@ export class LayerViewModel extends BaseViewModel {
 		return this.state;
 	}
 
-	getLayerIdFromName(layerName: string) {
-		// We trust that for each layer name there is only one layer id
-		// Remember: layer names were introduced to allow ids to be distinguished between runs.
-		const layerId = Object.values(this.state.availableByCase)
-			.flat()
-			.find((l) => l.name === layerName)?.id;
-		return layerId;
+	getLayerFromId(caseId: string, layerId: string) {
+		return this.state.availableByCase[caseId]?.find((l) => l.id === layerId);
 	}
 
 	getSelectedLayerFromIds(caseId: string, layerId: string) {
@@ -41,15 +36,15 @@ export class LayerViewModel extends BaseViewModel {
 		return this.state.styles;
 	}
 
-	uniqueLayersNames = $derived.by(() => {
-		const layerNames = new Set<string>();
+	uniqueLayersIds = $derived.by(() => {
+		const layerIds = new Set<string>();
 		caseViewModel.selectedCases.forEach((caseData) => {
 			const caseLayers = this.state.availableByCase[caseData.id] || [];
 			caseLayers.forEach((layer) => {
-				layerNames.add(layer.name);
+				layerIds.add(layer.id);
 			});
 		});
-		return Array.from(layerNames);
+		return Array.from(layerIds);
 	});
 
 	async loadLayersFromDataset(caseData: Case) {
@@ -153,10 +148,6 @@ export class LayerViewModel extends BaseViewModel {
 
 	setLayerStyleColor(layerId: string, colorMap: ColorMap) {
 		this.state.styles[layerId] = colorMap;
-	}
-
-	getLayerFromId(caseId: string, layerId: string) {
-		return this.state.availableByCase[caseId]?.find((l) => l.id === layerId);
 	}
 
 	reset() {

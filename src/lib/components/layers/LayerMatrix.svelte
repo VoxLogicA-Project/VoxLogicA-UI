@@ -12,11 +12,11 @@
 	// Show unique layers for the selected tab
 	let uniqueLayers = $derived.by(() => {
 		if (uiViewModel.bottomPanelTab === 'layers') {
-			return layerViewModel.uniqueLayersNames;
+			return layerViewModel.uniqueLayersIds;
 		}
 		const runIndex = parseInt(uiViewModel.bottomPanelTab.split('-')[1]);
 		if (isNaN(runIndex)) return [];
-		return runViewModel.uniqueLayerNamesByRun(runIndex);
+		return runViewModel.uniqueLayerIdsByRun(runIndex);
 	});
 
 	// Derive layer state based on the bottom panel tab
@@ -67,8 +67,7 @@
 										</button>
 									</div>
 								</th>
-								{#each uniqueLayers as layerName}
-									{@const layerId = layerState.getLayerIdFromName(layerName) || ''}
+								{#each uniqueLayers as layerId}
 									<th class="text-center p-2 border-b border-surface-500/30 font-medium">
 										<div class="flex flex-col items-center">
 											<div class:dark={uiViewModel.isDarkMode} title="Click to change layer color">
@@ -89,7 +88,7 @@
 													title="Click to toggle layer visibility for all cases"
 												>
 													<span class="truncate text-surface-900 dark:text-surface-50">
-														{layerName.length > 20 ? '...' + layerName.slice(-20) : layerName}
+														{layerId.length > 20 ? '...' + layerId.slice(-20) : layerId}
 													</span>
 													<i
 														class="fa-solid fa-check-to-slot text-sm transition-colors duration-200
@@ -119,8 +118,7 @@
 											</span>
 										</div>
 									</td>
-									{#each uniqueLayers as layerName}
-										{@const layerId = layerState.getLayerIdFromName(layerName) || ''}
+									{#each uniqueLayers as layerId}
 										{@const layer = layerState.getLayerFromId(case_.id, layerId)}
 										{@const isAvailable = layer !== undefined}
 										<td class="w-32 text-center align-middle px-4 border-b border-surface-500/30">
@@ -135,7 +133,7 @@
 													<i
 														class="fa-solid fa-circle-check text-2xl transition-colors duration-200 {layerState.isLayerSelectedForCase(
 															case_.id,
-															layerId
+															layer.id
 														)
 															? 'text-primary-500 group-hover:text-primary-400'
 															: 'text-surface-300/70 group-hover:text-surface-500 dark:text-surface-400/50 dark:group-hover:text-surface-300'}"
