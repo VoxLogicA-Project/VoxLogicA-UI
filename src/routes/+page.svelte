@@ -7,8 +7,6 @@
 	import ScriptEditor from '$lib/components/run/ScriptEditor.svelte';
 	import { datasetViewModel } from '$lib/viewmodels/dataset.svelte';
 	import { caseViewModel } from '$lib/viewmodels/case.svelte';
-	import { layerViewModel } from '$lib/viewmodels/layer.svelte';
-	import { runViewModel } from '$lib/viewmodels/run.svelte';
 	import { uiViewModel } from '$lib/viewmodels/ui.svelte';
 	import { stateManager } from '$lib/viewmodels/statemanager.svelte';
 	import { getToastStore } from '@skeletonlabs/skeleton';
@@ -18,7 +16,7 @@
 	// Add reactive class based on unsaved changes
 	const saveButtonClass = $derived(
 		stateManager.hasChanges()
-			? 'bg-primary-500 hover:bg-primary-600' // Highlighted state when there are unsaved changes
+			? 'bg-error-500 hover:bg-error-600' // Changed from primary to error variant
 			: 'bg-surface-300-600-token hover:bg-surface-400-500-token' // Default state
 	);
 
@@ -115,7 +113,7 @@
 					title="Load saved state"
 					aria-label="Load saved state"
 				>
-					<i class="fa-solid fa-folder-open text-lg"></i>
+					<i class="fa-solid fa-rotate-left text-lg"></i>
 				</button>
 
 				<!-- Existing Dark Mode Button -->

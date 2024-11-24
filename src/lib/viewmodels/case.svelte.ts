@@ -56,7 +56,7 @@ export class CaseViewModel extends BaseViewModel {
 	}
 
 	// Case Selection Methods
-	selectCase(caseData: Case) {
+	async selectCase(caseData: Case) {
 		if (this.state.selected.length >= this.state.maxCases) {
 			this.setError(`Cannot select more than ${this.state.maxCases} cases`);
 			return;
@@ -66,7 +66,7 @@ export class CaseViewModel extends BaseViewModel {
 			return;
 		}
 
-		layerViewModel.loadLayersFromDataset(caseData);
+		await layerViewModel.loadLayersFromDataset(caseData);
 
 		this.state.selected = [...this.state.selected, caseData];
 		this.setError(null);
@@ -80,12 +80,12 @@ export class CaseViewModel extends BaseViewModel {
 		stateManager.markAsUnsaved();
 	}
 
-	toggleCase(caseData: Case) {
+	async toggleCase(caseData: Case) {
 		const isSelected = this.state.selected.some((c) => c.id === caseData.id);
 		if (isSelected) {
 			this.deselectCase(caseData);
 		} else {
-			this.selectCase(caseData);
+			await this.selectCase(caseData);
 		}
 	}
 

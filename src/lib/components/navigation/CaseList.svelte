@@ -56,7 +56,7 @@
 							disabled={isDisabled}
 							showBadge={isSelected}
 							badgeContent={(caseViewModel.getSelectionIndex(caseData) + 1).toString()}
-							on:click={() => caseViewModel.toggleCase(caseData)}
+							on:click={async () => await caseViewModel.toggleCase(caseData)}
 						>
 							{caseData.id}
 						</ListButton>

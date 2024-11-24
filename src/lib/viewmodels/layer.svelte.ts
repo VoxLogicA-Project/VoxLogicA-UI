@@ -29,6 +29,10 @@ export class LayerViewModel extends BaseViewModel {
 		return this.state.styles;
 	}
 
+	getAvailableLayersForCase(caseId: string) {
+		return this.state.availableByCase[caseId] || [];
+	}
+
 	// Layer Lookup Methods
 	getAvailableLayerFromId(caseId: string, layerId: string) {
 		return this.state.availableByCase[caseId]?.find((l) => l.id === layerId);

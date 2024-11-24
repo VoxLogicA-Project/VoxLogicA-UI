@@ -7,6 +7,7 @@ node_modules
 /.svelte-kit
 /build
 repomix-output.txt
+.repomixignore
 coverage
 
 # OS
