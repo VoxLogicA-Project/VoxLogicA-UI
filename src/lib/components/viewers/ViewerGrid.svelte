@@ -24,10 +24,10 @@
 	{:else}
 		<section class={`grid gap-4 ${gridClass} pb-8`}>
 			{#each caseViewModel.selectedCases as case_ (case_.id)}
-				<div class="card h-fit">
-					<div
-						class="p-2 border-b border-surface-300-600-token bg-surface-100-800-token flex justify-between items-center"
-					>
+				<div
+					class="card h-fit transition-all duration-200 hover:scale-[1.02] hover:shadow-xl hover:shadow-surface-500/30 bg-surface-100-800-token hover:bg-primary-50-900-token"
+				>
+					<div class="p-2 border-b border-surface-300-600-token flex justify-between items-center">
 						<span class="text-sm font-medium flex items-center flex-1 min-w-0">
 							{#if true}
 								<div class="badge badge-sm variant-filled-primary mr-2 flex-shrink-0">
@@ -52,12 +52,17 @@
 							<NiivueViewer {case_} />
 						{:else}
 							<div
-								class="w-full h-full variant-soft-surface flex flex-col items-center justify-center gap-2"
+								class="w-full h-full variant-soft-surface flex flex-col items-center justify-center gap-1 p-2 overflow-hidden"
 							>
-								<i class="fa-solid fa-layer-group text-4xl text-surface-400-500-token"></i>
-								<div class="flex items-center gap-3 text-surface-600-300-token text-center px-4">
-									<p>Add layers from the below panel to view images</p>
-									<i class="fa-solid fa-arrow-down text-2xl animate-pulse"></i>
+								<i class="fa-solid fa-layer-group text-xl sm:text-4xl text-surface-400-500-token"
+								></i>
+								<div
+									class="flex flex-col sm:flex-row items-center gap-1 sm:gap-3 text-surface-600-300-token text-center"
+								>
+									<p class="text-[8px] sm:text-base line-clamp-3">
+										Add layers from the below panel to view images
+									</p>
+									<i class="fa-solid fa-arrow-down text-base sm:text-2xl animate-pulse"></i>
 								</div>
 							</div>
 						{/if}
