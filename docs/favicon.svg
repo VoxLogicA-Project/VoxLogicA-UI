@@ -1,0 +1,17 @@
+<svg
+  viewBox="0 0 100 100"
+  xmlns="http://www.w3.org/2000/svg"
+>
+  <!-- White background -->
+  <circle cx="50" cy="50" r="50" fill="white" />
+  
+  <!-- Path with brown fill -->
+  <path
+    d="M50 90 L15 10 L50 40 L85 10 Z
+       M15 10 L85 10 
+       M50 40 L50 10 
+       M35 25 L65 25"
+    fill="rgb(115, 66, 13)"
+    fill-rule="evenodd"
+  />
+</svg>
