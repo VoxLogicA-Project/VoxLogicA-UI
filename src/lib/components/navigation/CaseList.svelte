@@ -3,8 +3,17 @@
 	import { datasetViewModel } from '$lib/viewmodels/dataset.svelte';
 	import ListButton from '$lib/components/common/ListButton.svelte';
 	import { ProgressRadial } from '@skeletonlabs/skeleton';
+	import { getToastStore } from '@skeletonlabs/skeleton';
+
+	const toastStore = getToastStore();
 
 	let searchQuery = $state('');
+	interface Filter {
+		label: string;
+		operation: string;
+		value: string;
+	}
+	let filters = $state<Filter[]>([]);
 
 	// Filters cases based on search query
 	const filteredCases = $derived(
@@ -14,24 +23,98 @@
 				)
 			: caseViewModel.cases
 	);
+
+	function addFilter() {
+		if (filters.length === 0) {
+			toastStore.trigger({
+				message: 'Case filtering is not implemented yet',
+				background: 'variant-filled-warning',
+			});
+		}
+		filters = [...filters, { label: '', operation: '', value: '' }];
+	}
+
+	function removeFilter(index: number) {
+		filters = filters.filter((_, i) => i !== index);
+	}
 </script>
 
 <div class="flex flex-col h-full">
 	{#if datasetViewModel.selectedDataset}
-		<!-- Search bar -->
-		<div class="px-4 pb-4">
-			<div class="input-group grid-cols-[auto_1fr]">
-				<div class="input-group-shim">
-					<i class="fa-solid fa-search"></i>
+		<!-- Search bar and filter button -->
+		<div class="px-4 mb-2">
+			<div class="flex gap-2">
+				<div class="input-group grid-cols-[auto_1fr] flex-1">
+					<div class="input-group-shim">
+						<i class="fa-solid fa-search"></i>
+					</div>
+					<input
+						name="search_cases"
+						class="p-1"
+						type="search"
+						placeholder="Search cases..."
+						bind:value={searchQuery}
+					/>
 				</div>
-				<input
-					name="search_cases"
-					class="p-1"
-					type="search"
-					placeholder="Search cases..."
-					bind:value={searchQuery}
-				/>
+				{#if filters.length === 0}
+					<div class="flex flex-shrink-0 h-[2.25rem]">
+						<button
+							title="Filter cases by run print"
+							aria-label="Filter cases by run print"
+							class="btn-icon hover:variant-soft-primary rounded-full"
+							onclick={addFilter}
+						>
+							<i class="fa-solid fa-filter"></i>
+						</button>
+					</div>
+				{/if}
 			</div>
+
+			{#each filters as filter, i}
+				<div class="mt-2">
+					<div class="flex justify-between items-center gap-2">
+						<input
+							type="text"
+							class="input p-1"
+							placeholder="Run print label"
+							bind:value={filter.label}
+						/>
+						<select class="input p-1 w-20" bind:value={filter.operation}>
+							<option value=">">&gt;</option>
+							<option value="<">&lt;</option>
+							<option value=">=">&ge;</option>
+							<option value="<=">&le;</option>
+							<option value="=">=</option>
+						</select>
+						<input
+							type="number"
+							class="input p-1"
+							placeholder="Run print value"
+							bind:value={filter.value}
+						/>
+						<div class="flex gap-2 flex-shrink-0 h-[2.25rem]">
+							{#if i === filters.length - 1}
+								<button
+									title="Add filter"
+									aria-label="Add filter"
+									class="btn-icon hover:variant-soft-primary rounded-full h-9 w-9 flex items-center justify-center"
+									onclick={() => addFilter()}
+								>
+									<i class="fa-solid fa-filter"></i>
+								</button>
+							{/if}
+							<button
+								title="Remove filter"
+								aria-label="Remove filter"
+								class="btn-icon hover:variant-soft-error rounded-full h-9 w-9 flex items-center justify-center"
+								onclick={() => removeFilter(i)}
+							>
+								<i class="fa-solid fa-xmark"></i>
+							</button>
+						</div>
+					</div>
+				</div>
+			{/each}
 		</div>
 
 		{#if caseViewModel.isLoading}
