@@ -64,6 +64,13 @@ export class LayerViewModel extends BaseViewModel {
 		}));
 	});
 
+	isLayerSelectedForAllCases = $derived((layerId: string) => {
+		return (
+			Object.keys(this.state.selected).length > 0 &&
+			Object.values(this.state.selected).every((layers) => layers?.some((l) => l.id === layerId))
+		);
+	});
+
 	// Layer Loading Methods
 	async loadLayersFromDataset(caseData: Case) {
 		const dataset = datasetViewModel.selectedDataset;
@@ -83,6 +90,7 @@ export class LayerViewModel extends BaseViewModel {
 			});
 
 			this.state.availableByCase[caseData.id] = layers;
+			this.state.selected[caseData.id] = [];
 		} catch (error) {
 			this.setError(error instanceof Error ? error.message : 'Failed to load layers');
 		} finally {
@@ -143,13 +151,6 @@ export class LayerViewModel extends BaseViewModel {
 	// Layer State Check Methods
 	isLayerSelectedForCase(caseId: string, layerId: string) {
 		return this.state.selected[caseId]?.some((l) => l.id === layerId);
-	}
-
-	isLayerSelectedForAllCases(layerId: string) {
-		return (
-			Object.keys(this.state.selected).length > 0 &&
-			Object.values(this.state.selected).every((layers) => layers?.some((l) => l.id === layerId))
-		);
 	}
 
 	// Style Management Methods
