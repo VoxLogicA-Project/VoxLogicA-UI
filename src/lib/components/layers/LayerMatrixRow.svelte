@@ -30,7 +30,9 @@
 	}
 </script>
 
-<tr class="align-middle h-12">
+<tr
+	class="align-middle h-12 hover:bg-surface-400/10 hover:dark:bg-surface-500/20 transition-colors duration-200"
+>
 	<td
 		class="align-middle border-b border-surface-500/30 {isRunView &&
 		runPrints &&
@@ -44,7 +46,7 @@
 				<div class="badge-container">
 					<span class="badge variant-filled-primary">{index + 1}</span>
 				</div>
-				<span title={case_.id}>
+				<span class="group-hover:text-primary-500 transition-colors duration-200" title={case_.id}>
 					{case_.id.length > 20 ? '...' + case_.id.slice(-20) : case_.id}
 				</span>
 				{#if isRunView && runPrints && runPrints.length > 0}

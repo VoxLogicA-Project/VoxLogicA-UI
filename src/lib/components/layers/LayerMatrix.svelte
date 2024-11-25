@@ -55,10 +55,10 @@
 	</div>
 
 	<div class="flex-1 overflow-y-auto min-h-0">
-		<div class="px-4 relative h-full flex flex-col">
+		<div class="px-4 pt-2 relative h-full flex flex-col">
 			<!-- Output of the current run -->
 			{#if currentRunsWithErrors.length > 0}
-				<div class="mt-4 mb-2 bg-error-500/20 rounded-lg">
+				<div class="mt-2 mb-2 bg-error-500/20 rounded-lg">
 					<button
 						type="button"
 						class="w-full flex items-center gap-2 p-2 cursor-pointer hover:bg-error-500/30 rounded-lg"
