@@ -92,7 +92,7 @@
 							placeholder="Run print value"
 							bind:value={filter.value}
 						/>
-						<div class="flex gap-2 flex-shrink-0 h-[2.25rem]">
+						<div class="flex flex-shrink-0 h-[2.25rem]">
 							{#if i === filters.length - 1}
 								<button
 									title="Add filter"
