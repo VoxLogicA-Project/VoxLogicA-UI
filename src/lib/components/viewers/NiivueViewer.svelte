@@ -158,6 +158,6 @@
 	});
 </script>
 
-<div bind:this={container} class="relative w-full aspect-square">
-	<canvas bind:this={canvas} class="w-full h-full bg-black" aria-label="Niivue Viewer"></canvas>
+<div bind:this={container} class="w-full h-full">
+	<canvas bind:this={canvas} class="bg-black" aria-label="Niivue Viewer"></canvas>
 </div>
