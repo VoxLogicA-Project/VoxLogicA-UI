@@ -3,6 +3,16 @@
 	import { runViewModel } from '$lib/viewmodels/run.svelte';
 	import { uiViewModel } from '$lib/viewmodels/ui.svelte';
 
+	// Watch for changes to bottomPanelBlinkingTab
+	$effect(() => {
+		if (uiViewModel.bottomPanelBlinkingTab) {
+			// Reset after 3 blinks (1s each) plus a small buffer
+			setTimeout(() => {
+				uiViewModel.bottomPanelBlinkingTab = null;
+			}, 3100);
+		}
+	});
+
 	// Compute tabs based on run history
 	const tabs = $derived([
 		{ id: 'layers', label: 'Available Layers' },
@@ -11,13 +21,6 @@
 			label: `Run ${index + 1}`,
 		})),
 	]);
-
-	// Clear blinking after animation
-	function handleAnimationEnd(tabId: string) {
-		if (uiViewModel.bottomPanelBlinkingTab === tabId) {
-			uiViewModel.bottomPanelBlinkingTab = null;
-		}
-	}
 </script>
 
 <div class="tabs-container overflow-x-auto">
@@ -36,7 +39,6 @@
 				tab.id
 					? 'blink-tab'
 					: ''}"
-				on:animationend={() => handleAnimationEnd(tab.id)}
 			>
 				{tab.label}
 			</Tab>
