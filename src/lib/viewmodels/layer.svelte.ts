@@ -92,7 +92,9 @@ export class LayerViewModel extends BaseViewModel {
 			this.state.availableByCase[caseData.id] = layers;
 			this.state.selected[caseData.id] = [];
 		} catch (error) {
-			this.setError(error instanceof Error ? error.message : 'Failed to load layers');
+			this.setError(
+				error instanceof Error ? error.message : 'Failed to load layers for case ' + caseData.id
+			);
 		} finally {
 			this.setLoading(false);
 		}
