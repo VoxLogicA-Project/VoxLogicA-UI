@@ -3,6 +3,7 @@ import { BaseViewModel } from './base.svelte';
 interface UIState {
 	datasetSidebarCollapsed: boolean;
 	layerSidebarCollapsed: boolean;
+	fullscreenCaseId: string | null;
 	scriptSidebarCollapsed: boolean;
 	bottomPanelTab: string;
 	bottomPanelBlinkingTab: string | null;
@@ -13,6 +14,7 @@ export class UIViewModel extends BaseViewModel {
 	private state = $state<UIState>({
 		datasetSidebarCollapsed: false,
 		layerSidebarCollapsed: false,
+		fullscreenCaseId: null,
 		scriptSidebarCollapsed: false,
 		bottomPanelTab: 'layers',
 		bottomPanelBlinkingTab: null,
@@ -47,6 +49,15 @@ export class UIViewModel extends BaseViewModel {
 
 	set scriptSidebarCollapsed(value: boolean) {
 		this.state.scriptSidebarCollapsed = value;
+	}
+
+	// Viewer Panel Management
+	get fullscreenCaseId() {
+		return this.state.fullscreenCaseId;
+	}
+
+	set fullscreenCaseId(value: string | null) {
+		this.state.fullscreenCaseId = value;
 	}
 
 	// Bottom Panel Management

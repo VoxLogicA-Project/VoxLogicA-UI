@@ -45,7 +45,6 @@ class StateManager extends BaseViewModel {
 		const runState = runViewModel.getState();
 
 		return {
-			ui: uiViewModel.getState(),
 			dataset: {
 				selectedId: datasetViewModel.selectedDataset?.id || null,
 			},
@@ -66,17 +65,18 @@ class StateManager extends BaseViewModel {
 				layersStates: runState.layersStates.map((vm) => vm.getState()),
 				editorContent: runState.editorContent,
 			},
+			ui: uiViewModel.getState(),
 		};
 	}
 
 	async loadState(state: SerializedApplicationState) {
 		this.setLoading(true);
 		// Reset all viewmodels first
-		uiViewModel.reset();
 		caseViewModel.reset();
 		datasetViewModel.reset();
 		layerViewModel.reset();
 		runViewModel.reset();
+		uiViewModel.reset();
 
 		try {
 			// Load and validate datasets
@@ -114,9 +114,6 @@ class StateManager extends BaseViewModel {
 					});
 				}
 			}
-
-			// Restore UI state
-			Object.assign(uiViewModel.getState(), state.ui);
 
 			// Validate and restore runs
 			const validatedRuns: Run[][] = [];
@@ -163,6 +160,15 @@ class StateManager extends BaseViewModel {
 			});
 
 			await runViewModel.loadPresets();
+
+			// Restore UI state
+			Object.assign(uiViewModel.getState(), state.ui);
+			if (
+				state.ui.fullscreenCaseId &&
+				!caseViewModel.cases.some((c) => c.id === state.ui.fullscreenCaseId)
+			) {
+				uiViewModel.fullscreenCaseId = null;
+			}
 		} catch (error) {
 			console.error('Error loading application state:', error);
 			this.setError('Failed to restore application state. Some selections may be missing.');
