@@ -1,24 +1,82 @@
 <script lang="ts">
-	import type { Case } from '$lib/models/types';
+	import type { Case, PrintOutput } from '$lib/models/types';
 	import { LayerViewModel } from '$lib/viewmodels/layer.svelte';
-
+	import { runViewModel } from '$lib/viewmodels/run.svelte';
+	import { uiViewModel } from '$lib/viewmodels/ui.svelte';
 	let {
 		case_ = $bindable<Case>(),
 		index = $bindable<number>(),
 		uniqueLayers = $bindable<string[]>(),
 		layerState = $bindable<LayerViewModel>(),
+		isRunView = $bindable<boolean>(),
 	} = $props();
+
+	// Get prints for this specific case
+	const runPrints = $derived.by(() => {
+		if (uiViewModel.bottomPanelRunIndex === -1) return [];
+		// Assume there is only one RunPrint[] per case
+		return runViewModel.history[uiViewModel.bottomPanelRunIndex]
+			?.filter((run) => run.case.id === case_.id)
+			.map((run) => run.outputPrint)[0];
+	});
+
+	let isPrintsExpanded = $state(true);
+
+	function formatPrint(print: PrintOutput): string {
+		if (print.vltype === 'number' || print.vltype === 'string') {
+			return `${print.name}: ${print.value}`;
+		}
+		return `${print.name}: [${print.vltype}] ${print.value}`;
+	}
 </script>
 
 <tr class="align-middle h-12">
-	<td class="align-middle w-48 border-b border-surface-500/30">
-		<div class="px-4 py-1 rounded bg-surface-200-700-token/50 truncate flex items-center gap-2">
-			<div class="badge-container">
-				<span class="badge variant-filled-primary">{index + 1}</span>
+	<td
+		class="align-middle border-b border-surface-500/30 {isRunView &&
+		runPrints &&
+		runPrints.length > 0
+			? 'w-64'
+			: 'w-48'}"
+	>
+		<div class="px-4 py-1 rounded bg-surface-200-700-token/50 flex flex-col gap-1">
+			<!-- Main case info -->
+			<div class="flex items-center gap-2">
+				<div class="badge-container">
+					<span class="badge variant-filled-primary">{index + 1}</span>
+				</div>
+				<span title={case_.id}>
+					{case_.id.length > 20 ? '...' + case_.id.slice(-20) : case_.id}
+				</span>
+				{#if isRunView && runPrints && runPrints.length > 0}
+					<button
+						title={isPrintsExpanded ? 'Hide prints' : 'Show prints'}
+						aria-label={isPrintsExpanded ? 'Hide prints' : 'Show prints'}
+						class="ml-auto w-7 h-7 btn-icon hover:variant-soft-primary rounded-full"
+						onclick={() => (isPrintsExpanded = !isPrintsExpanded)}
+					>
+						<i class="fa-solid {isPrintsExpanded ? 'fa-chevron-up' : 'fa-chevron-down'} text-sm"
+						></i>
+					</button>
+				{/if}
 			</div>
-			<span title={case_.id}>
-				{case_.id.length > 20 ? '...' + case_.id.slice(-20) : case_.id}
-			</span>
+
+			<!-- Prints section (only shown when expanded and in run view) -->
+			{#if isRunView && runPrints && runPrints.length > 0 && isPrintsExpanded}
+				<div class="text-xs font-mono bg-surface-300/30 dark:bg-surface-500/30 rounded p-2">
+					<ul class="list-disc list-inside space-y-0.5">
+						{#each runPrints as runPrint}
+							<li class="break-all select-text" title={formatPrint(runPrint)}>
+								{runPrint.name}:
+								<span class="font-bold select-text"
+									>{runPrint.vltype === 'number' || runPrint.vltype === 'string'
+										? runPrint.value
+										: `[${runPrint.vltype}] ${runPrint.value}`}</span
+								>
+							</li>
+						{/each}
+					</ul>
+				</div>
+			{/if}
 		</div>
 	</td>
 	{#each uniqueLayers as layerId}

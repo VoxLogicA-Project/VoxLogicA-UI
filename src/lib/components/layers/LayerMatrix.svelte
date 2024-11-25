@@ -7,7 +7,6 @@
 	import LayerTabs from './LayerTabs.svelte';
 	import LayerMatrixHeader from './LayerMatrixHeader.svelte';
 	import LayerMatrixRow from './LayerMatrixRow.svelte';
-	import RunPrints from './RunPrints.svelte';
 
 	const toastStore = getToastStore();
 
@@ -28,6 +27,16 @@
 			: runViewModel.layerStates[uiViewModel.bottomPanelRunIndex]
 	);
 
+	// Get errors for this specific case
+	const currentRunsWithErrors = $derived.by(() => {
+		if (uiViewModel.bottomPanelRunIndex === -1) return [];
+		if (!runViewModel.history[uiViewModel.bottomPanelRunIndex]) return [];
+		return runViewModel.history[uiViewModel.bottomPanelRunIndex].filter((run) => run.outputError);
+	});
+
+	const isRunView = $derived.by(() => uiViewModel.bottomPanelRunIndex !== -1);
+	let errorsPanelExpanded = $state(true);
+
 	// Watch for errors and show toast
 	$effect(() => {
 		const error = layerViewModel.currentError;
@@ -47,8 +56,37 @@
 
 	<div class="flex-1 overflow-y-auto min-h-0">
 		<div class="px-4 relative h-full flex flex-col">
-			{#if uiViewModel.bottomPanelRunIndex !== -1}
-				<RunPrints />
+			<!-- Output of the current run -->
+			{#if currentRunsWithErrors.length > 0}
+				<div class="mt-4 mb-2 bg-error-500/20 rounded-lg">
+					<button
+						type="button"
+						class="w-full flex items-center gap-2 p-2 cursor-pointer hover:bg-error-500/30 rounded-lg"
+						onclick={() => (errorsPanelExpanded = !errorsPanelExpanded)}
+					>
+						<i class="fa-solid fa-triangle-exclamation text-error-500"></i>
+						<span
+							>Errors found in {currentRunsWithErrors.length}
+							{currentRunsWithErrors.length === 1 ? 'case' : 'cases'}</span
+						>
+						<i class="fa-solid {errorsPanelExpanded ? 'fa-chevron-up' : 'fa-chevron-down'} ml-auto"
+						></i>
+					</button>
+					{#if errorsPanelExpanded}
+						<div class="px-4 pb-2">
+							{#each currentRunsWithErrors as run}
+								<div class="text-sm font-mono text-error-600 dark:text-error-400 mb-4 last:mb-0">
+									<div class="font-bold text-error-700 dark:text-error-300">
+										Case {run.case.id}:
+									</div>
+									<div class="pl-4 whitespace-pre-wrap">
+										{run.outputError}
+									</div>
+								</div>
+							{/each}
+						</div>
+					{/if}
+				</div>
 			{/if}
 
 			{#if uniqueLayers.length === 0}
@@ -71,7 +109,7 @@
 						<LayerMatrixHeader {uniqueLayers} {layerState} />
 						<tbody>
 							{#each caseViewModel.selectedCases as case_, index}
-								<LayerMatrixRow {case_} {index} {uniqueLayers} {layerState} />
+								<LayerMatrixRow {case_} {index} {uniqueLayers} {layerState} {isRunView} />
 							{/each}
 						</tbody>
 					</table>
