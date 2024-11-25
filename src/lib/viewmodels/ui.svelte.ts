@@ -5,6 +5,7 @@ interface UIState {
 	layerSidebarCollapsed: boolean;
 	scriptSidebarCollapsed: boolean;
 	bottomPanelTab: string;
+	bottomPanelBlinkingTab: string | null;
 	isDarkMode: boolean;
 }
 
@@ -14,6 +15,7 @@ export class UIViewModel extends BaseViewModel {
 		layerSidebarCollapsed: false,
 		scriptSidebarCollapsed: false,
 		bottomPanelTab: 'layers',
+		bottomPanelBlinkingTab: null,
 		isDarkMode: false,
 	});
 
@@ -61,6 +63,14 @@ export class UIViewModel extends BaseViewModel {
 			return parseInt(this.state.bottomPanelTab.split('-')[1]);
 		}
 		return -1;
+	}
+
+	get bottomPanelBlinkingTab() {
+		return this.state.bottomPanelBlinkingTab;
+	}
+
+	set bottomPanelBlinkingTab(value: string | null) {
+		this.state.bottomPanelBlinkingTab = value;
 	}
 
 	// Theme Management

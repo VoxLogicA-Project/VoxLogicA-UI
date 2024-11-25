@@ -11,6 +11,13 @@
 			label: `Run ${index + 1}`,
 		})),
 	]);
+
+	// Clear blinking after animation
+	function handleAnimationEnd(tabId: string) {
+		if (uiViewModel.bottomPanelBlinkingTab === tabId) {
+			uiViewModel.bottomPanelBlinkingTab = null;
+		}
+	}
 </script>
 
 <div class="tabs-container overflow-x-auto">
@@ -25,7 +32,11 @@
 				bind:group={uiViewModel.bottomPanelTab}
 				name="layers-tab"
 				value={tab.id}
-				class="px-3 py-1.5 whitespace-nowrap text-sm tab-custom"
+				class="px-3 py-1.5 whitespace-nowrap text-sm tab-custom {uiViewModel.bottomPanelBlinkingTab ===
+				tab.id
+					? 'blink-tab'
+					: ''}"
+				on:animationend={() => handleAnimationEnd(tab.id)}
 			>
 				{tab.label}
 			</Tab>
@@ -63,5 +74,20 @@
 
 	:global(.tab-custom:not(.variant-filled-primary)) {
 		background-color: rgb(var(--color-surface-400) / 0.2);
+	}
+
+	:global(.blink-tab) {
+		animation: blink 1s ease-in-out 3;
+	}
+
+	@keyframes blink {
+		0%,
+		100% {
+			opacity: 1;
+		}
+		50% {
+			opacity: 0.8;
+			background-color: rgb(var(--color-success-500));
+		}
 	}
 </style>

@@ -170,7 +170,9 @@
 			} else {
 				// Switch to the newly created run tab
 				const newRunIndex = runViewModel.history.length - 1;
-				uiViewModel.bottomPanelTab = `run-${newRunIndex}`;
+				const newTabId = `run-${newRunIndex}`;
+				uiViewModel.bottomPanelTab = newTabId;
+				uiViewModel.bottomPanelBlinkingTab = newTabId;
 
 				toastStore.trigger({
 					message: 'Run completed successfully!',
