@@ -15,7 +15,7 @@
 
 	// Compute tabs based on run history
 	const tabs = $derived([
-		{ id: 'layers', label: 'Available Layers' },
+		{ id: 'layers', label: 'Dataset Layers' },
 		...runViewModel.history.map((_, index) => ({
 			id: `run-${index}`,
 			label: `Run ${index + 1}`,
