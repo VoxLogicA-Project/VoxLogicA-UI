@@ -3,10 +3,19 @@
 	import { caseViewModel } from '$lib/viewmodels/case.svelte';
 	import { layerViewModel } from '$lib/viewmodels/layer.svelte';
 	import { runViewModel } from '$lib/viewmodels/run.svelte';
-	import { ProgressRadial } from '@skeletonlabs/skeleton';
 
 	// Add state for tracking which case is in fullscreen mode
 	let fullscreenCaseId = $state<string | null>(null);
+	let lastNumberOfOpenedCases = 0;
+
+	$effect(() => {
+		if (caseViewModel.selectedCases.length === 1) {
+			fullscreenCaseId = caseViewModel.selectedCases[0]?.id;
+		} else if (caseViewModel.selectedCases.length === 2 && lastNumberOfOpenedCases === 1) {
+			fullscreenCaseId = null;
+		}
+		lastNumberOfOpenedCases = caseViewModel.selectedCases.length;
+	});
 
 	// Compute grid layout based on number of selected cases
 	const gridClass = $derived(
@@ -46,14 +55,17 @@
 						</span>
 					</span>
 					<div class="flex gap-1">
-						<button
-							class="w-6 h-6 flex items-center justify-center rounded hover:bg-surface-300-600-token transition-colors"
-							onclick={() => (fullscreenCaseId = fullscreenCaseId === case_.id ? null : case_.id)}
-							title={fullscreenCaseId === case_.id ? 'Exit full screen' : 'View full screen'}
-							aria-label={fullscreenCaseId === case_.id ? 'Exit full screen' : 'View full screen'}
-						>
-							<i class="fa-solid {fullscreenCaseId === case_.id ? 'fa-compress' : 'fa-expand'}"></i>
-						</button>
+						{#if caseViewModel.selectedCases.length > 1}
+							<button
+								class="w-6 h-6 flex items-center justify-center rounded hover:bg-surface-300-600-token transition-colors"
+								onclick={() => (fullscreenCaseId = fullscreenCaseId === case_.id ? null : case_.id)}
+								title={fullscreenCaseId === case_.id ? 'Exit full screen' : 'View full screen'}
+								aria-label={fullscreenCaseId === case_.id ? 'Exit full screen' : 'View full screen'}
+							>
+								<i class="fa-solid {fullscreenCaseId === case_.id ? 'fa-compress' : 'fa-expand'}"
+								></i>
+							</button>
+						{/if}
 						<button
 							class="w-6 h-6 flex items-center justify-center rounded hover:bg-surface-300-600-token transition-colors"
 							onclick={() => caseViewModel.deselectCase(case_)}
