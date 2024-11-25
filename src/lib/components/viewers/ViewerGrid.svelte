@@ -60,7 +60,10 @@
 					<div class="flex gap-1">
 						{#if caseViewModel.selectedCases.length > 1}
 							<button
-								class="w-6 h-6 flex items-center justify-center rounded hover:bg-surface-300-600-token transition-colors"
+								class="w-6 h-6 flex items-center justify-center rounded transition-colors
+									{uiViewModel.fullscreenCaseId === case_.id
+									? 'bg-primary-500 text-white hover:bg-primary-600'
+									: 'hover:bg-surface-300-600-token'}"
 								onclick={() =>
 									(uiViewModel.fullscreenCaseId =
 										uiViewModel.fullscreenCaseId === case_.id ? null : case_.id)}
