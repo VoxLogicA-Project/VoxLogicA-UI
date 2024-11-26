@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { scale } from 'svelte/transition';
+
 	let {
 		selected = $bindable(false),
 		disabled = $bindable(false),
@@ -11,8 +13,12 @@
 
 <!-- svelte-ignore event_directive_deprecated -->
 <button
-	class="w-full px-4 py-2.5 text-left transition-all duration-200
-		{!disabled ? 'hover:bg-surface-200-700-token hover:pl-6 group' : ''}
+	class="w-full px-4 py-2.5 text-left transition-all duration-10
+		{!disabled
+		? selected
+			? 'hover:bg-primary-500/20 hover:pl-6 group'
+			: 'hover:bg-surface-200-700-token hover:pl-6 group'
+		: ''}
 		{selected
 		? 'bg-primary-500/10 text-primary-700 dark:text-primary-400'
 		: 'text-surface-900-50-token'}
