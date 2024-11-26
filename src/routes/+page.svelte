@@ -2,7 +2,7 @@
 	import CollapsibleSidebar from '$lib/components/common/CollapsibleSidebar.svelte';
 	import DatasetBrowser from '$lib/components/navigation/DatasetBrowser.svelte';
 	import CaseList from '$lib/components/navigation/CaseList.svelte';
-	import ViewerGrid from '$lib/components/viewers/ViewerGrid.svelte';
+	import ViewersGrid from '$lib/components/viewers/ViewersGrid.svelte';
 	import LayerMatrix from '$lib/components/layers/LayerMatrix.svelte';
 	import ScriptEditor from '$lib/components/run/ScriptEditor.svelte';
 	import { datasetViewModel } from '$lib/viewmodels/dataset.svelte';
@@ -149,7 +149,7 @@
 				<!-- Viewer Grid -->
 				<div class="flex-1 overflow-auto">
 					{#if caseViewModel.selectedCases.length > 0}
-						<ViewerGrid />
+						<ViewersGrid />
 					{:else}
 						<div class="flex h-full items-center justify-center">
 							<div class="flex items-center gap-3 text-surface-600-300-token">

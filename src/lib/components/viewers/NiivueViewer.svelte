@@ -151,6 +151,19 @@
 		}
 	}
 
+	export async function saveScreenshot() {
+		if (!nv || !isInitialized) return;
+
+		const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+		const filename = `${case_.id}_${timestamp}.png`;
+
+		try {
+			await nv.saveScene(filename);
+		} catch (error) {
+			console.error('Failed to save screenshot:', error);
+		}
+	}
+
 	onDestroy(() => {
 		if (nv) {
 			nv.closeDrawing();
