@@ -33,7 +33,7 @@
 				sidebarElement.style[isVertical ? 'width' : 'height'] = `${size}px`;
 			} else if (size <= minSize && !isCollapsed) {
 				// Auto-collapse when dragged below minSize
-				toggleCollapse();
+				isCollapsed = !isCollapsed;
 			}
 		}
 
@@ -48,17 +48,12 @@
 		document.body.style.cursor = isVertical ? 'col-resize' : 'row-resize';
 	}
 
-	function toggleCollapse() {
+	$effect(() => {
 		if (isCollapsed) {
-			sidebarElement.style[isVertical ? 'width' : 'height'] = defaultSize;
-		} else {
 			sidebarElement.style[isVertical ? 'width' : 'height'] = '40px';
+		} else {
+			sidebarElement.style[isVertical ? 'width' : 'height'] = defaultSize;
 		}
-		isCollapsed = !isCollapsed;
-	}
-
-	onMount(() => {
-		sidebarElement.style[isVertical ? 'width' : 'height'] = defaultSize;
 	});
 </script>
 
@@ -80,7 +75,7 @@
 		<div class="w-full h-full flex items-center justify-center">
 			<button
 				class="w-full h-full btn variant-soft rounded-none flex items-center justify-center"
-				onclick={toggleCollapse}
+				onclick={() => (isCollapsed = !isCollapsed)}
 				aria-label={`${isCollapsed ? 'Expand' : 'Collapse'} sidebar`}
 			>
 				<i
