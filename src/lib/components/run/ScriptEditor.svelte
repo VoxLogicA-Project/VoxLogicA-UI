@@ -11,13 +11,13 @@
 	import { ProgressRadial } from '@skeletonlabs/skeleton';
 	import { getToastStore } from '@skeletonlabs/skeleton';
 	import { uiViewModel } from '$lib/viewmodels/ui.svelte';
+	import { popup } from '@skeletonlabs/skeleton';
 	const toastStore = getToastStore();
 
 	let fileInput: HTMLInputElement;
 	let editorView: EditorView;
 	let headerView: EditorView | undefined;
 	let isHeaderCollapsed = $state(false);
-	let showCaseDropdown = $state(false);
 
 	// Custom theme for the editor to blend better with Skeleton
 	const customTheme = EditorView.theme({
@@ -189,7 +189,6 @@
 
 	// Run the script for a single case
 	async function handleSingleRun(case_: Case) {
-		showCaseDropdown = false;
 		try {
 			await runViewModel.runAll([case_]);
 
@@ -297,33 +296,35 @@
 			<button
 				class="btn variant-filled-primary p-1"
 				disabled={!runViewModel.editorContent.trim()}
-				onclick={() => (showCaseDropdown = !showCaseDropdown)}
+				use:popup={{
+					event: 'click',
+					target: 'case-dropdown',
+					placement: 'top-end',
+				}}
 				title="Run Script for a single case"
 				aria-label="Run Script for a single case"
 			>
 				<i class="fa-solid fa-chevron-up text-sm"></i>
 			</button>
-			{#if showCaseDropdown}
-				<div
-					class="absolute bottom-[4.5rem] right-4 w-48 rounded-md shadow-lg bg-white dark:bg-gray-800 ring-1 ring-black/10 dark:ring-white/10 shadow-surface-900/20"
-				>
-					<div class="py-1" role="menu">
-						{#each caseViewModel.selectedCases as case_}
-							<button
-								class="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700"
-								title={`Run script for ${case_.id}`}
-								aria-label={`Run script for ${case_.id}`}
-								onclick={() => handleSingleRun(case_)}
-							>
-								Run Case <strong>{case_.id}</strong>
-							</button>
-							{#if caseViewModel.selectedCases.length - 1 !== caseViewModel.selectedCases.indexOf(case_)}
-								<hr class="border-surface-500/30" />
-							{/if}
-						{/each}
-					</div>
+
+			<div class="card p-0 w-48 shadow-xl bg-surface-200-700-token" data-popup="case-dropdown">
+				<div class="py-1">
+					{#each caseViewModel.selectedCases as case_, i}
+						<button
+							class="w-full text-left px-4 py-2 text-sm hover:bg-surface-500/20"
+							title={`Run script for ${case_.id}`}
+							aria-label={`Run script for ${case_.id}`}
+							onclick={() => handleSingleRun(case_)}
+						>
+							Run Case <strong>{case_.id}</strong>
+						</button>
+						{#if i !== caseViewModel.selectedCases.length - 1}
+							<hr class="border-surface-500/30" />
+						{/if}
+					{/each}
 				</div>
-			{/if}
+				<div class="arrow bg-surface-200-700-token"></div>
+			</div>
 		</div>
 	</div>
 </div>
