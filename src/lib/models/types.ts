@@ -21,6 +21,11 @@ export interface ColorMap {
 	I: number[];
 }
 
+export interface LayerStyle {
+	colorMap: ColorMap | string;
+	alpha: number;
+}
+
 export interface PresetScript {
 	id: string;
 	path: string;

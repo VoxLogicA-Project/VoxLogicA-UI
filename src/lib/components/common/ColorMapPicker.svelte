@@ -1,8 +1,7 @@
 <script lang="ts">
 	import { popup } from '@skeletonlabs/skeleton';
-	import type { ColorMap } from '$lib/models/types';
 
-	let { value = $bindable<ColorMap | string>(), id } = $props();
+	let { id, colormapValue = $bindable(), alphaValue = $bindable(1) } = $props();
 
 	const popupId = `colormap-picker-${id}`;
 
@@ -52,7 +51,7 @@
 			A: [0, 255, 255],
 			I: [0, 1, 255],
 		};
-		value = colorMap;
+		colormapValue = colorMap;
 	}
 
 	let activeTab: 'preset' | 'custom' = $state('preset');
@@ -60,7 +59,7 @@
 	function setActiveTab(tab: 'preset' | 'custom') {
 		activeTab = tab;
 		if (tab === 'preset' && presetColorMaps.length > 0) {
-			value = presetColorMaps[0];
+			colormapValue = presetColorMaps[0];
 		}
 	}
 
@@ -84,9 +83,9 @@
 			closeQuery: '.popup-close',
 		}}
 		class="btn-icon variant-soft hover:!bg-gradient-to-r hover:!from-[#8B0000B3] hover:!via-[#006400B3] hover:!to-[#00008BB3] hover:!text-white w-8 h-8 !rounded-md"
-		style="background: {typeof value === 'string'
-			? (presetColorMapping[value] ?? 'rgb(255, 255, 255)')
-			: `rgb(${value?.R?.[2] ?? 255}, ${value?.G?.[2] ?? 255}, ${value?.B?.[2] ?? 255})`}"
+		style="background: {typeof colormapValue === 'string'
+			? (presetColorMapping[colormapValue] ?? 'rgb(255, 255, 255)')
+			: `rgb(${colormapValue?.R?.[2] ?? 255}, ${colormapValue?.G?.[2] ?? 255}, ${colormapValue?.B?.[2] ?? 255})`}"
 		aria-label="Color Map Picker"
 	>
 		<i
@@ -96,7 +95,7 @@
 	</button>
 
 	<div class="card p-3 w-64 shadow-xl fixed" data-popup={popupId} style="z-index: 1000;">
-		<div class="flex flex-col gap-3">
+		<div class="flex flex-col gap-1">
 			<!-- Minimal tabs -->
 			<div class="tabs">
 				<div class="flex border-b border-surface-400-500-token justify-center">
@@ -135,7 +134,12 @@
 			<div class="h-[60px] flex items-center justify-center">
 				{#if activeTab === 'preset'}
 					<div class="w-full">
-						<select name="colormap_preset" class="select w-full" bind:value>
+						<select
+							name="colormap_preset"
+							class="select w-full"
+							value={colormapValue}
+							onchange={(e) => (colormapValue = e.currentTarget.value)}
+						>
 							<option value="" disabled>Choose a colormap...</option>
 							{#each presetColorMaps as name}
 								<option value={name}>{name}</option>
@@ -147,7 +151,7 @@
 						<input
 							name="colormap_custom"
 							type="color"
-							class="w-full h-10 rounded-container-token cursor-pointer appearance-none border-0 !p-0 hover:scale-[1.02] transition-transform"
+							class="w-full h-12 rounded-container-token cursor-pointer appearance-none border-0 !p-0 hover:scale-[1.02] transition-transform"
 							style="background-color: transparent;"
 							oninput={(e) => {
 								const hex = e.currentTarget.value;
@@ -159,6 +163,46 @@
 						/>
 					</div>
 				{/if}
+			</div>
+
+			<!-- Alpha control -->
+			<div class="flex flex-col gap-2">
+				<div class="flex items-center justify-between text-sm">
+					<span class="flex items-center gap-1.5" title="Adjust layer opacity">
+						<i class="fa-solid fa-circle-half-stroke"></i>
+						Opacity
+					</span>
+					<div class="input-group input-group-divider grid-cols-[1fr_auto] w-20">
+						<input
+							type="number"
+							bind:value={alphaValue}
+							min="0"
+							max="1"
+							step="0.01"
+							class="input p-1 text-center text-primary-500"
+							title="Opacity percentage"
+						/>
+					</div>
+				</div>
+				<div class="w-full relative">
+					<input
+						type="range"
+						bind:value={alphaValue}
+						min="0"
+						max="1"
+						step="0.01"
+						class="range w-full cursor-pointer"
+						title="Drag to adjust opacity"
+					/>
+					<div
+						class="absolute inset-0 rounded-token pointer-events-none"
+						style="background: {typeof colormapValue === 'string'
+							? (presetColorMapping[colormapValue] ??
+								'linear-gradient(to right, transparent, rgb(255, 255, 255))')
+							: `linear-gradient(to right, transparent, rgb(${colormapValue?.R?.[2] ?? 255}, ${colormapValue?.G?.[2] ?? 255}, ${colormapValue?.B?.[2] ?? 255}))`}; 
+						opacity: 0.1;"
+					></div>
+				</div>
 			</div>
 		</div>
 		<div class="arrow bg-surface-100-800-token"></div>

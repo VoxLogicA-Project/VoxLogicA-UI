@@ -1,6 +1,6 @@
 import { BaseViewModel } from './base.svelte';
 import { datasetViewModel } from './dataset.svelte';
-import type { Case, Layer, ColorMap } from '$lib/models/types';
+import type { Case, Layer, ColorMap, LayerStyle } from '$lib/models/types';
 import { apiRepository } from '$lib/models/repository';
 import { caseViewModel } from './case.svelte';
 import { stateManager } from './statemanager.svelte';
@@ -8,10 +8,13 @@ import { stateManager } from './statemanager.svelte';
 export interface LayerState {
 	availableByCase: Record<string, Layer[]>;
 	selected: Record<string, Layer[]>;
-	styles: Record<string, ColorMap | string>; // string is the name of the preset colormap
+	styles: Record<string, LayerStyle>;
 }
 
-const defaultColorMap = 'gray';
+const defaultLayerStyle: LayerStyle = {
+	colorMap: 'gray',
+	alpha: 1.0,
+};
 
 export class LayerViewModel extends BaseViewModel {
 	private state = $state<LayerState>({
@@ -56,11 +59,11 @@ export class LayerViewModel extends BaseViewModel {
 
 	selectedLayersForCase = $derived((caseId: string) => this.state.selected[caseId] || []);
 
-	selectedLayersWithColorMapsForCase = $derived((caseId: string) => {
+	selectedLayersWithLayerStylesForCase = $derived((caseId: string) => {
 		const layers = this.selectedLayersForCase(caseId);
 		return layers.map((layer) => ({
 			layer,
-			colorMap: this.state.styles[layer.id],
+			style: this.state.styles[layer.id],
 		}));
 	});
 
@@ -85,7 +88,7 @@ export class LayerViewModel extends BaseViewModel {
 			// Initialize default styles for new layers
 			layers.forEach((layer) => {
 				if (!this.state.styles[layer.id]) {
-					this.state.styles[layer.id] = defaultColorMap;
+					this.state.styles[layer.id] = { ...defaultLayerStyle };
 				}
 			});
 
@@ -103,7 +106,7 @@ export class LayerViewModel extends BaseViewModel {
 	async loadLayersFromRun(caseData: Case, runOutputLayers: Layer[]) {
 		// Initialize default styles for new layers
 		runOutputLayers.forEach((layer) => {
-			this.state.styles[layer.id] = defaultColorMap;
+			this.state.styles[layer.id] = { ...defaultLayerStyle };
 		});
 		this.state.availableByCase[caseData.id] = runOutputLayers;
 		stateManager.markAsUnsaved();
@@ -156,8 +159,19 @@ export class LayerViewModel extends BaseViewModel {
 	}
 
 	// Style Management Methods
-	setLayerStyleColor(layerId: string, colorMap: ColorMap) {
-		this.state.styles[layerId] = colorMap;
+	setLayerStyleColor(layerId: string, colorMap: ColorMap | string) {
+		this.state.styles[layerId] = {
+			...(this.state.styles[layerId] || defaultLayerStyle),
+			colorMap: colorMap,
+		};
+		stateManager.markAsUnsaved();
+	}
+
+	setLayerStyleAlpha(layerId: string, alpha: number) {
+		this.state.styles[layerId] = {
+			...(this.state.styles[layerId] || defaultLayerStyle),
+			alpha: alpha,
+		};
 		stateManager.markAsUnsaved();
 	}
 

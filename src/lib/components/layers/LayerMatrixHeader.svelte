@@ -32,7 +32,11 @@
 			<th class="text-center p-2 border-b border-surface-500/30 font-medium">
 				<div class="flex flex-col items-center">
 					<div class:dark={uiViewModel.isDarkMode} title="Click to change layer color">
-						<ColorMapPicker bind:value={layerState.styles[layerId]} id={layerId} />
+						<ColorMapPicker
+							id={layerId}
+							bind:colormapValue={layerState.styles[layerId].colorMap}
+							bind:alphaValue={layerState.styles[layerId].alpha}
+						/>
 					</div>
 					<div class="flex items-center gap-1">
 						<button

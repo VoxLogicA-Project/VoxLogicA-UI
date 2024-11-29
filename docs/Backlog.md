@@ -2,21 +2,39 @@
 
 ## Rework: introduce workspaces
 
-- A workspace persists on the server the current saved state (we can't trust the users)
-- Each user have their own workspaces, to not create confusion
-- Workspaces are not shareable (too difficult for now, maybe in the future)
-- Workspaces can be exported/imported
-- Each workspace have a unique id
-- Runs are limited inside a workspace
+- Workspaces will persist on the server in the form:
+
+```typescript
+interface Workspace {
+	id: string; // Unique identifier
+	name: string; // User-friendly name
+	createdAt: Date; // Creation timestamp
+	lastModifiedAt: Date; // Last modification timestamp
+	state: SerializedApplicationState; // The current state of the application
+}
+```
+
+- The list of created workspaces will be persisted in the client's local storage
+  - This will hide other users' workspaces
+- This will also make workspaces shareable, as long as a user knows the workspace id
+- Workspaces can be exported (along with the runs' outputs) / imported
+
+### API
+
+- POST `/workspaces/`: create a new workspace
+- GET `/workspaces/[id]`: fetch a workspace by id
+- PUT `/workspaces/[id]`: update a workspace by id (only sending the fields that changed)
+- DELETE `/workspaces/[id]`: delete a workspace by id
 
 ## UI
 
-- Rework the left sidebar:
+- Rework the left sidebar (after workspaces are implemented):
 
   - Dataset selection able to handle a large number of dataset folders
   - Able to select multiple datasets
   - Cases selection also showing runs of the session
   - Implement runs filtering
+  - Allow open/close runs
 
 - Stretch goal:
   - Add view-only mode:
@@ -60,6 +78,10 @@ function isPathSafe(basePath: string, requestedPath: string): boolean {
   - Implement it
 - CORS Configuration:
   - Add proper CORS configuration based on your requirements
+
+## Optimization
+
+- Implement cleanup strategies for old workspaces and run outputs
 
 ## Localization
 

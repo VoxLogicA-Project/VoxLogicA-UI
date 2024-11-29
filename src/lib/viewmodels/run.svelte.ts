@@ -1,5 +1,5 @@
 import { BaseViewModel } from './base.svelte';
-import type { Case, ColorMap, Layer, PresetScript, Run } from '$lib/models/types';
+import type { Case, ColorMap, Layer, LayerStyle, PresetScript, Run } from '$lib/models/types';
 import { LayerViewModel, layerViewModel } from './layer.svelte';
 import { apiRepository } from '$lib/models/repository';
 import { stateManager } from './statemanager.svelte';
@@ -186,22 +186,22 @@ export class RunViewModel extends BaseViewModel {
 		return allSelectedLayers;
 	});
 
-	selectedLayersWithColorMapsForCase = $derived((caseId: string) => {
-		const allSelectedLayersWithColorMaps: {
+	selectedLayersWithLayerStylesForCase = $derived((caseId: string) => {
+		const allSelectedLayersWithLayerStyles: {
 			runIndex: number;
 			layer: Layer;
-			colorMap: ColorMap | string;
+			style: LayerStyle;
 		}[] = [];
 		this.state.layersStates.forEach((state, index) => {
-			const layersWithColorMaps = state.selectedLayersWithColorMapsForCase(caseId);
-			allSelectedLayersWithColorMaps.push(
-				...layersWithColorMaps.map((item) => ({
+			const layersWithLayerStyles = state.selectedLayersWithLayerStylesForCase(caseId);
+			allSelectedLayersWithLayerStyles.push(
+				...layersWithLayerStyles.map((item) => ({
 					...item,
 					runIndex: index,
 				}))
 			);
 		});
-		return allSelectedLayersWithColorMaps;
+		return allSelectedLayersWithLayerStyles;
 	});
 
 	uniqueLayerIdsByRun = $derived((runIndex: number) => {

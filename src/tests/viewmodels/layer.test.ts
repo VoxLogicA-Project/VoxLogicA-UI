@@ -59,7 +59,10 @@ describe('LayerViewModel', () => {
 
 			// Assert
 			mockLayers.forEach((layer) => {
-				expect(layerViewModel.styles[layer.id]).toBe('gray');
+				expect(layerViewModel.styles[layer.id]).toEqual({
+					colorMap: 'gray',
+					alpha: 1,
+				});
 			});
 		});
 	});
@@ -111,13 +114,16 @@ describe('LayerViewModel', () => {
 				A: [0.5],
 				I: [1.0],
 			};
-			layerViewModel.getState().styles[layerId] = 'gray';
+			layerViewModel.getState().styles[layerId] = { colorMap: 'gray', alpha: 1 };
 
 			// Act
 			layerViewModel.setLayerStyleColor(layerId, newColorMap);
 
 			// Assert
-			expect(layerViewModel.styles[layerId]).toEqual(newColorMap);
+			expect(layerViewModel.styles[layerId]).toEqual({
+				colorMap: newColorMap,
+				alpha: 1,
+			});
 		});
 	});
 

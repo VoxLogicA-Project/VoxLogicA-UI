@@ -67,32 +67,32 @@ describe('CaseViewModel', () => {
 	});
 
 	describe('case selection', () => {
-		it('should select a case and load its layers', () => {
+		it('should select a case and load its layers', async () => {
 			// Arrange
 			const caseData = mockCases[0];
 
 			// Act
-			caseViewModel.selectCase(caseData);
+			await caseViewModel.selectCase(caseData);
 
 			// Assert
 			expect(caseViewModel.selectedCases).toContainEqual(caseData);
 			expect(layerViewModel.loadLayersFromDataset).toHaveBeenCalledWith(caseData);
 		});
 
-		it('should not select the same case twice', () => {
+		it('should not select the same case twice', async () => {
 			// Arrange
 			const caseData = mockCases[0];
 
 			// Act
-			caseViewModel.selectCase(caseData);
-			caseViewModel.selectCase(caseData);
+			await caseViewModel.selectCase(caseData);
+			await caseViewModel.selectCase(caseData);
 
 			// Assert
 			expect(caseViewModel.selectedCases).toHaveLength(1);
 			expect(layerViewModel.loadLayersFromDataset).toHaveBeenCalledTimes(1);
 		});
 
-		it('should enforce maximum case selection limit', () => {
+		it('should enforce maximum case selection limit', async () => {
 			// Arrange
 			const maxCases = caseViewModel.maxCases;
 			const cases = Array.from({ length: maxCases + 1 }, (_, i) => ({
@@ -101,17 +101,19 @@ describe('CaseViewModel', () => {
 			}));
 
 			// Act
-			cases.forEach((c) => caseViewModel.selectCase(c));
+			for (const c of cases) {
+				await caseViewModel.selectCase(c);
+			}
 
 			// Assert
 			expect(caseViewModel.selectedCases).toHaveLength(maxCases);
 			expect(caseViewModel.currentError).toBe(`Cannot select more than ${maxCases} cases`);
 		});
 
-		it('should deselect a case and remove its layers', () => {
+		it('should deselect a case and remove its layers', async () => {
 			// Arrange
 			const caseData = mockCases[0];
-			caseViewModel.selectCase(caseData);
+			await caseViewModel.selectCase(caseData);
 
 			// Act
 			caseViewModel.deselectCase(caseData);
@@ -123,9 +125,9 @@ describe('CaseViewModel', () => {
 	});
 
 	describe('reset', () => {
-		it('should reset all state', () => {
+		it('should reset all state', async () => {
 			// Arrange
-			caseViewModel.selectCase(mockCases[0]);
+			await caseViewModel.selectCase(mockCases[0]);
 
 			// Act
 			caseViewModel.reset();
