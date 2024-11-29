@@ -49,7 +49,9 @@
 									layerState.selectLayerForAllSelectedCases(layerId);
 								}
 							}}
-							title="Click to toggle layer visibility for all cases"
+							title={layerState.isLayerSelectedForAllCases(layerId)
+								? `Hide ${layerId} layer for all cases`
+								: `Show ${layerId} layer for all cases`}
 						>
 							<span class="truncate text-surface-900 dark:text-surface-50">
 								{layerId.length > 20 ? '...' + layerId.slice(-20) : layerId}

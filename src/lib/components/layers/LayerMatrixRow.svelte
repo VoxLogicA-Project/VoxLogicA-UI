@@ -86,8 +86,16 @@
 		{@const isAvailable = layer !== undefined}
 		<td class="w-32 text-center align-middle px-4 border-b border-surface-500/30">
 			<button
-				title="Toggle layer visibility"
-				aria-label="Toggle layer visibility"
+				title={isAvailable
+					? layerState.isLayerSelectedForCase(case_.id, layer.id)
+						? `Hide ${layerId} layer`
+						: `Show ${layerId} layer`
+					: `${layerId} layer not available for this case`}
+				aria-label={isAvailable
+					? layerState.isLayerSelectedForCase(case_.id, layer.id)
+						? `Hide ${layerId} layer`
+						: `Show ${layerId} layer`
+					: `${layerId} layer not available`}
 				class="w-12 h-12 rounded-full transition-all duration-200 hover:scale-110 focus:outline-none group"
 				disabled={!isAvailable}
 				onclick={() => layer && layerState.toggleLayer(case_.id, layer)}
