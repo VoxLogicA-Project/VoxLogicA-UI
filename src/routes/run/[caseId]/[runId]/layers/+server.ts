@@ -1,20 +1,19 @@
 import { json, error } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import fs from 'fs/promises';
-import path from 'path';
 import { RUN_OUTPUT_PATH } from '../../../../config';
 import type { Layer } from '$lib/models/types';
 
 export const GET: RequestHandler = async ({ params }) => {
-	const { runId, caseId } = params;
-	const casePath = path.join(RUN_OUTPUT_PATH(runId), caseId);
+	const { caseId, runId } = params;
+	const runPath = RUN_OUTPUT_PATH(caseId, runId);
 
 	// Read the case directory
 	let files: string[];
 	try {
-		files = await fs.readdir(casePath);
+		files = await fs.readdir(runPath);
 	} catch (e) {
-		throw error(404, `Case directory not found: ${caseId}`);
+		throw error(404, `Run directory not found: ${runId}`);
 	}
 
 	// Parse the layers
@@ -29,7 +28,7 @@ export const GET: RequestHandler = async ({ params }) => {
 
 		layers.push({
 			name: displayName[1],
-			path: `/run/${runId}/${caseId}/layers/${file}`,
+			path: `/run/${caseId}/${runId}/layers/${file}`,
 		});
 	}
 

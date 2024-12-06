@@ -24,7 +24,8 @@ export const GET: RequestHandler = async ({ params }: { params: { dataset: strin
 			.filter((entry) => entry.isDirectory())
 			.map((entry) => ({
 				name: entry.name,
-				path: path.join(params.dataset, entry.name),
+				path: `/datasets/${params.dataset}/cases/${entry.name}/layers`,
+				id: `${params.dataset}-${entry.name}`,
 			}));
 
 		if (cases.length === 0) {

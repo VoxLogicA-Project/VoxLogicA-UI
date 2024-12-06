@@ -156,7 +156,7 @@ export const POST: RequestHandler = async ({ request, fetch }) => {
 	const results: Run[] = [];
 
 	for (const case_ of cases) {
-		const caseOutputDir = path.join(RUN_OUTPUT_PATH(runId), case_.name);
+		const caseOutputDir = RUN_OUTPUT_PATH(case_.id, runId);
 
 		try {
 			// Create case-specific directory
@@ -175,12 +175,6 @@ export const POST: RequestHandler = async ({ request, fetch }) => {
 			await fs.access(VOXLOGICA_BINARY_PATH);
 			const voxlogicaResult = await runVoxLogica(VOXLOGICA_BINARY_PATH, scriptPath);
 
-			// Update layer paths to include case ID
-			const layers = voxlogicaResult.layers.map((layer) => ({
-				name: layer.name,
-				path: `/run/${runId}/${case_.name}/layers/${layer.name}.nii.gz`,
-			}));
-
 			const run: Run = {
 				id: runId,
 				timestamp: new Date(),
@@ -196,6 +190,7 @@ export const POST: RequestHandler = async ({ request, fetch }) => {
 			// Don't cleanup temp directory as we need it for layer access
 			results.push(run);
 		} catch (err) {
+			await cleanup(caseOutputDir);
 			if (err instanceof Error && 'code' in err && err.code === 'ENOENT') {
 				throw error(400, 'VoxLogicA binary not found. Please check your installation.');
 			}

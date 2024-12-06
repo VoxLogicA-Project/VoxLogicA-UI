@@ -17,5 +17,5 @@ export const VOXLOGICA_BINARY_PATH = (() => {
 	}
 })();
 
-export const RUN_OUTPUT_PATH = (runId: string) =>
-	path.join(process.env.RUN_OUTPUT_PATH || tmpdir(), `voxlogica_run_${runId}`);
+export const RUN_OUTPUT_PATH = (caseId: string, runId: string) =>
+	path.join(process.env.RUN_OUTPUT_PATH || tmpdir(), caseId, runId);
