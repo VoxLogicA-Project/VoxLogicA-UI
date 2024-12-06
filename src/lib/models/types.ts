@@ -1,15 +1,15 @@
 export interface Dataset {
-	id: string;
+	name: string;
 	layout: string;
 }
 
 export interface Case {
-	id: string;
+	name: string;
 	path: string;
 }
 
 export interface Layer {
-	id: string;
+	name: string;
 	path: string;
 }
 
@@ -22,12 +22,12 @@ export interface ColorMap {
 }
 
 export interface LayerStyle {
-	colorMap: ColorMap | string;
+	colorMap: ColorMap | string; // Either a color map or a string representing a color map name
 	alpha: number;
 }
 
 export interface PresetScript {
-	id: string;
+	name: string;
 	path: string;
 }
 
@@ -41,9 +41,47 @@ export interface Run {
 	id: string;
 	timestamp: Date;
 	scriptContent: string;
-	case: Case;
 	outputPrint: PrintOutput[];
-	outputLayers: Layer[];
 	outputLog?: string;
 	outputError?: string;
+}
+
+export interface LayersState {
+	openedLayersPathsByCasePath: Record<Case['path'], Layer['path'][]>;
+	stylesByLayerName: Record<Layer['name'], LayerStyle>;
+}
+
+export interface SerializedWorkspaceState {
+	data: {
+		openedDatasetName: Dataset['name'] | null;
+		openedCasesPaths: Case['path'][];
+		openedRunsIds: Run['id'][];
+	};
+	datasetLayersState: LayersState;
+	runsLayersStates: LayersState[];
+	ui: {
+		isDarkMode: boolean;
+		sidebars: {
+			datasetCollapsed: boolean;
+			layerCollapsed: boolean;
+			scriptCollapsed: boolean;
+		};
+		viewers: {
+			fullscreenCasePath: Case['path'] | null;
+		};
+		layers: {
+			bottomPanelTab: string;
+		};
+		scriptEditor: {
+			content: string;
+		};
+	};
+}
+
+export interface Workspace {
+	id: string;
+	name: string;
+	createdAt: Date;
+	updatedAt: Date;
+	state: SerializedWorkspaceState;
 }

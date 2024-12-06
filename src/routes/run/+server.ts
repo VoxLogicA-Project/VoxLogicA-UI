@@ -25,20 +25,20 @@ const substituteUiPathVariables = async (
 	const datasetId = case_.path.split(path.sep)[0];
 
 	try {
-		const response = await fetch(`/datasets/${datasetId}/cases/${case_.id}/layers`);
-		const layers = await response.json();
+		const response = await fetch(`/datasets/${datasetId}/cases/${case_.name}/layers`);
+		const layers: Layer[] = await response.json();
 
 		// Process layer paths
 		let processedScript = scriptContent;
 		for (const layer of layers) {
 			const layerFilename = layer.path.split('/').pop();
 			if (!layerFilename) {
-				throw error(400, `Invalid layer path for layer ${layer.id}`);
+				throw error(400, `Invalid layer path for layer ${layer.name}`);
 			}
 
 			processedScript = processedScript.replace(
-				new RegExp(`\\$\\{LAYER_PATH:${layer.id}\\}`, 'g'),
-				path.join(DATASET_PATH, datasetId, case_.id, layerFilename)
+				new RegExp(`\\$\\{LAYER_PATH:${layer.name}\\}`, 'g'),
+				path.join(DATASET_PATH, datasetId, case_.name, layerFilename)
 			);
 		}
 
@@ -57,15 +57,6 @@ const substituteUiPathVariables = async (
 	}
 };
 
-const substituteoutputDir = (str: string, outputDir: string) => {
-	// The idea was to remove any temp dir path information from the log/error
-	// but we would loose the formating this way
-	// Leaving this here for now, but it's not used
-	const strNoNewLines = str.replace(/^\s+/gm, '').replace(/[\r\n]/g, '');
-	const outputDirEscaped = outputDir.replace(/\\/g, '\\\\');
-	return strNoNewLines.replace(new RegExp(outputDirEscaped, 'gm'), '');
-};
-
 // VoxLogicA process execution and output parsing
 const runVoxLogica = async (binaryPath: string, scriptPath: string): Promise<VoxLogicaResult> => {
 	return new Promise((resolve, reject) => {
@@ -78,7 +69,7 @@ const runVoxLogica = async (binaryPath: string, scriptPath: string): Promise<Vox
 				process.kill();
 				reject(new Error('VoxLogicA process timed out after 5 minutes'));
 			},
-			5 * 60 * 1000
+			5 * 60 * 1000 // 5 minutes
 		);
 
 		process.stdout.on('data', (data) => {
@@ -146,90 +137,92 @@ async function cleanup(outputDir: string): Promise<void> {
 // Main API endpoint handler
 export const POST: RequestHandler = async ({ request, fetch }) => {
 	const runId = randomUUID();
-	const outputDir = RUN_OUTPUT_PATH(runId);
 
 	let scriptContent: string;
-	let case_: Case;
+	let cases: Case[];
 
 	try {
 		const body = await request.json();
 		scriptContent = body.scriptContent;
-		case_ = body.case_;
+		cases = body.cases;
+
+		if (!Array.isArray(cases)) {
+			throw error(400, '"cases" must be an array');
+		}
 	} catch (err) {
-		throw error(400, 'Missing required fields: scriptContent or case_');
+		throw error(400, 'Missing required fields: scriptContent or cases');
 	}
 
-	try {
-		// Create the temporary directory and write the script
-		await fs.mkdir(outputDir, { recursive: true });
-		const scriptPath = path.join(outputDir, 'script.imgql');
-		const substitutedScriptContent = await substituteUiPathVariables(
-			scriptContent,
-			case_,
-			outputDir,
-			fetch
-		);
-		await fs.writeFile(scriptPath, substitutedScriptContent);
+	const results: Run[] = [];
 
-		// Verify VoxLogicA binary exists and run the process
-		await fs.access(VOXLOGICA_BINARY_PATH);
-		const voxlogicaResult = await runVoxLogica(VOXLOGICA_BINARY_PATH, scriptPath);
+	for (const case_ of cases) {
+		const caseOutputDir = path.join(RUN_OUTPUT_PATH(runId), case_.name);
 
-		// Convert VoxLogicA layers to Layer objects
-		const layers = voxlogicaResult.layers.map((layer) => ({
-			id: layer.name,
-			path: `/run/${runId}/layers/${layer.name}.nii.gz`,
-		}));
+		try {
+			// Create case-specific directory
+			await fs.mkdir(caseOutputDir, { recursive: true });
+			const scriptPath = path.join(caseOutputDir, 'script.imgql');
 
-		// Create a Run object using the Run type
-		const run: Run = {
-			id: runId,
-			timestamp: new Date(),
-			scriptContent: scriptContent,
-			case: case_,
-			outputPrint: voxlogicaResult.print,
-			outputLayers: layers,
-			outputLog: voxlogicaResult.log,
-			outputError: voxlogicaResult.error,
-		};
+			const substitutedScriptContent = await substituteUiPathVariables(
+				scriptContent,
+				case_,
+				caseOutputDir,
+				fetch
+			);
+			await fs.writeFile(scriptPath, substitutedScriptContent);
 
-		// Dump the run into a file
-		await fs.writeFile(path.join(outputDir, 'run.json'), JSON.stringify(run, null, 2));
+			// Verify VoxLogicA binary exists and run the process
+			await fs.access(VOXLOGICA_BINARY_PATH);
+			const voxlogicaResult = await runVoxLogica(VOXLOGICA_BINARY_PATH, scriptPath);
 
-		// Don't cleanup temp directory as we need it for layer access
-		return json(run);
-	} catch (err) {
-		await cleanup(outputDir);
+			// Update layer paths to include case ID
+			const layers = voxlogicaResult.layers.map((layer) => ({
+				name: layer.name,
+				path: `/run/${runId}/${case_.name}/layers/${layer.name}.nii.gz`,
+			}));
 
-		if (err instanceof Error && 'code' in err && err.code === 'ENOENT') {
-			throw error(400, 'VoxLogicA binary not found. Please check your installation.');
-		}
-
-		console.error(err);
-		if (
-			err &&
-			typeof err === 'object' &&
-			'voxlogicaResult' in err &&
-			err.voxlogicaResult &&
-			typeof err.voxlogicaResult === 'object' &&
-			'print' in err.voxlogicaResult &&
-			'layers' in err.voxlogicaResult &&
-			'log' in err.voxlogicaResult &&
-			'error' in err.voxlogicaResult
-		) {
 			const run: Run = {
 				id: runId,
 				timestamp: new Date(),
-				scriptContent: scriptContent || '',
-				case: case_ || null,
-				outputPrint: err.voxlogicaResult.print as PrintOutput[],
-				outputLayers: err.voxlogicaResult.layers as Layer[],
-				outputLog: err.voxlogicaResult.log as string,
-				outputError: err.voxlogicaResult.error as string,
+				scriptContent: scriptContent,
+				outputPrint: voxlogicaResult.print,
+				outputLog: voxlogicaResult.log,
+				outputError: voxlogicaResult.error,
 			};
-			return json(run);
-		}
 
-		throw error(500, err instanceof Error ? err.message : String(err));
+			// Dump the run into a file
+			await fs.writeFile(path.join(caseOutputDir, 'run.json'), JSON.stringify(run, null, 2));
+
+			// Don't cleanup temp directory as we need it for layer access
+			results.push(run);
+		} catch (err) {
+			if (err instanceof Error && 'code' in err && err.code === 'ENOENT') {
+				throw error(400, 'VoxLogicA binary not found. Please check your installation.');
+			}
+
+			// Handle errors for individual cases but continue processing others
+			if (
+				err &&
+				typeof err === 'object' &&
+				'voxlogicaResult' in err &&
+				err.voxlogicaResult &&
+				typeof err.voxlogicaResult === 'object' &&
+				'print' in err.voxlogicaResult &&
+				'log' in err.voxlogicaResult &&
+				'error' in err.voxlogicaResult
+			) {
+				console.error(`Error processing case ${case_.name}:`, err);
+				results.push({
+					id: runId,
+					timestamp: new Date(),
+					scriptContent: scriptContent,
+					outputPrint: err.voxlogicaResult.print as PrintOutput[],
+					outputLog: err.voxlogicaResult.log as string,
+					outputError: err.voxlogicaResult.error as string,
+				});
+			}
+		}
 	}
+
+	return json(results);
 };

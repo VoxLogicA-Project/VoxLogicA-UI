@@ -23,7 +23,7 @@ export const GET: RequestHandler = async ({ params }: { params: { dataset: strin
 		const cases: Case[] = entries
 			.filter((entry) => entry.isDirectory())
 			.map((entry) => ({
-				id: entry.name,
+				name: entry.name,
 				path: path.join(params.dataset, entry.name),
 			}));
 
