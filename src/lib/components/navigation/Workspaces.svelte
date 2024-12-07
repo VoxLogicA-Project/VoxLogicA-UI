@@ -32,6 +32,14 @@
 			// Prevent closing if no workspaces exist
 			buttonTextCancel: sessionViewModel.hasWorkspaces ? 'Cancel' : '',
 			buttonTextSubmit: 'Create',
+			// Add padding and other styles to the input
+			valueAttr: {
+				type: 'text',
+				minlength: 3,
+				maxlength: 30,
+				required: true,
+				class: 'input p-2 rounded-lg w-full',
+			},
 		};
 		modalStore.trigger(modal);
 	}
@@ -52,6 +60,8 @@
 
 		try {
 			await sessionViewModel.createWorkspace(name);
+			// Reload workspaces after creation to make the new workspace appear
+			await sessionViewModel.loadWorkspaces();
 			toastStore.trigger({ message: 'Workspace created', background: 'variant-filled-success' });
 		} catch {
 			toastStore.trigger({
@@ -80,9 +90,6 @@
 	async function handleSelect(workspaceId: string) {
 		try {
 			await sessionViewModel.selectWorkspace(workspaceId);
-			// Reload workspaces after selection
-			await sessionViewModel.loadWorkspaces();
-			console.log(sessionViewModel.availableWorkspacesIdsAndNames);
 		} catch {
 			toastStore.trigger({
 				message: 'Failed to load workspace',
@@ -130,7 +137,7 @@
 </div>
 
 <!-- Popup Menu -->
-<div class="card w-64 shadow-xl" data-popup="workspace-menu">
+<div class="card w-64 shadow-xl" data-popup="workspace-menu" style="z-index: 1000;">
 	{#if sessionViewModel.isLoading}
 		<div class="p-2 text-center">
 			<i class="fa-solid fa-spinner animate-spin"></i>
@@ -160,7 +167,7 @@
 						>
 							<div class="flex flex-col gap-0.5">
 								<span class="font-medium text-sm">{name}</span>
-								<div class="flex items-start justify-between gap-1 max-w-[calc(16rem-2rem)]">
+								<div class="flex items-start justify-between gap-1 max-w-full">
 									<span class="text-xs opacity-50 font-mono truncate mt-0.5">{id}</span>
 									<div
 										class="inline-flex items-center justify-center p-0.5 hover:bg-surface-500/20 rounded-full opacity-50 hover:opacity-100 transition-opacity cursor-pointer"
