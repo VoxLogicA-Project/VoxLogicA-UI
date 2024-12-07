@@ -42,6 +42,7 @@ export interface Run {
 	id: string;
 	timestamp: Date;
 	scriptContent: string;
+	outputLayers: Layer[];
 	outputPrint: PrintOutput[];
 	outputLog?: string;
 	outputError?: string;

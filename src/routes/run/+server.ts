@@ -177,10 +177,17 @@ export const POST: RequestHandler = async ({ request, fetch }) => {
 			await fs.access(VOXLOGICA_BINARY_PATH);
 			const voxlogicaResult = await runVoxLogica(VOXLOGICA_BINARY_PATH, scriptPath);
 
+			// Convert VoxLogicA layers to Layer objects
+			const layers = voxlogicaResult.layers.map((layer) => ({
+				name: layer.name,
+				path: `/workspaces/${workspaceId}/${case_.id}/${runId}/layers/${layer.name}.nii.gz`,
+			}));
+
 			const run: Run = {
 				id: runId,
 				timestamp: new Date(),
 				scriptContent: scriptContent,
+				outputLayers: layers,
 				outputPrint: voxlogicaResult.print,
 				outputLog: voxlogicaResult.log,
 				outputError: voxlogicaResult.error,
@@ -206,7 +213,8 @@ export const POST: RequestHandler = async ({ request, fetch }) => {
 				typeof err.voxlogicaResult === 'object' &&
 				'print' in err.voxlogicaResult &&
 				'log' in err.voxlogicaResult &&
-				'error' in err.voxlogicaResult
+				'error' in err.voxlogicaResult &&
+				'layers' in err.voxlogicaResult
 			) {
 				console.error(`Error processing case ${case_.name}:`, err);
 				results.push({
@@ -216,6 +224,7 @@ export const POST: RequestHandler = async ({ request, fetch }) => {
 					outputPrint: err.voxlogicaResult.print as PrintOutput[],
 					outputLog: err.voxlogicaResult.log as string,
 					outputError: err.voxlogicaResult.error as string,
+					outputLayers: err.voxlogicaResult.layers as Layer[],
 				});
 			}
 		}
