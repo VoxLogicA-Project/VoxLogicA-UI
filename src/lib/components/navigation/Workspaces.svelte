@@ -1,14 +1,14 @@
 <script lang="ts">
-	import { getToastStore } from '@skeletonlabs/skeleton';
+	import { getToastStore, getModalStore } from '@skeletonlabs/skeleton';
 	import { sessionViewModel } from '$lib/viewmodels/session.svelte';
 	import { popup } from '@skeletonlabs/skeleton';
-	import type { PopupSettings, ModalSettings } from '@skeletonlabs/skeleton';
-	import { getModalStore } from '@skeletonlabs/skeleton';
+	import type { PopupSettings } from '@skeletonlabs/skeleton';
 	import { onMount } from 'svelte';
-	import { stopPropagation } from 'svelte/legacy';
+	import { createWorkspaceService } from './workspaceService';
 
 	const toastStore = getToastStore();
 	const modalStore = getModalStore();
+	const workspaceService = createWorkspaceService(toastStore, modalStore);
 
 	// Popup settings
 	const popupSettings: PopupSettings = {
@@ -17,91 +17,14 @@
 		placement: 'bottom',
 	};
 
-	// Load workspaces and check if we need to show create modal
 	onMount(() => {
 		sessionViewModel.loadWorkspaces();
 	});
 
-	function showCreateWorkspaceModal() {
-		const modal: ModalSettings = {
-			type: 'prompt',
-			title: 'New Workspace',
-			body: 'Enter a name for the new workspace',
-			value: '',
-			response: (r) => handleCreateWorkspace(r),
-			// Prevent closing if no workspaces exist
-			buttonTextCancel: sessionViewModel.hasWorkspaces ? 'Cancel' : '',
-			buttonTextSubmit: 'Create',
-			// Add padding and other styles to the input
-			valueAttr: {
-				type: 'text',
-				minlength: 3,
-				maxlength: 30,
-				required: true,
-				class: 'input p-2 rounded-lg w-full',
-			},
-		};
-		modalStore.trigger(modal);
-	}
-
-	async function handleCreateWorkspace(name: string | boolean | undefined) {
-		if (typeof name !== 'string') {
-			return;
-		}
-
-		if (!name.trim()) {
-			toastStore.trigger({
-				message: 'Please enter a workspace name',
-				background: 'variant-filled-error',
-			});
-			setTimeout(showCreateWorkspaceModal, 100);
-			return;
-		}
-
-		try {
-			await sessionViewModel.createWorkspace(name);
-			// Reload workspaces after creation to make the new workspace appear
-			await sessionViewModel.loadWorkspaces();
-			toastStore.trigger({ message: 'Workspace created', background: 'variant-filled-success' });
-		} catch {
-			toastStore.trigger({
-				message: 'Failed to create workspace',
-				background: 'variant-filled-error',
-			});
-			if (!sessionViewModel.hasWorkspaces) {
-				// Re-open modal if no workspaces exist
-				setTimeout(showCreateWorkspaceModal, 100);
-			}
-		}
-	}
-
-	async function handleSave() {
-		try {
-			await sessionViewModel.saveWorkspace();
-			toastStore.trigger({ message: 'Workspace saved', background: 'variant-filled-success' });
-		} catch {
-			toastStore.trigger({
-				message: 'Failed to save workspace',
-				background: 'variant-filled-error',
-			});
-		}
-	}
-
-	async function handleSelect(workspaceId: string) {
-		try {
-			await sessionViewModel.selectWorkspace(workspaceId);
-		} catch {
-			toastStore.trigger({
-				message: 'Failed to load workspace',
-				background: 'variant-filled-error',
-			});
-		}
-	}
-
 	const saveButtonClass = $derived(
 		sessionViewModel.hasUnsavedChanges
-			? 'bg-error-500 hover:bg-error-600' // Changed from primary to error variant
-			: 'bg-surface-300-600-token hover:bg-surface-400-500-token' // Default state
+			? 'bg-error-500 hover:bg-error-600'
+			: 'bg-surface-300-600-token hover:bg-surface-400-500-token'
 	);
 </script>
 
@@ -109,7 +32,7 @@
 <div class="flex gap-2">
 	<button
 		class="w-8 h-8 min-w-[2rem] min-h-[2rem] flex-shrink-0 rounded-lg {saveButtonClass} flex items-center justify-center transition-colors duration-200"
-		onclick={handleSave}
+		onclick={() => workspaceService.handleSave()}
 		title={sessionViewModel.hasUnsavedChanges ? 'Save changes' : 'No unsaved changes'}
 		aria-label={sessionViewModel.hasUnsavedChanges ? 'Save changes' : 'No unsaved changes'}
 	>
@@ -162,8 +85,8 @@
 							class="flex-1 cursor-pointer max-w-full"
 							role="button"
 							tabindex="0"
-							onclick={() => handleSelect(id)}
-							onkeydown={(e) => e.key === 'Enter' && handleSelect(id)}
+							onclick={() => workspaceService.handleSelect(id)}
+							onkeydown={(e) => e.key === 'Enter' && workspaceService.handleSelect(id)}
 						>
 							<div class="flex flex-col gap-0.5">
 								<span class="font-medium text-sm">{name}</span>
@@ -205,7 +128,7 @@
 
 			<button
 				class="option !px-2 !py-1.5 rounded-lg hover:!bg-surface-500/20 w-full text-left"
-				onclick={showCreateWorkspaceModal}
+				onclick={() => workspaceService.showCreateWorkspaceModal()}
 			>
 				<div class="flex items-center gap-2">
 					<i class="fa-solid fa-plus"></i>
@@ -214,4 +137,5 @@
 			</button>
 		</nav>
 	{/if}
+	<div class="arrow variant-filled-surface"></div>
 </div>

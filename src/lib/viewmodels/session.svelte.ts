@@ -11,6 +11,7 @@ const hasWorkspaces = $derived(availableWorkspacesIdsAndNames.length > 0);
 const selectedWorkspaceId = $derived(currentWorkspace.id);
 const selectedWorkspaceName = $derived(currentWorkspace.name);
 const hasUnsavedChanges = $state(true);
+const isWorkspaceSelected = $derived(!!selectedWorkspaceId);
 
 async function loadWorkspaces(): Promise<void> {
 	isLoading = true;
@@ -53,14 +54,16 @@ async function saveWorkspace(): Promise<void> {
 	}
 }
 
-async function createWorkspace(workspaceName: Workspace['name']): Promise<void> {
+async function createWorkspace(workspaceName: Workspace['name']): Promise<Workspace> {
 	isLoading = true;
 	error = null;
 
 	try {
-		await apiRepository.createWorkspace(workspaceName);
+		const newWorkspace = await apiRepository.createWorkspace(workspaceName);
+		return newWorkspace;
 	} catch (e) {
 		error = e instanceof Error ? e.message : 'Failed to create workspace';
+		throw e;
 	} finally {
 		isLoading = false;
 	}
@@ -133,6 +136,9 @@ export const sessionViewModel = {
 	},
 	get hasUnsavedChanges() {
 		return hasUnsavedChanges;
+	},
+	get isWorkspaceSelected() {
+		return isWorkspaceSelected;
 	},
 
 	// Actions

@@ -9,9 +9,16 @@
 	import { datasetViewModel } from '$lib/viewmodels/dataset.svelte';
 	import { caseViewModel } from '$lib/viewmodels/case.svelte';
 	import { uiViewModel } from '$lib/viewmodels/ui.svelte';
+	import WorkspacesFullScreen from '$lib/components/navigation/WorkspacesFullScreen.svelte';
+	import { sessionViewModel } from '$lib/viewmodels/session.svelte';
 </script>
 
 <div class="h-screen w-screen flex overflow-hidden bg-surface-50-900-token">
+	<!-- Workspace Selector Overlay -->
+	{#if !sessionViewModel.selectedWorkspaceId}
+		<WorkspacesFullScreen />
+	{/if}
+
 	<!-- Left Sidebar -->
 	<CollapsibleSidebar
 		side="left"
