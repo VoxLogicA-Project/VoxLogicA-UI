@@ -31,7 +31,7 @@ The repository acts as a single source of truth for all external data access, wi
 # Dataset ViewModel
 
 **General Description:**
-A viewmodel managing dataset selection and state, extending BaseViewModel. It handles loading and selecting datasets, coordinating with case and layer viewmodels.
+A viewmodel managing dataset selection and state. It handles loading and selecting datasets, coordinating with case and layer viewmodels.
 
 _State Properties:_
 
@@ -55,7 +55,7 @@ The viewmodel is exported as singleton `datasetViewModel`.
 # Case ViewModel
 
 **General Description:**
-A viewmodel managing case data selection and state, extending BaseViewModel. It handles loading, selecting, and managing multiple cases with a maximum limit of 16 cases.
+A viewmodel managing case data selection and state. It handles loading, selecting, and managing multiple cases with a maximum limit of 16 cases.
 
 **Properties & Methods:**
 
@@ -91,7 +91,7 @@ The viewmodel is exported as singleton `caseViewModel`.
 # Layer ViewModel
 
 **General Description:**
-A viewmodel managing layer data, selection, and styling, extending BaseViewModel. It handles layers per case, their selection states, and appearance settings.
+A viewmodel managing layer data, selection, and styling. It handles layers per case, their selection states, and appearance settings.
 
 _State Properties:_
 
@@ -129,7 +129,7 @@ The viewmodel is exported as singleton `layerViewModel`.
 # Run ViewModel
 
 **General Description:**
-A viewmodel managing script execution, run history, and associated layer states, extending BaseViewModel. It handles script content, presets, execution of runs across multiple cases, and maintains execution history with corresponding layer states.
+A viewmodel managing script execution, run history, and associated layer states. It handles script content, presets, execution of runs across multiple cases, and maintains execution history with corresponding layer states.
 
 _State Properties:_
 
@@ -174,7 +174,7 @@ The viewmodel is exported as singleton `runViewModel`.
 # UI ViewModel
 
 **General Description:**
-A viewmodel managing UI state and preferences, extending BaseViewModel. It handles sidebar states, panel visibility, fullscreen mode, and theme settings.
+A viewmodel managing UI state and preferences. It handles sidebar states, panel visibility, fullscreen mode, and theme settings.
 
 _State Properties:_
 
@@ -217,7 +217,7 @@ The viewmodel is exported as singleton `uiViewModel`.
 # StateManager ViewModel
 
 **General Description:**
-A viewmodel managing the entire application state, extending BaseViewModel. It handles saving, loading, and synchronizing state across all other viewmodels, with support for persistence to localStorage.
+A viewmodel managing the entire application state. It handles saving, loading, and synchronizing state across all other viewmodels, with support for persistence to localStorage.
 
 _State Properties:_
 
