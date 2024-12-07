@@ -4,8 +4,8 @@ interface LoadedData {
 	availableWorkspacesIds: Workspace['id'][];
 	datasets: Dataset[];
 	cases: Case[];
-	layersByCaseId: Record<Case['id'], Layer[]>;
-	runsByCaseId: Record<Case['id'], Run[]>;
+	layersByCasePath: Record<Case['path'], Layer[]>;
+	runsByCasePath: Record<Case['path'], Run[]>;
 	presetScripts: PresetScript[];
 }
 
@@ -13,8 +13,8 @@ export const loadedData = $state<LoadedData>({
 	availableWorkspacesIds: [],
 	datasets: [],
 	cases: [],
-	layersByCaseId: {},
-	runsByCaseId: {},
+	layersByCasePath: {},
+	runsByCasePath: {},
 	presetScripts: [],
 });
 
@@ -33,7 +33,7 @@ export const currentWorkspace = $state<Workspace>({
 			openedLayersPathsByCasePath: {},
 			stylesByLayerName: {},
 		},
-		runsLayersStates: [],
+		runsLayersStates: {},
 		ui: {
 			isDarkMode: false,
 			sidebars: {
@@ -46,6 +46,7 @@ export const currentWorkspace = $state<Workspace>({
 			},
 			layers: {
 				bottomPanelTab: 'layers',
+				bottomPanelBlinkingTab: null,
 			},
 			scriptEditor: {
 				content: '',
@@ -94,12 +95,12 @@ async function fetchCases(dataset: Dataset): Promise<void> {
 	loadedData.cases = await response.json();
 }
 
-async function fetchLayers(dataset: Dataset, caseData: Case): Promise<void> {
+async function fetchLayers(caseData: Case): Promise<void> {
 	const response = await fetchWithError(
-		`/datasets/${dataset.name}/cases/${caseData.name}/layers`,
+		caseData.path,
 		`Failed to fetch layers for case: ${caseData.path}`
 	);
-	loadedData.layersByCaseId[caseData.id] = await response.json();
+	loadedData.layersByCasePath[caseData.path] = await response.json();
 }
 
 async function fetchPresetsScripts(): Promise<void> {
@@ -167,21 +168,22 @@ async function fetchWorkspaceRuns(workspaceId: Workspace['id']): Promise<void> {
 
 	// Process the runs and organize them by case ID
 	const runs = await response.json();
-	const runsByCaseId: Record<Case['id'], Run[]> = {};
+	const runsByCasePath: Record<Case['path'], Run[]> = {};
 
+	// TODO: Fix this, is not working.
 	for (const run of runs) {
-		for (const caseId of Object.keys(run.caseResults)) {
-			if (!runsByCaseId[caseId]) {
-				runsByCaseId[caseId] = [];
+		for (const casePath of Object.keys(run.caseResults)) {
+			if (!runsByCasePath[casePath]) {
+				runsByCasePath[casePath] = [];
 			}
-			runsByCaseId[caseId].push({
+			runsByCasePath[casePath].push({
 				...run,
-				...run.caseResults[caseId],
+				...run.caseResults[casePath],
 			});
 		}
 	}
 
-	loadedData.runsByCaseId = runsByCaseId;
+	loadedData.runsByCasePath = runsByCasePath;
 }
 
 async function fetchRunLayers(

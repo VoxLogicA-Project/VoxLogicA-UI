@@ -1,24 +1,20 @@
 <script lang="ts">
 	import type { Case, PrintOutput } from '$lib/models/types';
-	import { LayerViewModel } from '$lib/viewmodels/layer.svelte';
-	import { runViewModel } from '$lib/viewmodels/run.svelte';
+	import { caseViewModel } from '$lib/viewmodels/case.svelte';
+	import { layerViewModel } from '$lib/viewmodels/layer.svelte';
 	import { uiViewModel } from '$lib/viewmodels/ui.svelte';
-	let {
-		case_ = $bindable<Case>(),
-		index = $bindable<number>(),
-		uniqueLayers = $bindable<string[]>(),
-		layerState = $bindable<LayerViewModel>(),
-		isRunView = $bindable<boolean>(),
-	} = $props();
+	let { case_ = $bindable<Case>() } = $props();
 
 	// Get prints for this specific case
-	const runPrints = $derived.by(() => {
-		if (uiViewModel.bottomPanelRunIndex === -1) return [];
-		// Assume there is only one RunPrint[] per case
-		return runViewModel.history[uiViewModel.bottomPanelRunIndex]
-			?.filter((run) => run.case.id === case_.id)
-			.map((run) => run.outputPrint)[0];
-	});
+	// const runPrints = $derived.by(() => {
+	// 	if (uiViewModel.bottomPanelRunIndex === -1) return [];
+	// 	// Assume there is only one RunPrint[] per case
+	// 	return runViewModel.history[uiViewModel.bottomPanelRunIndex]
+	// 		?.filter((run) => run.case.id === case_.id)
+	// 		.map((run) => run.outputPrint)[0];
+	// });
+	const runPrints: PrintOutput[] = [];
+	const isRunView = false;
 
 	let isPrintsExpanded = $state(true);
 
@@ -44,10 +40,15 @@
 			<!-- Main case info -->
 			<div class="flex items-center gap-2">
 				<div class="badge-container">
-					<span class="badge variant-filled-primary">{index + 1}</span>
+					<span class="badge variant-filled-primary"
+						>{caseViewModel.getSelectionIndex(case_.path)}</span
+					>
 				</div>
-				<span class="group-hover:text-primary-500 transition-colors duration-200" title={case_.id}>
-					{case_.id.length > 20 ? '...' + case_.id.slice(-20) : case_.id}
+				<span
+					class="group-hover:text-primary-500 transition-colors duration-200"
+					title={case_.name}
+				>
+					{case_.name.length > 20 ? '...' + case_.name.slice(-20) : case_.name}
 				</span>
 				{#if isRunView && runPrints && runPrints.length > 0}
 					<button
@@ -81,30 +82,30 @@
 			{/if}
 		</div>
 	</td>
-	{#each uniqueLayers as layerId}
-		{@const layer = layerState.getAvailableLayerFromId(case_.id, layerId)}
+	{#each layerViewModel.uniqueLayersNames as layerName}
+		{@const layer = layerViewModel.getAvailableLayerFromName(case_.path, layerName)}
 		{@const isAvailable = layer !== undefined}
 		<td class="w-32 text-center align-middle px-4 border-b border-surface-500/30">
 			<button
 				title={isAvailable
-					? layerState.isLayerSelectedForCase(case_.id, layer.id)
-						? `Hide ${layerId} layer`
-						: `Show ${layerId} layer`
-					: `${layerId} layer not available for this case`}
+					? layerViewModel.isLayerSelected(case_.path, layer.path)
+						? `Hide ${layerName} layer`
+						: `Show ${layerName} layer`
+					: `${layerName} layer not available for this case`}
 				aria-label={isAvailable
-					? layerState.isLayerSelectedForCase(case_.id, layer.id)
-						? `Hide ${layerId} layer`
-						: `Show ${layerId} layer`
-					: `${layerId} layer not available`}
+					? layerViewModel.isLayerSelected(case_.path, layer.path)
+						? `Hide ${layerName} layer`
+						: `Show ${layerName} layer`
+					: `${layerName} layer not available`}
 				class="w-12 h-12 rounded-full transition-all duration-200 hover:scale-110 focus:outline-none group"
 				disabled={!isAvailable}
-				onclick={() => layer && layerState.toggleLayer(case_.id, layer)}
+				onclick={() => layer && layerViewModel.toggleLayer(case_.path, layer.path)}
 			>
 				{#if isAvailable}
 					<i
-						class="fa-solid fa-circle-check text-2xl transition-colors duration-200 {layerState.isLayerSelectedForCase(
-							case_.id,
-							layer.id
+						class="fa-solid fa-circle-check text-2xl transition-colors duration-200 {layerViewModel.isLayerSelected(
+							case_.path,
+							layer.path
 						)
 							? 'text-primary-500 group-hover:text-primary-400'
 							: 'text-surface-300/70 group-hover:text-surface-500 dark:text-surface-400/50 dark:group-hover:text-surface-300'}"

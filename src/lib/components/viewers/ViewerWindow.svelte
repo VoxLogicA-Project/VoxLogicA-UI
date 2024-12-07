@@ -1,7 +1,6 @@
 <script lang="ts">
 	import NiivueViewer from '$lib/components/viewers/NiivueViewer.svelte';
 	import { layerViewModel } from '$lib/viewmodels/layer.svelte';
-	import { runViewModel } from '$lib/viewmodels/run.svelte';
 	import { uiViewModel } from '$lib/viewmodels/ui.svelte';
 	import { caseViewModel } from '$lib/viewmodels/case.svelte';
 	import type { Case } from '$lib/models/types';
@@ -12,8 +11,11 @@
 
 <div
 	class="card flex flex-col bg-surface-100-800-token hover:bg-primary-50-900-token transition-all duration-200
-        {uiViewModel.fullscreenCaseId === case_.id ? 'w-full h-full min-h-0' : ''}"
-	style:display={uiViewModel.fullscreenCaseId && uiViewModel.fullscreenCaseId !== case_.id
+        {uiViewModel.state.viewers.fullscreenCasePath === case_.path
+		? 'w-full h-full min-h-0'
+		: ''}"
+	style:display={uiViewModel.state.viewers.fullscreenCasePath &&
+	uiViewModel.state.viewers.fullscreenCasePath !== case_.path
 		? 'none'
 		: 'flex'}
 >
@@ -23,11 +25,11 @@
 		<span class="text-sm font-medium flex items-center flex-1 min-w-0">
 			{#if true}
 				<div class="badge badge-sm variant-filled-primary mr-2 flex-shrink-0">
-					{caseViewModel.getSelectionIndex(case_) + 1}
+					{caseViewModel.getSelectionIndex(case_.path)}
 				</div>
 			{/if}
 			<span class="truncate">
-				{case_.id}
+				{case_.name}
 			</span>
 		</span>
 		<div class="flex gap-1">
@@ -44,21 +46,21 @@
 				{#if caseViewModel.selectedCases.length > 1}
 					<button
 						class="w-6 h-6 flex items-center justify-center rounded transition-colors
-                        {uiViewModel.fullscreenCaseId === case_.id
+                        {uiViewModel.state.viewers.fullscreenCasePath === case_.path
 							? 'bg-primary-500 text-white hover:bg-primary-600'
 							: 'hover:bg-surface-300-600-token'}"
 						onclick={() =>
-							(uiViewModel.fullscreenCaseId =
-								uiViewModel.fullscreenCaseId === case_.id ? null : case_.id)}
-						title={uiViewModel.fullscreenCaseId === case_.id
+							(uiViewModel.state.viewers.fullscreenCasePath =
+								uiViewModel.state.viewers.fullscreenCasePath === case_.path ? null : case_.path)}
+						title={uiViewModel.state.viewers.fullscreenCasePath === case_.path
 							? 'Exit full screen'
 							: 'View full screen'}
-						aria-label={uiViewModel.fullscreenCaseId === case_.id
+						aria-label={uiViewModel.state.viewers.fullscreenCasePath === case_.path
 							? 'Exit full screen'
 							: 'View full screen'}
 					>
 						<i
-							class="fa-solid {uiViewModel.fullscreenCaseId === case_.id
+							class="fa-solid {uiViewModel.state.viewers.fullscreenCasePath === case_.path
 								? 'fa-compress'
 								: 'fa-expand'}"
 						></i>
@@ -76,9 +78,13 @@
 			</button>
 		</div>
 	</div>
-	<div class="relative {uiViewModel.fullscreenCaseId === case_.id ? 'h-full' : 'aspect-square'}">
+	<div
+		class="relative {uiViewModel.state.viewers.fullscreenCasePath === case_.path
+			? 'h-full'
+			: 'aspect-square'}"
+	>
 		<div class="absolute inset-0">
-			{#if layerViewModel.selectedLayersForCase(case_.id).length > 0 || runViewModel.selectedLayersForCase(case_.id).length > 0}
+			{#if layerViewModel.getAllSelectedLayersNoContext(case_.path).length > 0}
 				<NiivueViewer {case_} bind:this={niivueViewerRef} />
 			{:else}
 				<div

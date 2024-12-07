@@ -20,11 +20,16 @@ function resetUI(): void {
 	});
 }
 
+function toggleDarkMode(): void {
+	currentWorkspace.state.ui.isDarkMode = !currentWorkspace.state.ui.isDarkMode;
+}
+
 // Public API
 export const uiViewModel = {
 	// Bindable state
 	state: currentWorkspace.state.ui,
 
 	// Actions
+	toggleDarkMode,
 	resetUI,
 };

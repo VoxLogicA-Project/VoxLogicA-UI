@@ -2,9 +2,7 @@
 	import { popup } from '@skeletonlabs/skeleton';
 	import { uiViewModel } from '$lib/viewmodels/ui.svelte';
 	import ColorMapPicker from '$lib/components/common/ColorMapPicker.svelte';
-	import { LayerViewModel } from '$lib/viewmodels/layer.svelte';
-
-	let { uniqueLayers = $bindable<string[]>(), layerState = $bindable<LayerViewModel>() } = $props();
+	import { layerViewModel } from '$lib/viewmodels/layer.svelte';
 </script>
 
 <thead>
@@ -28,37 +26,38 @@
 				</button>
 			</div>
 		</th>
-		{#each uniqueLayers as layerId}
+		{#each layerViewModel.uniqueLayersNames as layerName}
 			<th class="text-center p-2 border-b border-surface-500/30 font-medium">
 				<div class="flex flex-col items-center">
-					<div class:dark={uiViewModel.isDarkMode} title="Click to change layer color">
+					<div class:dark={uiViewModel.state.isDarkMode} title="Click to change layer color">
 						<ColorMapPicker
-							id={layerId}
-							bind:colormapValue={layerState.styles[layerId].colorMap}
-							bind:alphaValue={layerState.styles[layerId].alpha}
+							id={layerName}
+							bind:colormapValue={layerViewModel.stylesByLayerName[layerName].colorMap}
+							bind:alphaValue={layerViewModel.stylesByLayerName[layerName].alpha}
 						/>
 					</div>
 					<div class="flex items-center gap-1">
 						<button
 							class="flex items-center gap-1 px-2 py-1 rounded hover:bg-surface-500/20 transition-colors group"
 							onclick={() => {
-								const isLayerSelectedForAllCases = layerState.isLayerSelectedForAllCases(layerId);
+								const isLayerSelectedForAllCases =
+									layerViewModel.isLayerSelectedForAllOpenedCases(layerName);
 								if (isLayerSelectedForAllCases) {
-									layerState.unselectLayerForAllSelectedCases(layerId);
+									layerViewModel.deselectLayerForAllOpenedCases(layerName);
 								} else {
-									layerState.selectLayerForAllSelectedCases(layerId);
+									layerViewModel.selectLayerForAllOpenedCases(layerName);
 								}
 							}}
-							title={layerState.isLayerSelectedForAllCases(layerId)
-								? `Hide ${layerId} layer for all cases`
-								: `Show ${layerId} layer for all cases`}
+							title={layerViewModel.isLayerSelectedForAllOpenedCases(layerName)
+								? `Hide ${layerName} layer for all cases`
+								: `Show ${layerName} layer for all cases`}
 						>
 							<span class="truncate text-surface-900 dark:text-surface-50">
-								{layerId.length > 20 ? '...' + layerId.slice(-20) : layerId}
+								{layerName.length > 20 ? '...' + layerName.slice(-20) : layerName}
 							</span>
 							<i
 								class="fa-solid fa-check-to-slot text-sm transition-colors duration-200
-                            {layerState.isLayerSelectedForAllCases(layerId)
+                            {layerViewModel.isLayerSelectedForAllOpenedCases(layerName)
 									? 'text-primary-500'
 									: 'text-surface-300/70 group-hover:text-surface-500 dark:text-surface-400/50 dark:group-hover:text-surface-300'}"
 							></i>

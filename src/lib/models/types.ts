@@ -60,7 +60,7 @@ export interface SerializedWorkspaceState {
 		openedRunsIds: Run['id'][];
 	};
 	datasetLayersState: LayersState;
-	runsLayersStates: LayersState[];
+	runsLayersStates: Record<Run['id'], LayersState>;
 	ui: {
 		isDarkMode: boolean;
 		sidebars: {
@@ -73,6 +73,7 @@ export interface SerializedWorkspaceState {
 		};
 		layers: {
 			bottomPanelTab: string;
+			bottomPanelBlinkingTab: string | null;
 		};
 		scriptEditor: {
 			content: string;

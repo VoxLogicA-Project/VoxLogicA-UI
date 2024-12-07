@@ -121,10 +121,10 @@
 			<div class="flex-1 flex items-center justify-center">
 				<ProgressRadial width="w-8" />
 			</div>
-		{:else if caseViewModel.currentError}
+		{:else if caseViewModel.error}
 			<div class="p-4">
 				<div class="alert variant-filled-error">
-					{caseViewModel.currentError}
+					{caseViewModel.error}
 				</div>
 			</div>
 		{:else}
@@ -132,16 +132,16 @@
 			<div class="flex-1 overflow-y-auto space-y-0.5">
 				{#if filteredCases.length > 0}
 					{#each filteredCases as caseData (caseData.id)}
-						{@const isSelected = caseViewModel.isSelected(caseData)}
+						{@const isSelected = caseViewModel.isSelected(caseData.path)}
 						{@const isDisabled = !caseViewModel.canSelectMore && !isSelected}
 						<ListButton
 							selected={isSelected}
 							disabled={isDisabled}
 							showBadge={isSelected}
-							badgeContent={(caseViewModel.getSelectionIndex(caseData) + 1).toString()}
+							badgeContent={caseViewModel.getSelectionIndex(caseData.path)}
 							on:click={async () => await caseViewModel.toggleCase(caseData)}
 						>
-							{caseData.id}
+							{caseData.name}
 						</ListButton>
 					{/each}
 				{:else if searchQuery}

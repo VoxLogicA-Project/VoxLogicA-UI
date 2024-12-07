@@ -15,18 +15,18 @@
 		<div class="flex-1 flex items-center justify-center">
 			<ProgressRadial width="w-8" />
 		</div>
-	{:else if datasetViewModel.currentError}
+	{:else if datasetViewModel.error}
 		<div class="alert variant-filled-error">
-			{datasetViewModel.currentError}
+			{datasetViewModel.error}
 		</div>
 	{:else}
 		<div class="space-y-0.5">
 			{#each datasetViewModel.datasets as dataset}
 				<ListButton
-					selected={datasetViewModel.selectedDataset?.id === dataset.id}
+					selected={datasetViewModel.selectedDataset?.name === dataset.name}
 					on:click={() => datasetViewModel.selectDataset(dataset)}
 				>
-					{dataset.id}
+					{dataset.name}
 				</ListButton>
 			{/each}
 		</div>

@@ -2,7 +2,6 @@
 	import { onMount, onDestroy } from 'svelte';
 	import { browser } from '$app/environment';
 	import { layerViewModel } from '$lib/viewmodels/layer.svelte';
-	import { runViewModel } from '$lib/viewmodels/run.svelte';
 	import type { Case, Layer, LayerStyle } from '$lib/models/types';
 
 	const { case_ } = $props<{ case_: Case }>();
@@ -18,12 +17,12 @@
 		return nv.volumes.findIndex((vol: any) => vol.url === layerPath);
 	}
 
-	function setColorMap(layerId: string, colorMap: LayerStyle['colorMap']) {
+	function setColorMap(layerPath: Layer['path'], colorMap: LayerStyle['colorMap']) {
 		if (!isInitialized) return;
 
 		if (typeof colorMap === 'string') return colorMap;
-		nv.addColormap(layerId, colorMap);
-		return layerId;
+		nv.addColormap(layerPath, colorMap);
+		return layerPath;
 	}
 
 	onMount(async () => {
@@ -42,10 +41,7 @@
 				isInitialized = true;
 
 				// Load layers if any are selected
-				if (
-					layerViewModel.selectedLayersForCase(case_.id).length > 0 ||
-					runViewModel.selectedLayersForCase(case_.id).length > 0
-				) {
+				if (layerViewModel.getAllSelectedLayersNoContext(case_.path).length > 0) {
 					await loadAllLayers(++loadingOperationCounter);
 				}
 			} catch (error) {
@@ -56,9 +52,7 @@
 
 	$effect(() => {
 		if (isInitialized) {
-			const datasetLayers = layerViewModel.selectedLayersForCase(case_.id);
-			const runLayers = runViewModel.selectedLayersForCase(case_.id);
-			if (datasetLayers.length > 0 || runLayers.length > 0) {
+			if (layerViewModel.getAllSelectedLayersNoContext(case_.path).length > 0) {
 				// Debounce loading layers to avoid multiple re-renders
 				const timeoutId = setTimeout(() => {
 					loadAllLayers(++loadingOperationCounter);
@@ -75,18 +69,8 @@
 		// TODO: Update only layers that have changed
 		if (isInitialized) {
 			// Check each dataset layer for changes (take a snapshot for deep reactivity)
-			const datasetLayers = $state.snapshot(
-				layerViewModel.selectedLayersWithLayerStylesForCase(case_.id)
-			);
-			datasetLayers.forEach(({ layer, style }) => {
-				updateLayerStyle(layer, style);
-			});
-
-			// Check each run layer for changes (take a snapshot for deep reactivity)
-			const runLayers = $state.snapshot(
-				runViewModel.selectedLayersWithLayerStylesForCase(case_.id)
-			);
-			runLayers.forEach(({ layer, style }) => {
+			const desiredLayers = layerViewModel.getAllSelectedLayersWithLayerStylesNoContext(case_.path);
+			desiredLayers.forEach(({ layer, style }) => {
 				updateLayerStyle(layer, style);
 			});
 		}
@@ -99,9 +83,7 @@
 		try {
 			// Get current and desired layers
 			const currentVolumes = nv.volumes.map((vol: any) => vol.url);
-			const datasetLayers = layerViewModel.selectedLayersWithLayerStylesForCase(case_.id);
-			const runLayers = runViewModel.selectedLayersWithLayerStylesForCase(case_.id);
-			const desiredLayers = [...datasetLayers, ...runLayers];
+			const desiredLayers = layerViewModel.getAllSelectedLayersWithLayerStylesNoContext(case_.path);
 
 			// Remove layers that are no longer needed
 			const layersToRemove = currentVolumes.filter(
@@ -128,10 +110,10 @@
 	}
 
 	async function loadLayer(layer: Layer, style: LayerStyle) {
-		const options: any = { url: layer.path, id: layer.id };
+		const options: any = { url: layer.path };
 
 		if (style.colorMap) {
-			options.colormap = setColorMap(layer.id, style.colorMap);
+			options.colormap = setColorMap(layer.path, style.colorMap);
 		}
 		if (style.alpha !== undefined) {
 			options.opacity = style.alpha;
@@ -145,7 +127,7 @@
 
 		const volumeIndex = getVolumeIndex(layer.path);
 		if (volumeIndex !== -1) {
-			const colorMapId = setColorMap(layer.id, style.colorMap);
+			const colorMapId = setColorMap(layer.path, style.colorMap);
 			nv.setColormap(nv.volumes[volumeIndex].id, colorMapId);
 
 			if (style.alpha !== undefined) {

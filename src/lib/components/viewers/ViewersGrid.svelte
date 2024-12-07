@@ -9,9 +9,9 @@
 		const selectedCount = caseViewModel.selectedCases.length;
 
 		if (selectedCount === 1) {
-			uiViewModel.fullscreenCaseId = caseViewModel.selectedCases[0].id;
+			uiViewModel.state.viewers.fullscreenCasePath = caseViewModel.selectedCases[0].path;
 		} else if (selectedCount === 2 && lastNumberOfOpenedCases === 1) {
-			uiViewModel.fullscreenCaseId = null;
+			uiViewModel.state.viewers.fullscreenCasePath = null;
 		}
 
 		lastNumberOfOpenedCases = selectedCount;
@@ -19,7 +19,7 @@
 
 	// Compute grid layout based on number of selected cases
 	const gridClass = $derived(
-		uiViewModel.fullscreenCaseId
+		uiViewModel.state.viewers.fullscreenCasePath
 			? 'w-full h-full'
 			: `grid gap-4 ${
 					caseViewModel.selectedCases.length <= 1
@@ -35,7 +35,7 @@
 
 <div class="h-full w-full p-8 overflow-auto">
 	<section class={gridClass}>
-		{#each caseViewModel.selectedCases as case_ (case_.id)}
+		{#each caseViewModel.selectedCases as case_}
 			<ViewerWindow {case_} />
 		{/each}
 	</section>

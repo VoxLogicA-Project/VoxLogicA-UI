@@ -1,26 +1,26 @@
 <script lang="ts">
 	import { TabGroup, Tab } from '@skeletonlabs/skeleton';
-	import { runViewModel } from '$lib/viewmodels/run.svelte';
 	import { uiViewModel } from '$lib/viewmodels/ui.svelte';
 
 	// Watch for changes to bottomPanelBlinkingTab
-	$effect(() => {
-		if (uiViewModel.bottomPanelBlinkingTab) {
-			// Reset after 3 blinks (1s each) plus a small buffer
-			setTimeout(() => {
-				uiViewModel.bottomPanelBlinkingTab = null;
-			}, 3100);
-		}
-	});
+	// $effect(() => {
+	// 	if (uiViewModel.bottomPanelBlinkingTab) {
+	// 		// Reset after 3 blinks (1s each) plus a small buffer
+	// 		setTimeout(() => {
+	// 			uiViewModel.bottomPanelBlinkingTab = null;
+	// 		}, 3100);
+	// 	}
+	// });
 
 	// Compute tabs based on run history
-	const tabs = $derived([
-		{ id: 'layers', label: 'Dataset Layers' },
-		...runViewModel.history.map((_, index) => ({
-			id: `run-${index}`,
-			label: `Run ${index + 1}`,
-		})),
-	]);
+	// const tabs = $derived([
+	// 	{ id: 'layers', label: 'Dataset Layers' },
+	// 	...runViewModel.history.map((_, index) => ({
+	// 		id: `run-${index}`,
+	// 		label: `Run ${index + 1}`,
+	// 	})),
+	// ]);
+	const tabs = [{ id: 'layers', label: 'Dataset Layers' }];
 </script>
 
 <div class="tabs-container overflow-x-auto">
@@ -32,11 +32,11 @@
 	>
 		{#each tabs as tab}
 			<Tab
-				bind:group={uiViewModel.bottomPanelTab}
+				bind:group={uiViewModel.state.layers.bottomPanelTab}
 				name="layers-tab"
 				value={tab.id}
-				class="px-3 py-1.5 whitespace-nowrap text-sm tab-custom {uiViewModel.bottomPanelBlinkingTab ===
-				tab.id
+				class="px-3 py-1.5 whitespace-nowrap text-sm tab-custom {uiViewModel.state.layers
+					.bottomPanelBlinkingTab === tab.id
 					? 'blink-tab'
 					: ''}"
 			>
