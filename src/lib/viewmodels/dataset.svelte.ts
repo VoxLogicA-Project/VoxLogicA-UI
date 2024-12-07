@@ -5,7 +5,8 @@ import { loadedData, currentWorkspace, apiRepository } from '$lib/models/reposit
 let isLoading = $state(false);
 let error = $state<string | null>(null);
 
-// Derived state from the model
+// Derived states
+const datasets = $derived(loadedData.datasets);
 const selectedDataset = $derived.by(() => {
 	const datasetName = currentWorkspace.state.data.openedDatasetName;
 	return loadedData.datasets.find((d) => d.name === datasetName) ?? null;
@@ -54,14 +55,17 @@ function reset(): void {
 // Public API
 export const datasetViewModel = {
 	// State (readonly)
-	get selectedDataset() {
-		return selectedDataset;
-	},
 	get isLoading() {
 		return isLoading;
 	},
 	get error() {
 		return error;
+	},
+	get datasets() {
+		return datasets;
+	},
+	get selectedDataset() {
+		return selectedDataset;
 	},
 	get hasDatasets() {
 		return loadedData.datasets.length > 0;

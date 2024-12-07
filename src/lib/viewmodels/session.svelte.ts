@@ -121,6 +121,12 @@ function reset(): void {
 // Public API
 export const sessionViewModel = {
 	// State (readonly)
+	get isLoading() {
+		return isLoading;
+	},
+	get error() {
+		return error;
+	},
 	get availableWorkspaces() {
 		return availableWorkspaces;
 	},
@@ -129,12 +135,6 @@ export const sessionViewModel = {
 	},
 	get selectedWorkspaceId() {
 		return selectedWorkspaceId;
-	},
-	get isLoading() {
-		return isLoading;
-	},
-	get error() {
-		return error;
 	},
 	get hasUnsavedChanges() {
 		return hasUnsavedChanges;

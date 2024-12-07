@@ -9,6 +9,7 @@ let error = $state<string | null>(null);
 const MAX_SELECTED_CASES = 16;
 
 // Derived states
+const cases = $derived(loadedData.cases);
 const selectedCases = $derived(currentWorkspace.state.data.openedCasesPaths);
 const canSelectMore = $derived(selectedCases.length < MAX_SELECTED_CASES);
 const getSelectionIndex = $derived((casePath: Case['path']) => {
@@ -65,14 +66,17 @@ function reset(): void {
 // Public API
 export const caseViewModel = {
 	// State (readonly)
-	get selectedCases() {
-		return selectedCases;
-	},
 	get isLoading() {
 		return isLoading;
 	},
 	get error() {
 		return error;
+	},
+	get cases() {
+		return cases;
+	},
+	get selectedCases() {
+		return selectedCases;
 	},
 
 	// Queries
