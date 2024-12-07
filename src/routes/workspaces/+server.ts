@@ -2,7 +2,7 @@ import { json, error } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import fs from 'fs/promises';
 import path from 'path';
-import { WORKSPACE_JSON_PATH, WORKSPACES_PATH } from '../config';
+import { WORKSPACE_JSON_PATH, WORKSPACES_PATH, WORKSPACE_PATH } from '../config';
 import type { Workspace } from '$lib/models/types';
 
 export const GET: RequestHandler = async () => {
@@ -46,6 +46,7 @@ export const POST: RequestHandler = async ({ request }) => {
 			updatedAt: new Date(),
 		};
 
+		await fs.mkdir(WORKSPACE_PATH(newId), { recursive: true });
 		await fs.writeFile(WORKSPACE_JSON_PATH(newId), JSON.stringify(newWorkspace, null, 2));
 
 		return json(newWorkspace);

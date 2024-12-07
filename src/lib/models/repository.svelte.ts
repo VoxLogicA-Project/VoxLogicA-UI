@@ -19,8 +19,8 @@ export const loadedData = $state<LoadedData>({
 });
 
 export const currentWorkspace = $state<Workspace>({
-	id: '',
-	name: '',
+	id: 'test',
+	name: 'Test',
 	createdAt: new Date(),
 	updatedAt: new Date(),
 	state: {

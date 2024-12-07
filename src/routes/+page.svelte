@@ -1,5 +1,6 @@
 <script lang="ts">
 	import CollapsibleSidebar from '$lib/components/common/CollapsibleSidebar.svelte';
+	import Workspaces from '$lib/components/navigation/Workspaces.svelte';
 	import DatasetBrowser from '$lib/components/navigation/DatasetBrowser.svelte';
 	import CaseList from '$lib/components/navigation/CaseList.svelte';
 	import ViewersGrid from '$lib/components/viewers/ViewersGrid.svelte';
@@ -8,53 +9,6 @@
 	import { datasetViewModel } from '$lib/viewmodels/dataset.svelte';
 	import { caseViewModel } from '$lib/viewmodels/case.svelte';
 	import { uiViewModel } from '$lib/viewmodels/ui.svelte';
-	import { sessionViewModel } from '$lib/viewmodels/session.svelte';
-	import { getToastStore } from '@skeletonlabs/skeleton';
-	import { currentWorkspace } from '$lib/models/repository.svelte';
-
-	const toastStore = getToastStore();
-
-	// Add reactive class based on unsaved changes
-	const saveButtonClass = $derived(
-		sessionViewModel.hasUnsavedChanges
-			? 'bg-error-500 hover:bg-error-600' // Changed from primary to error variant
-			: 'bg-surface-300-600-token hover:bg-surface-400-500-token' // Default state
-	);
-
-	function handleSave() {
-		try {
-			sessionViewModel.saveWorkspace();
-			toastStore.trigger({
-				message: 'Application state saved successfully',
-				background: 'variant-filled-success',
-			});
-		} catch (error) {
-			toastStore.trigger({
-				message: 'Failed to save application state',
-				background: 'variant-filled-error',
-			});
-		}
-	}
-
-	function handleLoad() {
-		// TODO: Implement load workspace
-		// try {
-		// 	sessionViewModel.loadWorkspace();
-		// 	toastStore.trigger({
-		// 		message: 'Application state restored successfully',
-		// 		background: 'variant-filled-success',
-		// 	});
-		// } catch (error) {
-		// 	toastStore.trigger({
-		// 		message: 'Failed to load application state',
-		// 		background: 'variant-filled-error',
-		// 	});
-		// }
-	}
-
-	$effect(() => {
-		$inspect(currentWorkspace.state.datasetLayersState.openedLayersPathsByCasePath);
-	});
 </script>
 
 <div class="h-screen w-screen flex overflow-hidden bg-surface-50-900-token">
@@ -98,31 +52,10 @@
 			</div>
 
 			<div class="flex gap-2">
-				<!-- Save State Button -->
-				<button
-					class="w-8 h-8 min-w-[2rem] min-h-[2rem] flex-shrink-0 rounded-lg {saveButtonClass} flex items-center justify-center transition-colors duration-200"
-					onclick={handleSave}
-					title={sessionViewModel.hasUnsavedChanges ? 'Save changes' : 'No unsaved changes'}
-					aria-label={sessionViewModel.hasUnsavedChanges ? 'Save changes' : 'No unsaved changes'}
-				>
-					<i
-						class="fa-solid fa-floppy-disk text-lg {sessionViewModel.hasUnsavedChanges
-							? 'animate-pulse'
-							: ''}"
-					></i>
-				</button>
+				<!-- Workspaces -->
+				<Workspaces />
 
-				<!-- Load State Button -->
-				<button
-					class="w-8 h-8 min-w-[2rem] min-h-[2rem] flex-shrink-0 rounded-lg bg-surface-300-600-token hover:bg-surface-400-500-token flex items-center justify-center"
-					onclick={handleLoad}
-					title="Load saved state"
-					aria-label="Load saved state"
-				>
-					<i class="fa-solid fa-rotate-left text-lg"></i>
-				</button>
-
-				<!-- Existing Dark Mode Button -->
+				<!-- Dark Mode Button -->
 				<button
 					class="w-8 h-8 min-w-[2rem] min-h-[2rem] flex-shrink-0 rounded-lg bg-surface-300-600-token hover:bg-surface-400-500-token flex items-center justify-center"
 					onclick={uiViewModel.toggleDarkMode}
