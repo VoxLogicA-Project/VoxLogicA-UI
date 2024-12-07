@@ -88,7 +88,7 @@
 							onclick={() => workspaceService.handleSelect(id)}
 							onkeydown={(e) => e.key === 'Enter' && workspaceService.handleSelect(id)}
 						>
-							<div class="flex flex-col gap-0.5">
+							<div class="flex flex-col">
 								<span class="font-medium text-sm">{name}</span>
 								<div class="flex items-start justify-between gap-1 max-w-full">
 									<span class="text-xs opacity-50 font-mono truncate mt-0.5">{id}</span>
