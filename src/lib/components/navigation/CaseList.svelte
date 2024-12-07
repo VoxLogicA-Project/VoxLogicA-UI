@@ -37,6 +37,15 @@
 	function removeFilter(index: number) {
 		filters = filters.filter((_, i) => i !== index);
 	}
+
+	$effect(() => {
+		if (caseViewModel.error) {
+			toastStore.trigger({
+				message: caseViewModel.error,
+				background: 'variant-filled-error',
+			});
+		}
+	});
 </script>
 
 <div class="flex flex-col h-full">
@@ -120,12 +129,6 @@
 		{#if caseViewModel.isLoading}
 			<div class="flex-1 flex items-center justify-center">
 				<ProgressRadial width="w-8" />
-			</div>
-		{:else if caseViewModel.error}
-			<div class="p-4">
-				<div class="alert variant-filled-error">
-					{caseViewModel.error}
-				</div>
 			</div>
 		{:else}
 			<!-- Content -->

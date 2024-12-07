@@ -1,5 +1,6 @@
 import type { Dataset } from '$lib/models/types';
 import { loadedData, currentWorkspace, apiRepository } from '$lib/models/repository.svelte';
+import { caseViewModel } from './case.svelte';
 
 // UI-specific state that doesn't belong in the model
 let isLoading = $state(false);
@@ -29,7 +30,7 @@ async function loadDatasets(): Promise<void> {
 async function selectDataset(dataset: Dataset): Promise<void> {
 	if (!dataset) return;
 
-	isLoading = true;
+	caseViewModel.isLoading = true;
 	error = null;
 
 	try {
@@ -40,7 +41,7 @@ async function selectDataset(dataset: Dataset): Promise<void> {
 		error = e instanceof Error ? e.message : 'Failed to load cases';
 		currentWorkspace.state.data.openedDatasetName = null;
 	} finally {
-		isLoading = false;
+		caseViewModel.isLoading = false;
 	}
 }
 

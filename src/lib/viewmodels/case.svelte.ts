@@ -33,7 +33,6 @@ async function selectCase(caseData: Case): Promise<void> {
 		return;
 	}
 
-	isLoading = true;
 	error = null;
 
 	try {
@@ -53,8 +52,6 @@ async function selectCase(caseData: Case): Promise<void> {
 		});
 	} catch (e) {
 		error = e instanceof Error ? e.message : `Failed to load layers for case: ${caseData.name}`;
-	} finally {
-		isLoading = false;
 	}
 }
 
@@ -90,6 +87,9 @@ export const caseViewModel = {
 	// State (readonly)
 	get isLoading() {
 		return isLoading;
+	},
+	set isLoading(value: boolean) {
+		isLoading = value;
 	},
 	get error() {
 		return error;
