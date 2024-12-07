@@ -1,12 +1,12 @@
 import { json, error } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import fs from 'fs/promises';
-import { RUN_OUTPUT_PATH } from '../../../../config';
+import { RUN_OUTPUT_PATH } from '../../../../../config';
 import type { Layer } from '$lib/models/types';
 
 export const GET: RequestHandler = async ({ params }) => {
-	const { caseId, runId } = params;
-	const runPath = RUN_OUTPUT_PATH(caseId, runId);
+	const { workspaceId, caseId, runId } = params;
+	const runPath = RUN_OUTPUT_PATH(workspaceId, caseId, runId);
 
 	// Read the case directory
 	let files: string[];

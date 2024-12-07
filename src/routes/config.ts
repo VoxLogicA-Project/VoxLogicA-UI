@@ -17,5 +17,13 @@ export const VOXLOGICA_BINARY_PATH = (() => {
 	}
 })();
 
-export const RUN_OUTPUT_PATH = (caseId: string, runId: string) =>
-	path.join(process.env.RUN_OUTPUT_PATH || tmpdir(), caseId, runId);
+export const WORKSPACES_PATH =
+	process.env.WORKSPACES_PATH || path.join(tmpdir(), 'voxlogica-ui', 'workspaces');
+
+export const WORKSPACE_PATH = (workspaceId: string) => path.join(WORKSPACES_PATH, workspaceId);
+
+export const WORKSPACE_JSON_PATH = (workspaceId: string) =>
+	path.join(WORKSPACE_PATH(workspaceId), 'workspace.json');
+
+export const RUN_OUTPUT_PATH = (workspaceId: string, caseId: string, runId: string) =>
+	path.join(WORKSPACE_PATH(workspaceId), caseId, runId);

@@ -1,10 +1,11 @@
-import type { Dataset, Case, Layer, PresetScript, Workspace } from './types';
+import type { Dataset, Case, Layer, PresetScript, Workspace, Run } from './types';
 
 interface LoadedData {
 	availableWorkspacesIds: Workspace['id'][];
 	datasets: Dataset[];
 	cases: Case[];
-	layersByCasePath: Record<Case['path'], Layer[]>;
+	layersByCaseId: Record<Case['id'], Layer[]>;
+	runsByCaseId: Record<Case['id'], Run[]>;
 	presetScripts: PresetScript[];
 }
 
@@ -12,7 +13,8 @@ export const loadedData = $state<LoadedData>({
 	availableWorkspacesIds: [],
 	datasets: [],
 	cases: [],
-	layersByCasePath: {},
+	layersByCaseId: {},
+	runsByCaseId: {},
 	presetScripts: [],
 });
 
@@ -97,7 +99,7 @@ export async function fetchLayers(dataset: Dataset, caseData: Case): Promise<voi
 		`/datasets/${dataset.name}/cases/${caseData.name}/layers`,
 		`Failed to fetch layers for case: ${caseData.path}`
 	);
-	loadedData.layersByCasePath[caseData.path] = await response.json();
+	loadedData.layersByCaseId[caseData.id] = await response.json();
 }
 
 export async function fetchPresetsScripts(): Promise<void> {
@@ -111,47 +113,85 @@ export async function fetchPresetScriptCode(script: PresetScript): Promise<strin
 }
 
 export async function fetchWorkspaces(): Promise<void> {
-	// const response = await fetchWithError('/workspaces', 'Failed to fetch workspaces');
-	// loadedData.workspacesId = await response.json();
-	// Temporarily, we can fetch them from local storage
-	loadedData.availableWorkspacesIds = ['id_test', 'id_test2', 'id_test3'];
+	const response = await fetchWithError('/workspaces', 'Failed to fetch workspaces');
+	loadedData.availableWorkspacesIds = await response.json();
 }
 
 export async function fetchWorkspace(workspaceId: Workspace['id']): Promise<void> {
-	// Temporary data structure updated to match new types
-	Object.assign(currentWorkspace, {
-		id: 'id_test',
-		name: 'My first workspace',
-		createdAt: new Date(),
-		updatedAt: new Date(),
-		state: {
-			data: {
-				openedDatasetName: null,
-				openedCasesPaths: [],
-				openedRunsIds: [],
-			},
-			datasetLayersState: {
-				openedLayersPathsByCasePath: {},
-				stylesByLayerName: {},
-			},
-			runsLayersStates: [],
-			ui: {
-				isDarkMode: false,
-				sidebars: {
-					datasetCollapsed: false,
-					layerCollapsed: false,
-					scriptCollapsed: false,
-				},
-				viewers: {
-					fullscreenCasePath: null,
-				},
-				layers: {
-					bottomPanelTab: 'layers',
-				},
-				scriptEditor: {
-					content: '',
-				},
-			},
-		},
+	const response = await fetchWithError(
+		`/workspaces/${workspaceId}`,
+		`Failed to fetch workspace: ${workspaceId}`
+	);
+	Object.assign(currentWorkspace, await response.json());
+}
+
+export async function saveWorkspace(workspace: Workspace): Promise<void> {
+	// TODO: Handle method/headers/body in fetchWithError
+	const response = await fetch(`/workspaces/${workspace.id}`, {
+		method: 'PUT',
+		headers: { 'Content-Type': 'application/json' },
+		body: JSON.stringify(workspace),
 	});
+
+	if (!response.ok) {
+		const errorData = await response.json().catch(() => null);
+		throw new RepositoryError(
+			errorData?.message || `Failed to save workspace: ${workspace.id}`,
+			response.status
+		);
+	}
+}
+
+export async function createWorkspace(
+	workspace: Omit<Workspace, 'id' | 'createdAt' | 'updatedAt'>
+): Promise<Workspace> {
+	const response = await fetch('/workspaces', {
+		method: 'POST',
+		headers: { 'Content-Type': 'application/json' },
+		body: JSON.stringify(workspace),
+	});
+
+	if (!response.ok) {
+		const errorData = await response.json();
+		throw new RepositoryError(errorData?.message || 'Failed to create workspace', response.status);
+	}
+
+	return response.json();
+}
+
+export async function fetchWorkspaceRuns(workspaceId: Workspace['id']): Promise<void> {
+	const response = await fetchWithError(
+		`/workspaces/${workspaceId}/runs`,
+		`Failed to fetch runs for workspace: ${workspaceId}`
+	);
+
+	// Process the runs and organize them by case ID
+	const runs = await response.json();
+	const runsByCaseId: Record<Case['id'], Run[]> = {};
+
+	for (const run of runs) {
+		for (const caseId of Object.keys(run.caseResults)) {
+			if (!runsByCaseId[caseId]) {
+				runsByCaseId[caseId] = [];
+			}
+			runsByCaseId[caseId].push({
+				...run,
+				...run.caseResults[caseId],
+			});
+		}
+	}
+
+	loadedData.runsByCaseId = runsByCaseId;
+}
+
+export async function fetchRunLayers(
+	workspaceId: Workspace['id'],
+	caseId: Case['id'],
+	runId: Run['id']
+): Promise<Layer[]> {
+	const response = await fetchWithError(
+		`/workspaces/${workspaceId}/runs/${caseId}/${runId}/layers`,
+		`Failed to fetch layers for run: ${runId}`
+	);
+	return await response.json();
 }

@@ -138,11 +138,13 @@ async function cleanup(outputDir: string): Promise<void> {
 export const POST: RequestHandler = async ({ request, fetch }) => {
 	const runId = randomUUID();
 
+	let workspaceId: string;
 	let scriptContent: string;
 	let cases: Case[];
 
 	try {
 		const body = await request.json();
+		workspaceId = body.workspaceId;
 		scriptContent = body.scriptContent;
 		cases = body.cases;
 
@@ -150,13 +152,13 @@ export const POST: RequestHandler = async ({ request, fetch }) => {
 			throw error(400, '"cases" must be an array');
 		}
 	} catch (err) {
-		throw error(400, 'Missing required fields: scriptContent or cases');
+		throw error(400, 'Missing required fields: workspaceId, scriptContent or cases');
 	}
 
 	const results: Run[] = [];
 
 	for (const case_ of cases) {
-		const caseOutputDir = RUN_OUTPUT_PATH(case_.id, runId);
+		const caseOutputDir = RUN_OUTPUT_PATH(workspaceId, case_.id, runId);
 
 		try {
 			// Create case-specific directory
