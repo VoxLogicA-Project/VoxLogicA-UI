@@ -6,9 +6,10 @@ let isLoading = $state(false);
 let error = $state<string | null>(null);
 
 // Derived states
-const availableWorkspaces = $derived(loadedData.availableWorkspacesIds);
-const hasWorkspaces = $derived(availableWorkspaces.length > 0);
+const availableWorkspacesIdsAndNames = $derived(loadedData.availableWorkspacesIdsAndNames);
+const hasWorkspaces = $derived(availableWorkspacesIdsAndNames.length > 0);
 const selectedWorkspaceId = $derived(currentWorkspace.id);
+const selectedWorkspaceName = $derived(currentWorkspace.name);
 const hasUnsavedChanges = $state(true);
 
 async function loadWorkspaces(): Promise<void> {
@@ -47,6 +48,19 @@ async function saveWorkspace(): Promise<void> {
 		await apiRepository.saveWorkspace(currentWorkspace);
 	} catch (e) {
 		error = e instanceof Error ? e.message : 'Failed to save workspace';
+	} finally {
+		isLoading = false;
+	}
+}
+
+async function createWorkspace(workspaceName: Workspace['name']): Promise<void> {
+	isLoading = true;
+	error = null;
+
+	try {
+		await apiRepository.createWorkspace(workspaceName);
+	} catch (e) {
+		error = e instanceof Error ? e.message : 'Failed to create workspace';
 	} finally {
 		isLoading = false;
 	}
@@ -91,7 +105,7 @@ function reset(): void {
 	});
 
 	// Reset loaded data and state tracking
-	loadedData.availableWorkspacesIds = [];
+	loadedData.availableWorkspacesIdsAndNames = [];
 	isLoading = false;
 	error = null;
 }
@@ -105,14 +119,17 @@ export const sessionViewModel = {
 	get error() {
 		return error;
 	},
-	get availableWorkspaces() {
-		return availableWorkspaces;
+	get availableWorkspacesIdsAndNames() {
+		return availableWorkspacesIdsAndNames;
 	},
 	get hasWorkspaces() {
 		return hasWorkspaces;
 	},
 	get selectedWorkspaceId() {
 		return selectedWorkspaceId;
+	},
+	get selectedWorkspaceName() {
+		return selectedWorkspaceName;
 	},
 	get hasUnsavedChanges() {
 		return hasUnsavedChanges;
@@ -122,5 +139,6 @@ export const sessionViewModel = {
 	loadWorkspaces,
 	selectWorkspace,
 	saveWorkspace,
+	createWorkspace,
 	reset,
 };

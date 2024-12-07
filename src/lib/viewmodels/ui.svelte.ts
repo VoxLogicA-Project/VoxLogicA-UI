@@ -27,7 +27,9 @@ function toggleDarkMode(): void {
 // Public API
 export const uiViewModel = {
 	// Bindable state
-	state: currentWorkspace.state.ui,
+	get state() {
+		return currentWorkspace.state.ui;
+	},
 
 	// Actions
 	toggleDarkMode,

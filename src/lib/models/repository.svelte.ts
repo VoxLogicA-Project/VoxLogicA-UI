@@ -1,7 +1,7 @@
 import type { Dataset, Case, Layer, PresetScript, Workspace, Run } from './types';
 
 interface LoadedData {
-	availableWorkspacesIds: Workspace['id'][];
+	availableWorkspacesIdsAndNames: { id: Workspace['id']; name: Workspace['name'] }[];
 	datasets: Dataset[];
 	cases: Case[];
 	layersByCasePath: Record<Case['path'], Layer[]>;
@@ -10,7 +10,7 @@ interface LoadedData {
 }
 
 export const loadedData = $state<LoadedData>({
-	availableWorkspacesIds: [],
+	availableWorkspacesIdsAndNames: [],
 	datasets: [],
 	cases: [],
 	layersByCasePath: {},
@@ -18,41 +18,43 @@ export const loadedData = $state<LoadedData>({
 	presetScripts: [],
 });
 
-export const currentWorkspace = $state<Workspace>({
-	id: 'test',
-	name: 'Test',
-	createdAt: new Date(),
-	updatedAt: new Date(),
-	state: {
-		data: {
-			openedDatasetName: null,
-			openedCasesPaths: [],
-			openedRunsIds: [],
+const initialWorkspaceState: Workspace['state'] = {
+	data: {
+		openedDatasetName: null,
+		openedCasesPaths: [],
+		openedRunsIds: [],
+	},
+	datasetLayersState: {
+		openedLayersPathsByCasePath: {},
+		stylesByLayerName: {},
+	},
+	runsLayersStates: {},
+	ui: {
+		isDarkMode: false,
+		sidebars: {
+			datasetCollapsed: false,
+			layerCollapsed: false,
+			scriptCollapsed: true,
 		},
-		datasetLayersState: {
-			openedLayersPathsByCasePath: {},
-			stylesByLayerName: {},
+		viewers: {
+			fullscreenCasePath: null,
 		},
-		runsLayersStates: {},
-		ui: {
-			isDarkMode: false,
-			sidebars: {
-				datasetCollapsed: false,
-				layerCollapsed: false,
-				scriptCollapsed: false,
-			},
-			viewers: {
-				fullscreenCasePath: null,
-			},
-			layers: {
-				bottomPanelTab: 'layers',
-				bottomPanelBlinkingTab: null,
-			},
-			scriptEditor: {
-				content: '',
-			},
+		layers: {
+			bottomPanelTab: 'layers',
+			bottomPanelBlinkingTab: null,
+		},
+		scriptEditor: {
+			content: '',
 		},
 	},
+};
+
+export const currentWorkspace = $state<Workspace>({
+	id: '',
+	name: '',
+	createdAt: new Date(),
+	updatedAt: new Date(),
+	state: initialWorkspaceState,
 });
 
 export class RepositoryError extends Error {
@@ -115,7 +117,7 @@ async function fetchPresetScriptCode(script: PresetScript): Promise<string> {
 
 async function fetchWorkspaces(): Promise<void> {
 	const response = await fetchWithError('/workspaces', 'Failed to fetch workspaces');
-	loadedData.availableWorkspacesIds = await response.json();
+	loadedData.availableWorkspacesIdsAndNames = await response.json();
 }
 
 async function fetchWorkspace(workspaceId: Workspace['id']): Promise<void> {
@@ -143,9 +145,12 @@ async function saveWorkspace(workspace: Workspace): Promise<void> {
 	}
 }
 
-async function createWorkspace(
-	workspace: Omit<Workspace, 'id' | 'createdAt' | 'updatedAt'>
-): Promise<Workspace> {
+async function createWorkspace(workspaceName: Workspace['name']): Promise<Workspace> {
+	const workspace: Omit<Workspace, 'id' | 'createdAt' | 'updatedAt'> = {
+		name: workspaceName,
+		state: initialWorkspaceState,
+	};
+
 	const response = await fetch('/workspaces', {
 		method: 'POST',
 		headers: { 'Content-Type': 'application/json' },

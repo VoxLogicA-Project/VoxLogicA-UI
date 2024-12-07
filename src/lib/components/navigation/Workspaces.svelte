@@ -1,68 +1,210 @@
 <script lang="ts">
 	import { getToastStore } from '@skeletonlabs/skeleton';
 	import { sessionViewModel } from '$lib/viewmodels/session.svelte';
+	import { popup } from '@skeletonlabs/skeleton';
+	import type { PopupSettings, ModalSettings } from '@skeletonlabs/skeleton';
+	import { getModalStore } from '@skeletonlabs/skeleton';
+	import { onMount } from 'svelte';
+	import { stopPropagation } from 'svelte/legacy';
 
 	const toastStore = getToastStore();
+	const modalStore = getModalStore();
 
-	// Add reactive class based on unsaved changes
-	const saveButtonClass = $derived(
-		sessionViewModel.hasUnsavedChanges
-			? 'bg-error-500 hover:bg-error-600' // Changed from primary to error variant
-			: 'bg-surface-300-600-token hover:bg-surface-400-500-token' // Default state
-	);
+	// Popup settings
+	const popupSettings: PopupSettings = {
+		event: 'click',
+		target: 'workspace-menu',
+		placement: 'bottom',
+	};
 
-	function handleSave() {
-		try {
-			sessionViewModel.saveWorkspace();
+	// Load workspaces and check if we need to show create modal
+	onMount(() => {
+		sessionViewModel.loadWorkspaces();
+	});
+
+	function showCreateWorkspaceModal() {
+		const modal: ModalSettings = {
+			type: 'prompt',
+			title: 'New Workspace',
+			body: 'Enter a name for the new workspace',
+			value: '',
+			response: (r) => handleCreateWorkspace(r),
+			// Prevent closing if no workspaces exist
+			buttonTextCancel: sessionViewModel.hasWorkspaces ? 'Cancel' : '',
+			buttonTextSubmit: 'Create',
+		};
+		modalStore.trigger(modal);
+	}
+
+	async function handleCreateWorkspace(name: string | boolean | undefined) {
+		if (typeof name !== 'string') {
+			return;
+		}
+
+		if (!name.trim()) {
 			toastStore.trigger({
-				message: 'Application state saved successfully',
-				background: 'variant-filled-success',
+				message: 'Please enter a workspace name',
+				background: 'variant-filled-error',
 			});
-		} catch (error) {
+			setTimeout(showCreateWorkspaceModal, 100);
+			return;
+		}
+
+		try {
+			await sessionViewModel.createWorkspace(name);
+			toastStore.trigger({ message: 'Workspace created', background: 'variant-filled-success' });
+		} catch {
 			toastStore.trigger({
-				message: 'Failed to save application state',
+				message: 'Failed to create workspace',
+				background: 'variant-filled-error',
+			});
+			if (!sessionViewModel.hasWorkspaces) {
+				// Re-open modal if no workspaces exist
+				setTimeout(showCreateWorkspaceModal, 100);
+			}
+		}
+	}
+
+	async function handleSave() {
+		try {
+			await sessionViewModel.saveWorkspace();
+			toastStore.trigger({ message: 'Workspace saved', background: 'variant-filled-success' });
+		} catch {
+			toastStore.trigger({
+				message: 'Failed to save workspace',
 				background: 'variant-filled-error',
 			});
 		}
 	}
 
-	function handleLoad() {
-		// TODO: Implement load workspace
-		// try {
-		// 	sessionViewModel.loadWorkspace();
-		// 	toastStore.trigger({
-		// 		message: 'Application state restored successfully',
-		// 		background: 'variant-filled-success',
-		// 	});
-		// } catch (error) {
-		// 	toastStore.trigger({
-		// 		message: 'Failed to load application state',
-		// 		background: 'variant-filled-error',
-		// 	});
-		// }
+	async function handleSelect(workspaceId: string) {
+		try {
+			await sessionViewModel.selectWorkspace(workspaceId);
+			// Reload workspaces after selection
+			await sessionViewModel.loadWorkspaces();
+			console.log(sessionViewModel.availableWorkspacesIdsAndNames);
+		} catch {
+			toastStore.trigger({
+				message: 'Failed to load workspace',
+				background: 'variant-filled-error',
+			});
+		}
 	}
+
+	const saveButtonClass = $derived(
+		sessionViewModel.hasUnsavedChanges
+			? 'bg-error-500 hover:bg-error-600' // Changed from primary to error variant
+			: 'bg-surface-300-600-token hover:bg-surface-400-500-token' // Default state
+	);
 </script>
 
-<!-- Save State Button -->
-<button
-	class="w-8 h-8 min-w-[2rem] min-h-[2rem] flex-shrink-0 rounded-lg {saveButtonClass} flex items-center justify-center transition-colors duration-200"
-	onclick={handleSave}
-	title={sessionViewModel.hasUnsavedChanges ? 'Save changes' : 'No unsaved changes'}
-	aria-label={sessionViewModel.hasUnsavedChanges ? 'Save changes' : 'No unsaved changes'}
->
-	<i
-		class="fa-solid fa-floppy-disk text-lg {sessionViewModel.hasUnsavedChanges
-			? 'animate-pulse'
-			: ''}"
-	></i>
-</button>
+<!-- Save Button and Workspace Button side by side -->
+<div class="flex gap-2">
+	<button
+		class="w-8 h-8 min-w-[2rem] min-h-[2rem] flex-shrink-0 rounded-lg {saveButtonClass} flex items-center justify-center transition-colors duration-200"
+		onclick={handleSave}
+		title={sessionViewModel.hasUnsavedChanges ? 'Save changes' : 'No unsaved changes'}
+		aria-label={sessionViewModel.hasUnsavedChanges ? 'Save changes' : 'No unsaved changes'}
+	>
+		<i
+			class="fa-solid fa-floppy-disk text-lg {sessionViewModel.hasUnsavedChanges
+				? 'animate-pulse'
+				: ''}"
+		></i>
+	</button>
 
-<!-- Load State Button -->
-<button
-	class="w-8 h-8 min-w-[2rem] min-h-[2rem] flex-shrink-0 rounded-lg bg-surface-300-600-token hover:bg-surface-400-500-token flex items-center justify-center"
-	onclick={handleLoad}
-	title="Load saved state"
-	aria-label="Load saved state"
->
-	<i class="fa-solid fa-rotate-left text-lg"></i>
-</button>
+	<button
+		class="h-8 px-2 rounded-lg bg-surface-300-600-token hover:bg-surface-400-500-token flex items-center gap-2 transition-colors duration-200"
+		use:popup={popupSettings}
+	>
+		<i class="fa-solid fa-window-restore text-sm opacity-50"></i>
+		<span class="truncate max-w-[120px] text-sm">
+			{#if sessionViewModel.selectedWorkspaceName}
+				{sessionViewModel.selectedWorkspaceName}
+			{:else}
+				Select Workspace
+			{/if}
+		</span>
+		<i class="fa-solid fa-chevron-down text-xs opacity-50"></i>
+	</button>
+</div>
+
+<!-- Popup Menu -->
+<div class="card w-64 shadow-xl" data-popup="workspace-menu">
+	{#if sessionViewModel.isLoading}
+		<div class="p-2 text-center">
+			<i class="fa-solid fa-spinner animate-spin"></i>
+		</div>
+	{:else if sessionViewModel.error}
+		<div class="p-2 text-error-500 text-center text-sm">
+			{sessionViewModel.error}
+		</div>
+	{:else}
+		<nav class="list-nav p-1">
+			{#if sessionViewModel.hasWorkspaces}
+				<div class="px-2 py-0.5 text-xs font-semibold uppercase text-surface-500-400-token">
+					Your Workspaces
+				</div>
+				{#each sessionViewModel.availableWorkspacesIdsAndNames as { id, name }}
+					<div
+						class="option !px-2 !py-1.5 rounded-lg {id === sessionViewModel.selectedWorkspaceId
+							? '!bg-primary-500/40 hover:!bg-primary-500/60'
+							: 'hover:!bg-surface-500/20'} flex items-center"
+					>
+						<div
+							class="flex-1 cursor-pointer max-w-full"
+							role="button"
+							tabindex="0"
+							onclick={() => handleSelect(id)}
+							onkeydown={(e) => e.key === 'Enter' && handleSelect(id)}
+						>
+							<div class="flex flex-col gap-0.5">
+								<span class="font-medium text-sm">{name}</span>
+								<div class="flex items-start justify-between gap-1 max-w-[calc(16rem-2rem)]">
+									<span class="text-xs opacity-50 font-mono truncate mt-0.5">{id}</span>
+									<div
+										class="inline-flex items-center justify-center p-0.5 hover:bg-surface-500/20 rounded-full opacity-50 hover:opacity-100 transition-opacity cursor-pointer"
+										role="button"
+										tabindex="0"
+										title="Copy Workspace ID"
+										onclick={(event) => {
+											event.stopPropagation();
+											navigator.clipboard.writeText(id);
+											toastStore.trigger({
+												message: 'Workspace ID copied',
+												background: 'variant-filled-success',
+											});
+										}}
+										onkeydown={(e) => {
+											if (e.key === 'Enter') {
+												e.stopPropagation();
+												navigator.clipboard.writeText(id);
+												toastStore.trigger({
+													message: 'Workspace ID copied',
+													background: 'variant-filled-success',
+												});
+											}
+										}}
+									>
+										<i class="fa-solid fa-copy text-xs"></i>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				{/each}
+				<hr class="!my-1 opacity-50" />
+			{/if}
+
+			<button
+				class="option !px-2 !py-1.5 rounded-lg hover:!bg-surface-500/20 w-full text-left"
+				onclick={showCreateWorkspaceModal}
+			>
+				<div class="flex items-center gap-2">
+					<i class="fa-solid fa-plus"></i>
+					<span class="text-sm">New Workspace</span>
+				</div>
+			</button>
+		</nav>
+	{/if}
+</div>
