@@ -81,12 +81,12 @@ async function fetchWithError(url: string, defaultErrorMessage: string): Promise
 	}
 }
 
-export async function fetchDatasets(): Promise<void> {
+async function fetchDatasets(): Promise<void> {
 	const response = await fetchWithError('/datasets', 'Failed to fetch datasets');
 	loadedData.datasets = await response.json();
 }
 
-export async function fetchCases(dataset: Dataset): Promise<void> {
+async function fetchCases(dataset: Dataset): Promise<void> {
 	const response = await fetchWithError(
 		`/datasets/${dataset.name}/cases`,
 		`Failed to fetch cases for dataset: ${dataset.name}`
@@ -94,7 +94,7 @@ export async function fetchCases(dataset: Dataset): Promise<void> {
 	loadedData.cases = await response.json();
 }
 
-export async function fetchLayers(dataset: Dataset, caseData: Case): Promise<void> {
+async function fetchLayers(dataset: Dataset, caseData: Case): Promise<void> {
 	const response = await fetchWithError(
 		`/datasets/${dataset.name}/cases/${caseData.name}/layers`,
 		`Failed to fetch layers for case: ${caseData.path}`
@@ -102,22 +102,22 @@ export async function fetchLayers(dataset: Dataset, caseData: Case): Promise<voi
 	loadedData.layersByCaseId[caseData.id] = await response.json();
 }
 
-export async function fetchPresetsScripts(): Promise<void> {
+async function fetchPresetsScripts(): Promise<void> {
 	const response = await fetchWithError('/scripts', 'Failed to fetch scripts');
 	loadedData.presetScripts = await response.json();
 }
 
-export async function fetchPresetScriptCode(script: PresetScript): Promise<string> {
+async function fetchPresetScriptCode(script: PresetScript): Promise<string> {
 	const response = await fetchWithError(script.path, `Failed to fetch script: ${script.name}`);
 	return response.text();
 }
 
-export async function fetchWorkspaces(): Promise<void> {
+async function fetchWorkspaces(): Promise<void> {
 	const response = await fetchWithError('/workspaces', 'Failed to fetch workspaces');
 	loadedData.availableWorkspacesIds = await response.json();
 }
 
-export async function fetchWorkspace(workspaceId: Workspace['id']): Promise<void> {
+async function fetchWorkspace(workspaceId: Workspace['id']): Promise<void> {
 	const response = await fetchWithError(
 		`/workspaces/${workspaceId}`,
 		`Failed to fetch workspace: ${workspaceId}`
@@ -125,7 +125,7 @@ export async function fetchWorkspace(workspaceId: Workspace['id']): Promise<void
 	Object.assign(currentWorkspace, await response.json());
 }
 
-export async function saveWorkspace(workspace: Workspace): Promise<void> {
+async function saveWorkspace(workspace: Workspace): Promise<void> {
 	// TODO: Handle method/headers/body in fetchWithError
 	const response = await fetch(`/workspaces/${workspace.id}`, {
 		method: 'PUT',
@@ -142,7 +142,7 @@ export async function saveWorkspace(workspace: Workspace): Promise<void> {
 	}
 }
 
-export async function createWorkspace(
+async function createWorkspace(
 	workspace: Omit<Workspace, 'id' | 'createdAt' | 'updatedAt'>
 ): Promise<Workspace> {
 	const response = await fetch('/workspaces', {
@@ -159,7 +159,7 @@ export async function createWorkspace(
 	return response.json();
 }
 
-export async function fetchWorkspaceRuns(workspaceId: Workspace['id']): Promise<void> {
+async function fetchWorkspaceRuns(workspaceId: Workspace['id']): Promise<void> {
 	const response = await fetchWithError(
 		`/workspaces/${workspaceId}/runs`,
 		`Failed to fetch runs for workspace: ${workspaceId}`
@@ -184,7 +184,7 @@ export async function fetchWorkspaceRuns(workspaceId: Workspace['id']): Promise<
 	loadedData.runsByCaseId = runsByCaseId;
 }
 
-export async function fetchRunLayers(
+async function fetchRunLayers(
 	workspaceId: Workspace['id'],
 	caseId: Case['id'],
 	runId: Run['id']
@@ -195,3 +195,18 @@ export async function fetchRunLayers(
 	);
 	return await response.json();
 }
+
+// Public API
+export const apiRepository = {
+	fetchDatasets,
+	fetchCases,
+	fetchLayers,
+	fetchPresetsScripts,
+	fetchPresetScriptCode,
+	fetchWorkspaces,
+	fetchWorkspace,
+	saveWorkspace,
+	createWorkspace,
+	fetchWorkspaceRuns,
+	fetchRunLayers,
+};
