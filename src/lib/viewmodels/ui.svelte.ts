@@ -1,6 +1,9 @@
 import { currentWorkspace } from '$lib/models/repository.svelte';
 import type { LayerContext } from '$lib/models/types';
-function resetUI(): void {
+
+let blinkingTabLayerContext: LayerContext | null = $state(null);
+
+function reset(): void {
 	Object.assign(currentWorkspace.state.ui, {
 		isDarkMode: false,
 		sidebars: {
@@ -34,6 +37,12 @@ export const uiViewModel = {
 	get state() {
 		return currentWorkspace.state.ui;
 	},
+	get blinkingTabLayerContext() {
+		return blinkingTabLayerContext;
+	},
+	set blinkingTabLayerContext(context: LayerContext | null) {
+		blinkingTabLayerContext = context;
+	},
 	get layerContext() {
 		return currentWorkspace.state.ui.layers.layerContext;
 	},
@@ -44,5 +53,5 @@ export const uiViewModel = {
 	// Actions
 	toggleDarkMode,
 	setLayerContext,
-	resetUI,
+	reset,
 };

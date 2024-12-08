@@ -79,7 +79,7 @@ async function singleRun(caseData: Case): Promise<void> {
 	await runAll([caseData]);
 }
 
-async function runAll(cases: Case[]): Promise<void> {
+async function runAll(cases: Case[]): Promise<Run['id']> {
 	isLoading = true;
 	error = null;
 
@@ -100,6 +100,9 @@ async function runAll(cases: Case[]): Promise<void> {
 		}
 
 		const runs: [Case, Run][] = await response.json();
+
+		// Get the run ID (all runs share the same ID)
+		const runId = runs[0][1].id;
 
 		// Load the runs into loadedData
 		for (const [case_, run] of runs) {
@@ -124,6 +127,8 @@ async function runAll(cases: Case[]): Promise<void> {
 		if (runs.some(([_, run]) => run.outputError)) {
 			error = 'Some runs failed. Check individual results for details.';
 		}
+
+		return runId;
 	} catch (err) {
 		error = err instanceof Error ? err.message : 'Failed to execute runs';
 		throw err;

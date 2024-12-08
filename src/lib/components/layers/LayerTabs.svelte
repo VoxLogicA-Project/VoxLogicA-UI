@@ -4,21 +4,32 @@
 	import { layerViewModel } from '$lib/viewmodels/layer.svelte';
 	import type { LayerContext } from '$lib/models/types';
 
-	// Watch for changes to bottomPanelBlinkingTab
-	// $effect(() => {
-	// 	if (uiViewModel.bottomPanelBlinkingTab) {
-	// 		// Reset after 3 blinks (1s each) plus a small buffer
-	// 		setTimeout(() => {
-	// 			uiViewModel.bottomPanelBlinkingTab = null;
-	// 		}, 3100);
-	// 	}
-	// });
-	let datasetTabId = $state('dataset');
+	// Watch for changes to blinkingTabLayerContext
 	$effect(() => {
-		// Whenever id changes, we need to update the layerContext
+		if (uiViewModel.blinkingTabLayerContext) {
+			// Reset after 3 blinks (1s each) plus a small buffer
+			setTimeout(() => {
+				uiViewModel.blinkingTabLayerContext = null;
+			}, 3100);
+		}
+	});
+	let datasetTabId = $state('dataset');
+	// Whenever id changes, we need to update the layerContext
+	$effect(() => {
 		const tab = tabs.find((tab) => tab.id === datasetTabId);
 		if (tab) {
 			uiViewModel.layerContext = tab.layerContext;
+		}
+	});
+	// And viceversa, whenever layerContext changes, we need to update the datasetTabId
+	$effect(() => {
+		const tab = tabs.find(
+			(tab) =>
+				tab.layerContext.type === uiViewModel.layerContext.type &&
+				tab.layerContext.runId === uiViewModel.layerContext.runId
+		);
+		if (tab) {
+			datasetTabId = tab.id;
 		}
 	});
 
@@ -54,7 +65,11 @@
 				bind:group={datasetTabId}
 				name="layers-tab"
 				value={tab.id}
-				class="px-3 py-1.5 whitespace-nowrap text-sm tab-custom"
+				class="px-3 py-1.5 whitespace-nowrap text-sm tab-custom
+				{uiViewModel.blinkingTabLayerContext?.type === tab.layerContext.type &&
+				uiViewModel.blinkingTabLayerContext?.runId === tab.layerContext.runId
+					? 'blink-tab'
+					: ''}"
 			>
 				{tab.label}
 			</Tab>

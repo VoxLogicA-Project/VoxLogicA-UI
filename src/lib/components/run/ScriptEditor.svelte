@@ -10,6 +10,7 @@
 	import type { Case, PresetScript } from '$lib/models/types';
 	import { ProgressRadial } from '@skeletonlabs/skeleton';
 	import { getToastStore } from '@skeletonlabs/skeleton';
+	import type { LayerContext } from '$lib/models/types';
 	import { uiViewModel } from '$lib/viewmodels/ui.svelte';
 	import { popup } from '@skeletonlabs/skeleton';
 	const toastStore = getToastStore();
@@ -160,7 +161,7 @@
 	// Run the script for all selected cases
 	async function handleRun() {
 		try {
-			await runViewModel.runAll(caseViewModel.selectedCases);
+			const runId = await runViewModel.runAll(caseViewModel.selectedCases);
 
 			if (runViewModel.error) {
 				toastStore.trigger({
@@ -168,11 +169,11 @@
 					background: 'variant-filled-error',
 				});
 			} else {
+				const newLayerContext: LayerContext = { type: 'run', runId: runId };
 				// Switch to the newly created run tab
-				// const newRunIndex = runViewModel.history.length - 1;
-				// const newTabId = `run-${newRunIndex}`;
-				// uiViewModel.bottomPanelTab = newTabId;
-				// uiViewModel.bottomPanelBlinkingTab = newTabId;
+				uiViewModel.layerContext = newLayerContext;
+				// And make it blink
+				uiViewModel.blinkingTabLayerContext = newLayerContext;
 
 				toastStore.trigger({
 					message: 'Run completed successfully!',
