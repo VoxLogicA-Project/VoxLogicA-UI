@@ -7,18 +7,19 @@ import {
 } from '$lib/models/repository.svelte';
 import { layerViewModel } from './layer.svelte';
 
-// UI-specific state
+// UI state
 let isLoading = $state(false);
 let error = $state<string | null>(null);
 
 // Derived states
 const headerContent = $derived.by(() => {
 	const layersIds = layerViewModel.datasetUniqueLayersNames;
-	return `import "stdlib.imgql"\n\n// Load layers\n${layersIds
-		.map((layerId) => {
-			return `load ${layerId} = "\$\{LAYER_PATH:${layerId}\}"`;
-		})
-		.join('\n')}`;
+	return [
+		'import "stdlib.imgql"',
+		'',
+		'// Load layers',
+		...layersIds.map((layerId) => `load ${layerId} = "\$\{LAYER_PATH:${layerId}\}"`),
+	].join('\n');
 });
 const fullScriptContent = $derived(
 	`${headerContent}\n\n${currentWorkspace.state.ui.scriptEditor.content}`

@@ -5,7 +5,7 @@ import { layerViewModel } from '$lib/viewmodels/layer.svelte';
 // Constants
 const MAX_SELECTED_CASES = 16;
 
-// UI-specific state
+// UI state
 let isLoading = $state(false);
 let error = $state<string | null>(null);
 

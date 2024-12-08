@@ -1,7 +1,7 @@
 import type { Workspace, SerializedWorkspaceState } from '$lib/models/types';
 import { loadedData, currentWorkspace, apiRepository } from '$lib/models/repository.svelte';
 
-// UI-specific state
+// UI state
 let isLoading = $state(false);
 let error = $state<string | null>(null);
 

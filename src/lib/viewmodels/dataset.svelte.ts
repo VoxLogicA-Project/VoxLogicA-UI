@@ -2,7 +2,7 @@ import type { Dataset } from '$lib/models/types';
 import { loadedData, currentWorkspace, apiRepository } from '$lib/models/repository.svelte';
 import { caseViewModel } from './case.svelte';
 
-// UI-specific state that doesn't belong in the model
+// UI state
 let isLoading = $state(false);
 let error = $state<string | null>(null);
 

@@ -6,11 +6,11 @@ const DEFAULT_LAYER_STYLE: LayerStyle = {
 	alpha: 1.0,
 };
 
-// UI-specific state
+// UI state
 let isLoading = $state(false);
 let error = $state<string | null>(null);
 
-// Use layerContext to determine which layers we're working with
+// Context-dependent states
 const currentLayersByCase = $derived((casePath: Case['path']) => {
 	if (currentWorkspace.state.ui.layers.layerContext.type === 'dataset') {
 		return loadedData.layersByCasePath[casePath] ?? [];
