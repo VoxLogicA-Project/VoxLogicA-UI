@@ -34,7 +34,7 @@ const initialWorkspaceState: Workspace['state'] = {
 		sidebars: {
 			datasetCollapsed: false,
 			layerCollapsed: false,
-			scriptCollapsed: true,
+			scriptCollapsed: false,
 		},
 		viewers: {
 			fullscreenCasePath: null,
