@@ -77,11 +77,15 @@ const isLayerSelected = $derived((casePath: Case['path'], layerPath: Layer['path
 
 const isLayerSelectedForAllOpenedCases = $derived((layerName: Layer['name']) => {
 	return currentWorkspace.state.data.openedCasesPaths.every((casePath) => {
-		const layers = openedLayersByCasePath(casePath) ?? [];
-		if (!layers.some((l) => l.name === layerName)) {
-			return false;
+		// Get available layers for this case
+		const availableLayers = currentLayersByCase(casePath);
+		// If layer doesn't exist in this case, consider it as selected
+		if (!availableLayers.some((l) => l.name === layerName)) {
+			return true;
 		}
-		return true;
+		// Otherwise check if it's in the opened layers
+		const layers = openedLayersByCasePath(casePath) ?? [];
+		return layers.some((l) => l.name === layerName);
 	});
 });
 
