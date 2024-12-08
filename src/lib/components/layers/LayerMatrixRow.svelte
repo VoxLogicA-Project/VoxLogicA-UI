@@ -3,18 +3,14 @@
 	import { caseViewModel } from '$lib/viewmodels/case.svelte';
 	import { layerViewModel } from '$lib/viewmodels/layer.svelte';
 	import { uiViewModel } from '$lib/viewmodels/ui.svelte';
+	import { runViewModel } from '$lib/viewmodels/run.svelte';
 	let { case_ = $bindable<Case>() } = $props();
 
-	// Get prints for this specific case
-	// const runPrints = $derived.by(() => {
-	// 	if (uiViewModel.bottomPanelRunIndex === -1) return [];
-	// 	// Assume there is only one RunPrint[] per case
-	// 	return runViewModel.history[uiViewModel.bottomPanelRunIndex]
-	// 		?.filter((run) => run.case.id === case_.id)
-	// 		.map((run) => run.outputPrint)[0];
-	// });
-	const runPrints: PrintOutput[] = [];
-	const isRunView = false;
+	let runPrints = $derived.by(() => {
+		if (uiViewModel.state.layers.layerContext.type !== 'run') return [];
+		if (!uiViewModel.state.layers.layerContext.runId) return [];
+		return runViewModel.getRunPrints(uiViewModel.state.layers.layerContext.runId, case_.path);
+	});
 
 	let isPrintsExpanded = $state(true);
 
@@ -29,13 +25,7 @@
 <tr
 	class="align-middle h-12 hover:bg-surface-400/10 hover:dark:bg-surface-500/20 transition-colors duration-200"
 >
-	<td
-		class="align-middle border-b border-surface-500/30 {isRunView &&
-		runPrints &&
-		runPrints.length > 0
-			? 'w-64'
-			: 'w-48'}"
-	>
+	<td class="align-middle border-b border-surface-500/30 {runPrints.length > 0 ? 'w-64' : 'w-48'}">
 		<div class="px-4 py-1 rounded bg-surface-200-700-token/50 flex flex-col gap-1">
 			<!-- Main case info -->
 			<div class="flex items-center gap-2">
@@ -50,7 +40,7 @@
 				>
 					{case_.name.length > 20 ? '...' + case_.name.slice(-20) : case_.name}
 				</span>
-				{#if isRunView && runPrints && runPrints.length > 0}
+				{#if runPrints.length > 0}
 					<button
 						title={isPrintsExpanded ? 'Hide prints' : 'Show prints'}
 						aria-label={isPrintsExpanded ? 'Hide prints' : 'Show prints'}
@@ -64,7 +54,7 @@
 			</div>
 
 			<!-- Prints section (only shown when expanded and in run view) -->
-			{#if isRunView && runPrints && runPrints.length > 0 && isPrintsExpanded}
+			{#if runPrints.length > 0 && isPrintsExpanded}
 				<div class="text-xs font-mono bg-surface-300/30 dark:bg-surface-500/30 rounded p-2">
 					<ul class="list-disc list-inside space-y-0.5">
 						{#each runPrints as runPrint}

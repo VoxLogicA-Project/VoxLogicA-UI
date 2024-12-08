@@ -35,6 +35,13 @@ const getRunsWithErrors = $derived((runId: Run['id']) => {
 	}
 	return runsErrors;
 });
+const getRunPrints = $derived((runId: Run['id'], casePath: Case['path']) => {
+	const runsForCase = loadedData.runsByCasePath[casePath];
+	if (!runsForCase) return [];
+	const run = runsForCase.find((r) => r.id === runId);
+	if (!run) return [];
+	return run.outputPrint;
+});
 
 // Actions
 async function loadPresets(): Promise<void> {
@@ -156,6 +163,7 @@ export const runViewModel = {
 
 	// Queries
 	getRunsWithErrors,
+	getRunPrints,
 
 	// Actions
 	loadPresets,
