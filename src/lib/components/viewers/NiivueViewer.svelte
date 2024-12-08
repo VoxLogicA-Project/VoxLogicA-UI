@@ -68,12 +68,9 @@
 	$effect(() => {
 		// TODO: Update only layers that have changed
 		if (isInitialized) {
-			// Check each dataset layer for changes
-			console.log(
-				'layerViewModel.getAllSelectedLayersWithLayerStylesNoContext',
+			const desiredLayers = $state.snapshot(
 				layerViewModel.getAllSelectedLayersWithLayerStylesNoContext(case_.path)
 			);
-			const desiredLayers = layerViewModel.getAllSelectedLayersWithLayerStylesNoContext(case_.path);
 			desiredLayers.forEach(({ layer, style }) => {
 				updateLayerStyle(layer, style);
 			});
@@ -138,6 +135,7 @@
 				nv.setOpacity(volumeIndex, style.alpha);
 			}
 		}
+		nv.updateGLVolume();
 	}
 
 	export async function saveScreenshot() {
