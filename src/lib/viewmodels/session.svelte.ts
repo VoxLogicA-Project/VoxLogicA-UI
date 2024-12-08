@@ -1,5 +1,6 @@
 import type { Workspace, SerializedWorkspaceState } from '$lib/models/types';
 import { loadedData, currentWorkspace, apiRepository } from '$lib/models/repository.svelte';
+import { untrack } from 'svelte';
 
 // UI state
 let isLoading = $state(false);
@@ -10,8 +11,18 @@ const availableWorkspacesIdsAndNames = $derived(loadedData.availableWorkspacesId
 const hasWorkspaces = $derived(availableWorkspacesIdsAndNames.length > 0);
 const selectedWorkspaceId = $derived(currentWorkspace.id);
 const selectedWorkspaceName = $derived(currentWorkspace.name);
-const hasUnsavedChanges = $state(true);
-const isWorkspaceSelected = $derived(!!selectedWorkspaceId);
+
+// Store the initial state snapshot when workspace is loaded
+let lastSavedState = $state.raw<string>('');
+
+const hasUnsavedChanges = $derived.by(() => {
+	// Skip comparison if no workspace is selected
+	if (!selectedWorkspaceId) return false;
+
+	// Compare current state with last saved state
+	const currentState = JSON.stringify(currentWorkspace);
+	return currentState !== lastSavedState;
+});
 
 async function loadWorkspaces(): Promise<void> {
 	isLoading = true;
@@ -34,6 +45,7 @@ async function selectWorkspace(workspaceId: Workspace['id']): Promise<void> {
 
 	try {
 		await apiRepository.fetchWorkspace(workspaceId);
+		lastSavedState = JSON.stringify(currentWorkspace);
 	} catch (e) {
 		error = e instanceof Error ? e.message : 'Failed to load workspace';
 	} finally {
@@ -47,6 +59,7 @@ async function saveWorkspace(): Promise<void> {
 
 	try {
 		await apiRepository.saveWorkspace(currentWorkspace);
+		lastSavedState = JSON.stringify(currentWorkspace);
 	} catch (e) {
 		error = e instanceof Error ? e.message : 'Failed to save workspace';
 	} finally {
@@ -111,6 +124,7 @@ function reset(): void {
 	loadedData.availableWorkspacesIdsAndNames = [];
 	isLoading = false;
 	error = null;
+	lastSavedState = '';
 }
 
 // Public API
@@ -138,7 +152,7 @@ export const sessionViewModel = {
 		return hasUnsavedChanges;
 	},
 	get isWorkspaceSelected() {
-		return isWorkspaceSelected;
+		return !!selectedWorkspaceId;
 	},
 
 	// Actions
