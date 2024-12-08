@@ -40,8 +40,7 @@ const initialWorkspaceState: Workspace['state'] = {
 			fullscreenCasePath: null,
 		},
 		layers: {
-			bottomPanelTab: 'layers',
-			bottomPanelBlinkingTab: null,
+			layerContext: { type: 'dataset' },
 		},
 		scriptEditor: {
 			content: '',

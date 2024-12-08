@@ -6,32 +6,18 @@
 	import LayerTabs from './LayerTabs.svelte';
 	import LayerMatrixHeader from './LayerMatrixHeader.svelte';
 	import LayerMatrixRow from './LayerMatrixRow.svelte';
-	import type { Case, Run } from '$lib/models/types';
+	import { runViewModel } from '$lib/viewmodels/run.svelte';
 
 	const toastStore = getToastStore();
 
-	// Switch context depending on the bottom panel tab
-	$effect(() => {
-		if (uiViewModel.state.layers.bottomPanelTab === 'layers') {
-			layerViewModel.setContext({ type: 'dataset' });
-		}
-		// else {
-		// 	layerViewModel.setContext({ type: 'run', runId:
-		// }
+	// Get errors for this specific case
+	const currentRunsWithErrors = $derived.by(() => {
+		if (uiViewModel.state.layers.layerContext.type !== 'run') return [];
+		const runId = uiViewModel.state.layers.layerContext.runId;
+		if (!runId) return [];
+		return runViewModel.getRunsWithErrors(runId);
 	});
 
-	// Get errors for this specific case
-	// const currentRunsWithErrors = $derived.by(() => {
-	// 	if (uiViewModel.state.layers.bottomPanelRunIndex === -1) return [];
-	// 	if (!runViewModel.history[uiViewModel.state.layers.bottomPanelRunIndex]) return [];
-	// 	return runViewModel.history[uiViewModel.state.layers.bottomPanelRunIndex].filter(
-	// 		(run) => run.outputError
-	// 	);
-	// });
-	const currentRunsWithErrors: Record<Case['id'], Run> = {};
-
-	// const isRunView = $derived.by(() => uiViewModel.bottomPanelRunIndex !== -1);
-	const isRunView = false;
 	let errorsPanelExpanded = $state(true);
 
 	// Watch for errors and show toast
@@ -93,9 +79,9 @@
 					<div class="flex flex-col gap-2">
 						<i class="fa-solid fa-layer-group text-3xl"></i>
 						<p>
-							<!-- {uiViewModel.bottomPanelRunIndex !== -1
-								? 'No layers available for this run. Check if the run was successful and try loading different cases.'
-								: 'No layers available. Try loading different cases to view their layers.'} -->
+							{uiViewModel.state.layers.layerContext.type === 'dataset'
+								? 'No layers available. Try loading different cases to view their layers.'
+								: 'No layers available for this run. Check if the run was successful and try loading different cases.'}
 						</p>
 					</div>
 				</div>

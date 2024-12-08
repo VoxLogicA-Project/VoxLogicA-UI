@@ -70,59 +70,61 @@
 			{sessionViewModel.error}
 		</div>
 	{:else}
-		<nav class="list-nav p-1">
+		<nav class="list-nav p-1 flex flex-col" style="max-height: 60vh;">
 			{#if sessionViewModel.hasWorkspaces}
 				<div class="px-2 py-0.5 text-xs font-semibold uppercase text-surface-500-400-token">
 					Your Workspaces
 				</div>
-				{#each sessionViewModel.availableWorkspacesIdsAndNames as { id, name }}
-					<div
-						class="option !px-2 !py-1.5 rounded-lg {id === sessionViewModel.selectedWorkspaceId
-							? '!bg-primary-500/40 hover:!bg-primary-500/60'
-							: 'hover:!bg-surface-500/20'} flex items-center"
-					>
+				<div class="overflow-y-auto overflow-x-hidden">
+					{#each sessionViewModel.availableWorkspacesIdsAndNames as { id, name }}
 						<div
-							class="flex-1 cursor-pointer max-w-full"
-							role="button"
-							tabindex="0"
-							onclick={() => workspaceService.handleSelect(id)}
-							onkeydown={(e) => e.key === 'Enter' && workspaceService.handleSelect(id)}
+							class="option !px-2 !py-1.5 rounded-lg {id === sessionViewModel.selectedWorkspaceId
+								? '!bg-primary-500/40 hover:!bg-primary-500/60'
+								: 'hover:!bg-surface-500/20'} flex items-center"
 						>
-							<div class="flex flex-col">
-								<span class="font-medium text-sm">{name}</span>
-								<div class="flex items-start justify-between gap-1 max-w-full">
-									<span class="text-xs opacity-50 font-mono truncate mt-0.5">{id}</span>
-									<div
-										class="inline-flex items-center justify-center p-0.5 hover:bg-surface-500/20 rounded-full opacity-50 hover:opacity-100 transition-opacity cursor-pointer"
-										role="button"
-										tabindex="0"
-										title="Copy Workspace ID"
-										onclick={(event) => {
-											event.stopPropagation();
-											navigator.clipboard.writeText(id);
-											toastStore.trigger({
-												message: 'Workspace ID copied',
-												background: 'variant-filled-success',
-											});
-										}}
-										onkeydown={(e) => {
-											if (e.key === 'Enter') {
-												e.stopPropagation();
+							<div
+								class="flex-1 cursor-pointer max-w-full"
+								role="button"
+								tabindex="0"
+								onclick={() => workspaceService.handleSelect(id)}
+								onkeydown={(e) => e.key === 'Enter' && workspaceService.handleSelect(id)}
+							>
+								<div class="flex flex-col">
+									<span class="font-medium text-sm">{name}</span>
+									<div class="flex items-start justify-between gap-1 max-w-full">
+										<span class="text-xs opacity-50 font-mono truncate mt-0.5">{id}</span>
+										<div
+											class="inline-flex items-center justify-center p-0.5 hover:bg-surface-500/20 rounded-full opacity-50 hover:opacity-100 transition-opacity cursor-pointer"
+											role="button"
+											tabindex="0"
+											title="Copy Workspace ID"
+											onclick={(event) => {
+												event.stopPropagation();
 												navigator.clipboard.writeText(id);
 												toastStore.trigger({
 													message: 'Workspace ID copied',
 													background: 'variant-filled-success',
 												});
-											}
-										}}
-									>
-										<i class="fa-solid fa-copy text-xs"></i>
+											}}
+											onkeydown={(e) => {
+												if (e.key === 'Enter') {
+													e.stopPropagation();
+													navigator.clipboard.writeText(id);
+													toastStore.trigger({
+														message: 'Workspace ID copied',
+														background: 'variant-filled-success',
+													});
+												}
+											}}
+										>
+											<i class="fa-solid fa-copy text-xs"></i>
+										</div>
 									</div>
 								</div>
 							</div>
 						</div>
-					</div>
-				{/each}
+					{/each}
+				</div>
 				<hr class="!my-1 opacity-50" />
 			{/if}
 
@@ -137,5 +139,5 @@
 			</button>
 		</nav>
 	{/if}
-	<div class="arrow variant-filled-surface"></div>
+	<div class="arrow bg-surface-200-700-token"></div>
 </div>

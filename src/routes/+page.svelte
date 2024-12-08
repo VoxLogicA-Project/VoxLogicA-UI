@@ -5,7 +5,7 @@
 	import CaseList from '$lib/components/navigation/CaseList.svelte';
 	import ViewersGrid from '$lib/components/viewers/ViewersGrid.svelte';
 	import LayerMatrix from '$lib/components/layers/LayerMatrix.svelte';
-	// import ScriptEditor from '$lib/components/run/ScriptEditor.svelte';
+	import ScriptEditor from '$lib/components/run/ScriptEditor.svelte';
 	import { datasetViewModel } from '$lib/viewmodels/dataset.svelte';
 	import { caseViewModel } from '$lib/viewmodels/case.svelte';
 	import { uiViewModel } from '$lib/viewmodels/ui.svelte';
@@ -139,8 +139,7 @@
 			defaultSize="400px"
 			bind:isCollapsed={uiViewModel.state.sidebars.scriptCollapsed}
 		>
-			<div></div>
-			<!-- <ScriptEditor /> -->
+			<ScriptEditor />
 		</CollapsibleSidebar>
 	{/if}
 </div>

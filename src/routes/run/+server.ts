@@ -22,10 +22,10 @@ const substituteUiPathVariables = async (
 	outputDir: string,
 	fetch: Function
 ): Promise<string> => {
-	const datasetId = case_.path.split(path.sep)[0];
+	const datasetId = case_.path.split('/')[2];
 
 	try {
-		const response = await fetch(`/datasets/${datasetId}/cases/${case_.name}/layers`);
+		const response = await fetch(case_.path);
 		const layers: Layer[] = await response.json();
 
 		// Process layer paths
@@ -155,7 +155,7 @@ export const POST: RequestHandler = async ({ request, fetch }) => {
 		throw error(400, 'Missing required fields: workspaceId, scriptContent or cases');
 	}
 
-	const results: Run[] = [];
+	const results: [Case, Run][] = [];
 
 	for (const case_ of cases) {
 		const caseOutputDir = RUN_OUTPUT_PATH(workspaceId, case_.id, runId);
@@ -197,7 +197,7 @@ export const POST: RequestHandler = async ({ request, fetch }) => {
 			await fs.writeFile(path.join(caseOutputDir, 'run.json'), JSON.stringify(run, null, 2));
 
 			// Don't cleanup temp directory as we need it for layer access
-			results.push(run);
+			results.push([case_, run]);
 		} catch (err) {
 			await cleanup(caseOutputDir);
 			if (err instanceof Error && 'code' in err && err.code === 'ENOENT') {
@@ -217,15 +217,18 @@ export const POST: RequestHandler = async ({ request, fetch }) => {
 				'layers' in err.voxlogicaResult
 			) {
 				console.error(`Error processing case ${case_.name}:`, err);
-				results.push({
-					id: runId,
-					timestamp: new Date(),
-					scriptContent: scriptContent,
-					outputPrint: err.voxlogicaResult.print as PrintOutput[],
-					outputLog: err.voxlogicaResult.log as string,
-					outputError: err.voxlogicaResult.error as string,
-					outputLayers: err.voxlogicaResult.layers as Layer[],
-				});
+				results.push([
+					case_,
+					{
+						id: runId,
+						timestamp: new Date(),
+						scriptContent: scriptContent,
+						outputPrint: err.voxlogicaResult.print as PrintOutput[],
+						outputLog: err.voxlogicaResult.log as string,
+						outputError: err.voxlogicaResult.error as string,
+						outputLayers: err.voxlogicaResult.layers as Layer[],
+					},
+				]);
 			}
 		}
 	}

@@ -53,6 +53,11 @@ export interface LayersState {
 	stylesByLayerName: Record<Layer['name'], LayerStyle>;
 }
 
+export interface LayerContext {
+	type: 'dataset' | 'run';
+	runId?: Run['id'];
+}
+
 export interface SerializedWorkspaceState {
 	data: {
 		openedDatasetName: Dataset['name'] | null;
@@ -72,8 +77,7 @@ export interface SerializedWorkspaceState {
 			fullscreenCasePath: Case['path'] | null;
 		};
 		layers: {
-			bottomPanelTab: string;
-			bottomPanelBlinkingTab: string | null;
+			layerContext: LayerContext;
 		};
 		scriptEditor: {
 			content: string;

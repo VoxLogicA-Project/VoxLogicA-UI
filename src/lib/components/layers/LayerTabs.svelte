@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { TabGroup, Tab } from '@skeletonlabs/skeleton';
 	import { uiViewModel } from '$lib/viewmodels/ui.svelte';
+	import { layerViewModel } from '$lib/viewmodels/layer.svelte';
+	import type { LayerContext } from '$lib/models/types';
 
 	// Watch for changes to bottomPanelBlinkingTab
 	// $effect(() => {
@@ -11,16 +13,33 @@
 	// 		}, 3100);
 	// 	}
 	// });
+	let datasetTabId = $state('dataset');
+	$effect(() => {
+		// Whenever id changes, we need to update the layerContext
+		const tab = tabs.find((tab) => tab.id === datasetTabId);
+		if (tab) {
+			uiViewModel.layerContext = tab.layerContext;
+		}
+	});
 
-	// Compute tabs based on run history
-	// const tabs = $derived([
-	// 	{ id: 'layers', label: 'Dataset Layers' },
-	// 	...runViewModel.history.map((_, index) => ({
-	// 		id: `run-${index}`,
-	// 		label: `Run ${index + 1}`,
-	// 	})),
-	// ]);
-	const tabs = [{ id: 'layers', label: 'Dataset Layers' }];
+	// Compute tabs based on opened runs
+	const tabs: { id: string; layerContext: LayerContext; label: string }[] = $derived.by(() => {
+		var res: { id: string; layerContext: LayerContext; label: string }[] = [
+			{
+				id: 'dataset',
+				layerContext: { type: 'dataset' },
+				label: 'Dataset Layers',
+			},
+		];
+		for (const [index, runId] of layerViewModel.uniqueRunIds.entries()) {
+			res.push({
+				id: `run-${runId}`,
+				layerContext: { type: 'run', runId },
+				label: `Run ${index + 1}`,
+			});
+		}
+		return res;
+	});
 </script>
 
 <div class="tabs-container overflow-x-auto">
@@ -32,13 +51,10 @@
 	>
 		{#each tabs as tab}
 			<Tab
-				bind:group={uiViewModel.state.layers.bottomPanelTab}
+				bind:group={datasetTabId}
 				name="layers-tab"
 				value={tab.id}
-				class="px-3 py-1.5 whitespace-nowrap text-sm tab-custom {uiViewModel.state.layers
-					.bottomPanelBlinkingTab === tab.id
-					? 'blink-tab'
-					: ''}"
+				class="px-3 py-1.5 whitespace-nowrap text-sm tab-custom"
 			>
 				{tab.label}
 			</Tab>

@@ -41,8 +41,6 @@ async function selectCase(caseData: Case): Promise<void> {
 			...currentWorkspace.state.data.openedCasesPaths,
 			caseData.path,
 		];
-		// Initialize opened layers paths for the case
-		currentWorkspace.state.datasetLayersState.openedLayersPathsByCasePath[caseData.path] = [];
 		// Initialize default styles for each layer
 		layerViewModel.uniqueLayersNames.forEach((layerName) => {
 			if (!currentWorkspace.state.datasetLayersState.stylesByLayerName[layerName]) {

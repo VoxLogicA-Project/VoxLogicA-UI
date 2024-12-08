@@ -7,7 +7,7 @@
 	import { EditorView, basicSetup } from '@codemirror/basic-setup';
 	import { lineNumbers } from '@codemirror/view';
 	import { imgql } from './imgql-lang';
-	import type { Case } from '$lib/models/types';
+	import type { Case, PresetScript } from '$lib/models/types';
 	import { ProgressRadial } from '@skeletonlabs/skeleton';
 	import { getToastStore } from '@skeletonlabs/skeleton';
 	import { uiViewModel } from '$lib/viewmodels/ui.svelte';
@@ -97,7 +97,7 @@
 
 	// Reinitialize/destroy header editor when uncollapsed/collapsed
 	$effect(() => {
-		if (!isHeaderCollapsed && !headerView && layerViewModel.uniqueLayersIds) {
+		if (!isHeaderCollapsed && !headerView && layerViewModel.uniqueLayersNames) {
 			initHeaderCodeBlock();
 		} else if (isHeaderCollapsed && headerView) {
 			headerView.destroy();
@@ -117,8 +117,8 @@
 	// Load script from dropdown
 	async function handlePresetScriptSelect(event: Event) {
 		const select = event.target as HTMLSelectElement;
-		const scriptId = select.value;
-		const script = runViewModel.availablePresets.find((p) => p.id === scriptId);
+		const scriptName = select.value;
+		const script = runViewModel.presetScripts.find((p: PresetScript) => p.name === scriptName);
 		if (script) {
 			await runViewModel.loadPresetScript(script);
 			editorView.dispatch({
@@ -162,17 +162,17 @@
 		try {
 			await runViewModel.runAll(caseViewModel.selectedCases);
 
-			if (runViewModel.currentError) {
+			if (runViewModel.error) {
 				toastStore.trigger({
-					message: runViewModel.currentError ?? 'Run failed',
+					message: runViewModel.error ?? 'Run failed',
 					background: 'variant-filled-error',
 				});
 			} else {
 				// Switch to the newly created run tab
-				const newRunIndex = runViewModel.history.length - 1;
-				const newTabId = `run-${newRunIndex}`;
-				uiViewModel.bottomPanelTab = newTabId;
-				uiViewModel.bottomPanelBlinkingTab = newTabId;
+				// const newRunIndex = runViewModel.history.length - 1;
+				// const newTabId = `run-${newRunIndex}`;
+				// uiViewModel.bottomPanelTab = newTabId;
+				// uiViewModel.bottomPanelBlinkingTab = newTabId;
 
 				toastStore.trigger({
 					message: 'Run completed successfully!',
@@ -181,7 +181,7 @@
 			}
 		} catch (error) {
 			toastStore.trigger({
-				message: runViewModel.currentError ?? 'Run failed',
+				message: runViewModel.error ?? 'Run failed',
 				background: 'variant-filled-error',
 			});
 		}
@@ -192,9 +192,9 @@
 		try {
 			await runViewModel.runAll([case_]);
 
-			if (runViewModel.currentError) {
+			if (runViewModel.error) {
 				toastStore.trigger({
-					message: runViewModel.currentError ?? 'Single run failed',
+					message: runViewModel.error ?? 'Single run failed',
 					background: 'variant-filled-error',
 				});
 			} else {
@@ -205,7 +205,7 @@
 			}
 		} catch (error) {
 			toastStore.trigger({
-				message: runViewModel.currentError ?? 'Single run failed',
+				message: runViewModel.error ?? 'Single run failed',
 				background: 'variant-filled-error',
 			});
 		}
@@ -231,8 +231,8 @@
 			onchange={handlePresetScriptSelect}
 		>
 			<option value="" disabled>Load a preset script template...</option>
-			{#each runViewModel.availablePresets as script}
-				<option value={script.id}>{script.id}</option>
+			{#each runViewModel.presetScripts as script}
+				<option value={script.name}>{script.name}</option>
 			{/each}
 		</select>
 
@@ -312,11 +312,11 @@
 					{#each caseViewModel.selectedCases as case_, i}
 						<button
 							class="w-full text-left px-4 py-2 text-sm hover:bg-surface-500/20"
-							title={`Run script for ${case_.id}`}
-							aria-label={`Run script for ${case_.id}`}
+							title={`Run script for ${case_.name}`}
+							aria-label={`Run script for ${case_.name}`}
 							onclick={() => handleSingleRun(case_)}
 						>
-							Run Case <strong>{case_.id}</strong>
+							Run Case <strong>{case_.name}</strong>
 						</button>
 						{#if i !== caseViewModel.selectedCases.length - 1}
 							<hr class="border-surface-500/30" />

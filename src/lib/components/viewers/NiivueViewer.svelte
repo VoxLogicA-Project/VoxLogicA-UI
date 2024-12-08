@@ -68,7 +68,11 @@
 	$effect(() => {
 		// TODO: Update only layers that have changed
 		if (isInitialized) {
-			// Check each dataset layer for changes (take a snapshot for deep reactivity)
+			// Check each dataset layer for changes
+			console.log(
+				'layerViewModel.getAllSelectedLayersWithLayerStylesNoContext',
+				layerViewModel.getAllSelectedLayersWithLayerStylesNoContext(case_.path)
+			);
 			const desiredLayers = layerViewModel.getAllSelectedLayersWithLayerStylesNoContext(case_.path);
 			desiredLayers.forEach(({ layer, style }) => {
 				updateLayerStyle(layer, style);
