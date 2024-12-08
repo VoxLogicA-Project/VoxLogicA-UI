@@ -41,6 +41,7 @@ export interface PrintOutput {
 export interface Run {
 	id: string;
 	timestamp: Date;
+	casePath: Case['path'];
 	scriptContent: string;
 	outputLayers: Layer[];
 	outputPrint: PrintOutput[];

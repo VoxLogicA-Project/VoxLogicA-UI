@@ -186,6 +186,7 @@ export const POST: RequestHandler = async ({ request, fetch }) => {
 			const run: Run = {
 				id: runId,
 				timestamp: new Date(),
+				casePath: case_.path,
 				scriptContent: scriptContent,
 				outputLayers: layers,
 				outputPrint: voxlogicaResult.print,
@@ -222,6 +223,7 @@ export const POST: RequestHandler = async ({ request, fetch }) => {
 					{
 						id: runId,
 						timestamp: new Date(),
+						casePath: case_.path,
 						scriptContent: scriptContent,
 						outputPrint: err.voxlogicaResult.print as PrintOutput[],
 						outputLog: err.voxlogicaResult.log as string,

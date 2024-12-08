@@ -17,13 +17,27 @@ const currentLayersByCase = $derived((casePath: Case['path']) => {
 	}
 	// For runs, we need to get layers from the specific run
 	const runs = loadedData.runsByCasePath[casePath] ?? [];
+	console.log('runs', loadedData.runsByCasePath);
+	console.log('casePath', casePath);
 	const run = runs.find((r) => r.id === currentWorkspace.state.ui.layers.layerContext.runId);
+	console.log('runOutputLayers', run?.outputLayers);
 	return run?.outputLayers ?? [];
 });
 const currentLayerState = $derived.by(() => {
 	if (currentWorkspace.state.ui.layers.layerContext.type === 'dataset') {
 		return currentWorkspace.state.datasetLayersState;
 	}
+	console.log(
+		'currentWorkspace.state.ui.layers.layerContext.runId',
+		currentWorkspace.state.ui.layers.layerContext.runId
+	);
+	console.log('currentWorkspace.state.runsLayersStates', currentWorkspace.state.runsLayersStates);
+	console.log(
+		'currentWorkspace.state.runsLayersStates',
+		currentWorkspace.state.runsLayersStates[
+			currentWorkspace.state.ui.layers.layerContext.runId ?? ''
+		]
+	);
 	return currentWorkspace.state.runsLayersStates[
 		currentWorkspace.state.ui.layers.layerContext.runId ?? ''
 	];
@@ -52,11 +66,6 @@ const uniqueLayersNames = $derived.by(() => {
 		});
 	});
 	return Array.from(layerNames);
-});
-const uniqueRunIds = $derived.by(() => {
-	return Array.from(
-		new Set(Object.values(loadedData.runsByCasePath).flatMap((runs) => runs.map((r) => r.id)))
-	);
 });
 
 // Queries
@@ -228,9 +237,6 @@ export const layerViewModel = {
 	},
 	get uniqueLayersNames() {
 		return uniqueLayersNames;
-	},
-	get uniqueRunIds() {
-		return uniqueRunIds;
 	},
 
 	// Queries

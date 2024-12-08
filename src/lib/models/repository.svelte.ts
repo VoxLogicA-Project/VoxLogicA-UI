@@ -20,7 +20,7 @@ export const loadedData = $state<LoadedData>({
 	presetScripts: [],
 });
 
-const initialWorkspaceState: Workspace['state'] = {
+export const DEFAULT_WORKSPACE_STATE: Workspace['state'] = {
 	data: {
 		openedDatasetName: null,
 		openedCasesPaths: [],
@@ -55,7 +55,7 @@ export const currentWorkspace = $state<Workspace>({
 	name: '',
 	createdAt: new Date(),
 	updatedAt: new Date(),
-	state: initialWorkspaceState,
+	state: DEFAULT_WORKSPACE_STATE,
 });
 
 // Error Handling
@@ -126,8 +126,26 @@ export const apiRepository = {
 	},
 
 	async fetchWorkspace(workspaceId: Workspace['id']) {
-		const workspace = await api.fetch<Workspace>(`/workspaces/${workspaceId}`);
-		Object.assign(currentWorkspace, workspace);
+		try {
+			const workspace = await api.fetch<Workspace>(`/workspaces/${workspaceId}`);
+
+			// Reset current state before loading new workspace
+			loadedData.datasets = [];
+			loadedData.cases = [];
+			loadedData.layersByCasePath = {};
+			loadedData.runsByCasePath = {};
+			loadedData.presetScripts = [];
+
+			// Load all required data based on workspace state
+			await loadWorkspaceData(workspace);
+
+			// Finally, update the current workspace
+			// TODO: we could check if all the selected data is still available
+			Object.assign(currentWorkspace, workspace);
+		} catch (error) {
+			if (error instanceof RepositoryError) throw error;
+			throw new RepositoryError('Failed to fetch workspace data', undefined, error);
+		}
 	},
 
 	async saveWorkspace(workspace: Workspace) {
@@ -141,7 +159,7 @@ export const apiRepository = {
 	async createWorkspace(workspaceName: string) {
 		const newWorkspace: Omit<Workspace, 'id' | 'createdAt' | 'updatedAt'> = {
 			name: workspaceName,
-			state: initialWorkspaceState,
+			state: DEFAULT_WORKSPACE_STATE,
 		};
 
 		return api.fetch<Workspace>('/workspaces', {
@@ -154,24 +172,42 @@ export const apiRepository = {
 	async fetchWorkspaceRuns(workspaceId: Workspace['id']) {
 		const runs = await api.fetch<Run[]>(`/workspaces/${workspaceId}/runs`);
 
-		// Process the runs and organize them by case ID
+		// Process the runs and organize them by case path
 		const runsByCasePath: Record<Case['path'], Run[]> = {};
 
-		// TODO: Fix this, is not working.
-		// for (const run of runs) {
-		// 	for (const casePath of Object.keys(run.caseResults)) {
-		// 		if (!runsByCasePath[casePath]) {
-		// 			runsByCasePath[casePath] = [];
-		// 		}
-		// 		runsByCasePath[casePath].push({
-		// 			...run,
-		// 			...run.caseResults[casePath],
-		// 		});
-		// 	}
-		// }
-	},
+		for (const run of runs) {
+			if (!runsByCasePath[run.casePath]) {
+				runsByCasePath[run.casePath] = [];
+			}
+			runsByCasePath[run.casePath].push(run);
+		}
 
-	async fetchRunLayers(workspaceId: Workspace['id'], caseId: Case['id'], runId: Run['id']) {
-		return api.fetch<Layer[]>(`/workspaces/${workspaceId}/runs/${caseId}/${runId}/layers`);
+		// Update the state
+		loadedData.runsByCasePath = runsByCasePath;
 	},
 };
+
+async function loadWorkspaceData(workspace: Workspace) {
+	// Load datasets, preset scripts and runs
+	await apiRepository.fetchDatasets();
+	await apiRepository.fetchPresetsScripts();
+
+	// TODO: this could be optimized by fetching only the runs that are needed
+	await apiRepository.fetchWorkspaceRuns(workspace.id);
+
+	// Load cases if one is opened
+	const dataset = loadedData.datasets.find(
+		(d) => d.name === workspace.state.data.openedDatasetName
+	);
+	if (dataset) {
+		await apiRepository.fetchCases(dataset);
+
+		// Load layers for each opened case
+		for (const casePath of workspace.state.data.openedCasesPaths) {
+			const caseData = loadedData.cases.find((c) => c.path === casePath);
+			if (caseData) {
+				await apiRepository.fetchLayers(caseData);
+			}
+		}
+	}
+}

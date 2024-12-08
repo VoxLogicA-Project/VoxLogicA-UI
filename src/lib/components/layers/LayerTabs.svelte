@@ -1,27 +1,30 @@
 <script lang="ts">
 	import { TabGroup, Tab } from '@skeletonlabs/skeleton';
 	import { uiViewModel } from '$lib/viewmodels/ui.svelte';
-	import { layerViewModel } from '$lib/viewmodels/layer.svelte';
+	import { runViewModel } from '$lib/viewmodels/run.svelte';
 	import type { LayerContext } from '$lib/models/types';
 
-	// Watch for changes to blinkingTabLayerContext
-	$effect(() => {
-		if (uiViewModel.blinkingTabLayerContext) {
-			// Reset after 3 blinks (1s each) plus a small buffer
-			setTimeout(() => {
-				uiViewModel.blinkingTabLayerContext = null;
-			}, 3100);
+	// Initialize currentTabId
+	let currentTabId = $state('dataset');
+
+	// Initialize currentTabId based on the layerContext when component mounts
+	$effect.pre(() => {
+		const context = uiViewModel.layerContext;
+		if (context.type === 'run') {
+			currentTabId = `run-${context.runId}`;
+		} else {
+			currentTabId = 'dataset';
 		}
 	});
-	let datasetTabId = $state('dataset');
+
 	// Whenever id changes, we need to update the layerContext
 	$effect(() => {
-		const tab = tabs.find((tab) => tab.id === datasetTabId);
+		const tab = tabs.find((tab) => tab.id === currentTabId);
 		if (tab) {
 			uiViewModel.layerContext = tab.layerContext;
 		}
 	});
-	// And viceversa, whenever layerContext changes, we need to update the datasetTabId
+	// And viceversa, whenever layerContext changes, we need to update the currentTabId
 	$effect(() => {
 		const tab = tabs.find(
 			(tab) =>
@@ -29,7 +32,7 @@
 				tab.layerContext.runId === uiViewModel.layerContext.runId
 		);
 		if (tab) {
-			datasetTabId = tab.id;
+			currentTabId = tab.id;
 		}
 	});
 
@@ -42,7 +45,7 @@
 				label: 'Dataset Layers',
 			},
 		];
-		for (const [index, runId] of layerViewModel.uniqueRunIds.entries()) {
+		for (const [index, runId] of runViewModel.openedRunsIds.entries()) {
 			res.push({
 				id: `run-${runId}`,
 				layerContext: { type: 'run', runId },
@@ -50,6 +53,16 @@
 			});
 		}
 		return res;
+	});
+
+	// Watch for changes to blinkingTabLayerContext
+	$effect(() => {
+		if (uiViewModel.blinkingTabLayerContext) {
+			// Reset after 3 blinks (1s each) plus a small buffer
+			setTimeout(() => {
+				uiViewModel.blinkingTabLayerContext = null;
+			}, 3100);
+		}
 	});
 </script>
 
@@ -62,7 +75,7 @@
 	>
 		{#each tabs as tab}
 			<Tab
-				bind:group={datasetTabId}
+				bind:group={currentTabId}
 				name="layers-tab"
 				value={tab.id}
 				class="px-3 py-1.5 whitespace-nowrap text-sm tab-custom

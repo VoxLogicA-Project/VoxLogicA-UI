@@ -1,6 +1,10 @@
-import type { Workspace, SerializedWorkspaceState } from '$lib/models/types';
-import { loadedData, currentWorkspace, apiRepository } from '$lib/models/repository.svelte';
-import { untrack } from 'svelte';
+import type { Workspace } from '$lib/models/types';
+import {
+	loadedData,
+	currentWorkspace,
+	apiRepository,
+	DEFAULT_WORKSPACE_STATE,
+} from '$lib/models/repository.svelte';
 
 // UI state
 let isLoading = $state(false);
@@ -84,41 +88,7 @@ async function createWorkspace(workspaceName: Workspace['name']): Promise<Worksp
 
 function reset(): void {
 	// Reset workspace state to initial values
-	Object.assign(currentWorkspace, {
-		id: '',
-		name: '',
-		createdAt: new Date(),
-		updatedAt: new Date(),
-		state: {
-			data: {
-				openedDatasetName: null,
-				openedCasesPaths: [],
-				openedRunsIds: [],
-			},
-			datasetLayersState: {
-				openedLayersPathsByCasePath: {},
-				stylesByLayerName: {},
-			},
-			runsLayersStates: [],
-			ui: {
-				isDarkMode: false,
-				sidebars: {
-					datasetCollapsed: false,
-					layerCollapsed: false,
-					scriptCollapsed: false,
-				},
-				viewers: {
-					fullscreenCasePath: null,
-				},
-				layers: {
-					bottomPanelTab: 'layers',
-				},
-				scriptEditor: {
-					content: '',
-				},
-			},
-		},
-	});
+	Object.assign(currentWorkspace, DEFAULT_WORKSPACE_STATE);
 
 	// Reset loaded data and state tracking
 	loadedData.availableWorkspacesIdsAndNames = [];

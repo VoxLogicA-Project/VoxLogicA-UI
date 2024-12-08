@@ -24,6 +24,7 @@ const headerContent = $derived.by(() => {
 const fullScriptContent = $derived(
 	`${headerContent}\n\n${currentWorkspace.state.ui.scriptEditor.content}`
 );
+const openedRunsIds = $derived(currentWorkspace.state.data.openedRunsIds);
 const getRunsWithErrors = $derived((runId: Run['id']) => {
 	const runsErrors: Record<Case['path'], Run> = {};
 	for (const casePath in loadedData.runsByCasePath) {
@@ -105,6 +106,8 @@ async function runAll(cases: Case[]): Promise<Run['id']> {
 		// Get the run ID (all runs share the same ID)
 		const runId = runs[0][1].id;
 
+		currentWorkspace.state.data.openedRunsIds.push(runId);
+
 		// Load the runs into loadedData
 		for (const [case_, run] of runs) {
 			if (!loadedData.runsByCasePath[case_.path]) {
@@ -165,6 +168,9 @@ export const runViewModel = {
 	},
 	get fullScriptContent() {
 		return fullScriptContent;
+	},
+	get openedRunsIds() {
+		return openedRunsIds;
 	},
 
 	// Queries
