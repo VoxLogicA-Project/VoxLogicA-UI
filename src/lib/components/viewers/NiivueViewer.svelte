@@ -36,6 +36,7 @@
 					show3Dcrosshair: true,
 					dragMode: 0,
 					smoothDisplay: false,
+					logLevel: 'error',
 				});
 				await nv.attachToCanvas(canvas);
 				isInitialized = true;
