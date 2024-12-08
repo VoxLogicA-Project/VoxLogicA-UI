@@ -19,7 +19,7 @@
 		<div class="p-8 pb-4 text-center space-y-4">
 			<h2 class="h2">Welcome to VoxLogicA UI</h2>
 			<p class="text-surface-600-300-token">
-				Please select a workspace to continue or create a new one.
+				Please select a workspace or create a new one to continue.
 			</p>
 		</div>
 
