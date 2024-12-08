@@ -1,31 +1,5 @@
 # Remaining tasks
 
-## Rework: introduce workspaces
-
-- Workspaces will persist on the server in the form:
-
-```typescript
-interface Workspace {
-	id: string; // Unique identifier
-	name: string; // User-friendly name
-	createdAt: Date; // Creation timestamp
-	lastModifiedAt: Date; // Last modification timestamp
-	state: SerializedApplicationState; // The current state of the application
-}
-```
-
-- The list of created workspaces will be persisted in the client's local storage
-  - This will hide other users' workspaces
-- This will also make workspaces shareable, as long as a user knows the workspace id
-- Workspaces can be exported (along with the runs' outputs) / imported
-
-### API
-
-- POST `/workspaces/`: create a new workspace
-- GET `/workspaces/[id]`: fetch a workspace by id
-- PUT `/workspaces/[id]`: update a workspace by id (only sending the fields that changed)
-- DELETE `/workspaces/[id]`: delete a workspace by id
-
 ## UI
 
 - Rework the left sidebar (after workspaces are implemented):

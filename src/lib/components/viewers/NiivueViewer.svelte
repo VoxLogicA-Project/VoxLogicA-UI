@@ -123,19 +123,32 @@
 		await nv.addVolumeFromUrl(options);
 	}
 
-	function updateLayerStyle(layer: Layer, style: LayerStyle) {
+	function updateLayerStyle(layer: Layer, newStyle: LayerStyle) {
 		if (!nv) return;
 
 		const volumeIndex = getVolumeIndex(layer.path);
-		if (volumeIndex !== -1) {
-			const colorMapId = setColorMap(layer.path, style.colorMap);
-			nv.setColormap(nv.volumes[volumeIndex].id, colorMapId);
+		if (volumeIndex === -1) return;
 
-			if (style.alpha !== undefined) {
-				nv.setOpacity(volumeIndex, style.alpha);
+		const volume = nv.volumes[volumeIndex];
+		const currentStyle = {
+			colorMap: volume.colormap,
+			alpha: volume.opacity,
+		};
+
+		// Only update if styles are different
+		// TODO: This does not work when custom colormaps are used
+		// (colorMapId will be the same since we are using layer.path)
+		// So in that case it will always be updated
+		if (currentStyle.colorMap !== newStyle.colorMap || currentStyle.alpha !== newStyle.alpha) {
+			const colorMapId = setColorMap(layer.path, newStyle.colorMap);
+			nv.setColormap(volume.id, colorMapId);
+
+			if (newStyle.alpha !== undefined) {
+				nv.setOpacity(volumeIndex, newStyle.alpha);
 			}
+
+			nv.updateGLVolume();
 		}
-		nv.updateGLVolume();
 	}
 
 	export async function saveScreenshot() {
