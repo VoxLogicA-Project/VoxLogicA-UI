@@ -44,6 +44,12 @@ const getRunPrints = $derived((runId: Run['id'], casePath: Case['path']) => {
 	if (!run) return [];
 	return run.outputPrint;
 });
+const getRunsForCase = $derived((casePath: Case['path']) => {
+	return loadedData.runsByCasePath[casePath] ?? [];
+});
+const isRunSelected = $derived((runId: Run['id']) => {
+	return currentWorkspace.state.data.openedRunsIds.includes(runId);
+});
 
 // Actions
 async function loadPresets(): Promise<void> {
@@ -148,6 +154,27 @@ function reset(): void {
 	error = null;
 }
 
+function selectRun(runId: Run['id']): void {
+	if (isRunSelected(runId)) return;
+	currentWorkspace.state.data.openedRunsIds.push(runId);
+}
+
+function deselectRun(runId: Run['id']): void {
+	if (!isRunSelected(runId)) return;
+	const index = currentWorkspace.state.data.openedRunsIds.indexOf(runId);
+	if (index !== -1) {
+		currentWorkspace.state.data.openedRunsIds.splice(index, 1);
+	}
+}
+
+function toggleRun(runId: Run['id']): void {
+	if (isRunSelected(runId)) {
+		deselectRun(runId);
+	} else {
+		selectRun(runId);
+	}
+}
+
 // Public API
 export const runViewModel = {
 	// State (readonly)
@@ -176,6 +203,8 @@ export const runViewModel = {
 	// Queries
 	getRunsWithErrors,
 	getRunPrints,
+	getRunsForCase,
+	isRunSelected,
 
 	// Actions
 	loadPresets,
@@ -184,4 +213,7 @@ export const runViewModel = {
 	singleRun,
 	runAll,
 	reset,
+	selectRun,
+	deselectRun,
+	toggleRun,
 };
