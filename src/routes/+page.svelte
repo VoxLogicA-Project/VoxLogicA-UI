@@ -26,8 +26,8 @@
 		bind:isCollapsed={uiViewModel.state.sidebars.datasetCollapsed}
 	>
 		<!-- Header -->
-		<div class="flex items-center justify-between p-4 border-b border-surface-500/30">
-			<div class="flex items-center">
+		<div class="flex items-center justify-between p-4">
+			<div class="flex items-center flex-1">
 				<a href="/" class="flex items-center" onclick={() => (window.location.href = '/')}>
 					<!-- SVG Logo -->
 					<div class="theme-container">
@@ -58,20 +58,22 @@
 				</a>
 			</div>
 
-			<div class="flex gap-2">
-				<!-- Workspaces -->
-				<Workspaces />
+			<!-- Dark Mode Button -->
+			<button
+				class="w-8 h-8 min-w-[2rem] min-h-[2rem] flex items-center justify-center flex-shrink-0 rounded-lg bg-surface-300-600-token hover:bg-primary-200-700-token transition-colors duration-200"
+				onclick={uiViewModel.toggleDarkMode}
+				title="Toggle dark mode"
+				aria-label="Toggle dark mode"
+			>
+				<i class="fa-solid fa-sun text-lg hidden dark:block"></i>
+				<i class="fa-solid fa-moon text-lg block dark:hidden"></i>
+			</button>
+		</div>
 
-				<!-- Dark Mode Button -->
-				<button
-					class="w-8 h-8 min-w-[2rem] min-h-[2rem] flex-shrink-0 rounded-lg bg-surface-300-600-token hover:bg-surface-400-500-token flex items-center justify-center"
-					onclick={uiViewModel.toggleDarkMode}
-					title="Toggle dark mode"
-					aria-label="Toggle dark mode"
-				>
-					<i class="fa-solid fa-sun text-lg hidden dark:block"></i>
-					<i class="fa-solid fa-moon text-lg block dark:hidden"></i>
-				</button>
+		<!-- Workspace Selector -->
+		<div class="border-b border-surface-500/30">
+			<div class="pb-4 px-4">
+				<Workspaces />
 			</div>
 		</div>
 

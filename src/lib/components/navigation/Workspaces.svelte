@@ -29,7 +29,22 @@
 </script>
 
 <!-- Save Button and Workspace Button side by side -->
-<div class="flex gap-2">
+<div class="flex gap-2 w-full">
+	<button
+		class="flex-1 h-8 px-2 rounded-lg bg-surface-300-600-token hover:bg-primary-200-700-token flex items-center gap-2 transition-colors duration-200"
+		use:popup={popupSettings}
+	>
+		<i class="fa-solid fa-window-restore text-sm opacity-50"></i>
+		<span class="truncate flex-1 text-sm text-left">
+			{#if sessionViewModel.selectedWorkspaceName}
+				{sessionViewModel.selectedWorkspaceName}
+			{:else}
+				Select Workspace
+			{/if}
+		</span>
+		<i class="fa-solid fa-chevron-down text-xs opacity-50"></i>
+	</button>
+
 	<button
 		class="w-8 h-8 min-w-[2rem] min-h-[2rem] flex-shrink-0 rounded-lg {saveButtonClass} flex items-center justify-center transition-colors duration-200"
 		onclick={() => workspaceService.handleSave()}
@@ -42,25 +57,14 @@
 				: ''}"
 		></i>
 	</button>
-
-	<button
-		class="h-8 px-2 rounded-lg bg-surface-300-600-token hover:bg-surface-400-500-token flex items-center gap-2 transition-colors duration-200"
-		use:popup={popupSettings}
-	>
-		<i class="fa-solid fa-window-restore text-sm opacity-50"></i>
-		<span class="truncate max-w-[120px] text-sm">
-			{#if sessionViewModel.selectedWorkspaceName}
-				{sessionViewModel.selectedWorkspaceName}
-			{:else}
-				Select Workspace
-			{/if}
-		</span>
-		<i class="fa-solid fa-chevron-down text-xs opacity-50"></i>
-	</button>
 </div>
 
 <!-- Popup Menu -->
-<div class="card w-64 shadow-xl" data-popup="workspace-menu" style="z-index: 1000;">
+<div
+	class="card w-64 shadow-xl bg-surface-200-700-token"
+	data-popup="workspace-menu"
+	style="z-index: 1000;"
+>
 	{#if sessionViewModel.isLoading}
 		<div class="p-2 text-center">
 			<i class="fa-solid fa-spinner animate-spin"></i>
