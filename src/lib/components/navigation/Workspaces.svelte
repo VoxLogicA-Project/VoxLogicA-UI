@@ -63,7 +63,7 @@
 
 <!-- Popup Menu -->
 <div
-	class="card w-64 shadow-xl bg-surface-200-700-token"
+	class="card w-64 shadow-xl bg-surface-200-700-token ring-surface-500/30"
 	data-popup="workspace-menu"
 	style="z-index: 1000;"
 >
