@@ -54,9 +54,7 @@
 	<!-- Fixed Header -->
 	<header class="px-4 py-3 border-b border-surface-500/10 flex-none">
 		<div class="flex items-center justify-between gap-2">
-			<span
-				class="text-xl font-bold tracking-wide text-primary-900-50-token dark:text-primary-400 truncate"
-				>Browser</span
+			<span class="text-xl font-bold tracking-wide text-primary-900-50-token truncate">Browser</span
 			>
 			<div class="text-sm text-surface-600-300-token whitespace-nowrap">
 				{caseViewModel.selectedCases.length}/{caseViewModel.MAX_SELECTED_CASES} cases selected
