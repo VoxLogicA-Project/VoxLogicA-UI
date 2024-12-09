@@ -31,6 +31,8 @@
 <!-- Save Button and Workspace Button side by side -->
 <div class="flex gap-2 w-full">
 	<button
+		title="Select Workspace"
+		aria-label="Select Workspace"
 		class="flex-1 h-8 px-2 rounded-lg bg-surface-500/10 hover:bg-surface-500/20 border border-surface-500/30 flex items-center gap-2 transition-colors duration-200"
 		use:popup={popupSettings}
 	>
