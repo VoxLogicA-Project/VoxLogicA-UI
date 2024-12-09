@@ -7,6 +7,7 @@
 		minSize = 150,
 		maxSize = 800,
 		isCollapsed = $bindable(false),
+		title = '',
 		children,
 	} = $props();
 
@@ -74,19 +75,45 @@
 	{#if isCollapsed}
 		<div class="w-full h-full flex items-center justify-center">
 			<button
-				class="w-full h-full btn variant-soft rounded-none flex items-center justify-center"
+				class="w-full h-full btn variant-soft rounded-none flex {isVertical
+					? 'flex-col'
+					: ''} items-center justify-center"
 				onclick={() => (isCollapsed = !isCollapsed)}
 				aria-label={`${isCollapsed ? 'Expand' : 'Collapse'} sidebar`}
 			>
-				<i
-					class="fa-solid {side === 'left'
-						? 'fa-chevron-right'
-						: side === 'right'
-							? 'fa-chevron-left'
-							: side === 'top'
-								? 'fa-chevron-down'
-								: 'fa-chevron-up'}"
-				></i>
+				{#if title && isVertical}
+					<div class="flex flex-col items-center gap-2 h-full justify-center">
+						<i
+							class="fa-solid {side === 'left'
+								? 'fa-chevron-right'
+								: side === 'right'
+									? 'fa-chevron-left'
+									: side === 'top'
+										? 'fa-chevron-down'
+										: 'fa-chevron-up'}"
+						></i>
+						<span
+							class="font-medium text-xs tracking-wider opacity-60"
+							style="writing-mode: vertical-rl; text-orientation: mixed; transform: rotate({side ===
+							'right'
+								? 0
+								: 180}deg);"
+						>
+							{title}
+						</span>
+					</div>
+				{:else if title}
+					<span class="font-medium text-sm opacity-60">{title}</span>
+					<i
+						class="fa-solid ml-2 {side === 'left'
+							? 'fa-chevron-right'
+							: side === 'right'
+								? 'fa-chevron-left'
+								: side === 'top'
+									? 'fa-chevron-down'
+									: 'fa-chevron-up'}"
+					></i>
+				{/if}
 			</button>
 		</div>
 	{/if}

@@ -30,6 +30,7 @@
 		side="left"
 		defaultSize="330px"
 		bind:isCollapsed={uiViewModel.state.sidebars.datasetCollapsed}
+		title="Browser"
 	>
 		<!-- Header -->
 		<div class="flex items-center justify-between p-4">
@@ -118,6 +119,7 @@
 						minSize={100}
 						maxSize={600}
 						bind:isCollapsed={uiViewModel.state.sidebars.layerCollapsed}
+						title="Layers"
 					>
 						<LayerMatrix />
 					</CollapsibleSidebar>
@@ -139,6 +141,7 @@
 			side="right"
 			defaultSize="400px"
 			bind:isCollapsed={uiViewModel.state.sidebars.scriptCollapsed}
+			title="Script Editor"
 		>
 			<ScriptEditor />
 		</CollapsibleSidebar>
