@@ -53,12 +53,13 @@
 <div class="flex flex-col h-full">
 	<!-- Fixed Header -->
 	<header class="px-4 py-3 border-b border-surface-500/10 flex-none">
-		<div class="flex items-center justify-between">
-			<span class="text-xl font-bold tracking-wide text-primary-900-50-token dark:text-primary-400"
+		<div class="flex items-center justify-between gap-2">
+			<span
+				class="text-xl font-bold tracking-wide text-primary-900-50-token dark:text-primary-400 truncate"
 				>Browser</span
 			>
-			<div class="text-sm text-surface-600-300-token">
-				{caseViewModel.selectedCases.length}/{caseViewModel.MAX_SELECTED_CASES} selected
+			<div class="text-sm text-surface-600-300-token whitespace-nowrap">
+				{caseViewModel.selectedCases.length}/{caseViewModel.MAX_SELECTED_CASES} cases selected
 			</div>
 		</div>
 	</header>
@@ -225,7 +226,7 @@
 																{#if runViewModel.getRunsForCase(case_.path).length === 0}
 																	<li>
 																		<div
-																			class="px-3 py-1.5 text-sm opacity-50 flex items-center min-w-0"
+																			class="px-3 py-1.5 text-sm opacity-50 flex items-center min-w-0 text-surface-900-50-token"
 																		>
 																			<i class="fa-solid fa-circle-info mr-2 flex-shrink-0"></i>
 																			<span class="truncate">No runs available</span>

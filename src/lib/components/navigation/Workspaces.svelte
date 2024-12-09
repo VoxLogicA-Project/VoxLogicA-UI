@@ -23,15 +23,15 @@
 
 	const saveButtonClass = $derived(
 		sessionViewModel.hasUnsavedChanges
-			? 'bg-error-500 hover:bg-error-600'
-			: 'bg-surface-300-600-token hover:bg-surface-400-500-token'
+			? 'bg-error-500/20 hover:bg-error-500/30 shadow-lg shadow-error-500/20 ring-1 ring-error-500/50'
+			: 'bg-surface-500/10 hover:bg-surface-500/20'
 	);
 </script>
 
 <!-- Save Button and Workspace Button side by side -->
 <div class="flex gap-2 w-full">
 	<button
-		class="flex-1 h-8 px-2 rounded-lg bg-surface-300-600-token hover:bg-primary-200-700-token flex items-center gap-2 transition-colors duration-200"
+		class="flex-1 h-8 px-2 rounded-lg bg-surface-500/10 hover:bg-surface-500/20 border border-surface-500/30 flex items-center gap-2 transition-colors duration-200"
 		use:popup={popupSettings}
 	>
 		<i class="fa-solid fa-window-restore text-sm opacity-50"></i>
@@ -46,15 +46,15 @@
 	</button>
 
 	<button
-		class="w-8 h-8 min-w-[2rem] min-h-[2rem] flex-shrink-0 rounded-lg {saveButtonClass} flex items-center justify-center transition-colors duration-200"
+		class="w-8 h-8 min-w-[2rem] min-h-[2rem] flex-shrink-0 rounded-lg {saveButtonClass} border border-surface-500/30 flex items-center justify-center transition-all duration-200"
 		onclick={() => workspaceService.handleSave()}
 		title={sessionViewModel.hasUnsavedChanges ? 'Save changes' : 'No unsaved changes'}
 		aria-label={sessionViewModel.hasUnsavedChanges ? 'Save changes' : 'No unsaved changes'}
 	>
 		<i
-			class="fa-solid fa-floppy-disk text-lg {sessionViewModel.hasUnsavedChanges
-				? 'animate-pulse'
-				: ''}"
+			class:animate-pulse={sessionViewModel.hasUnsavedChanges}
+			class:text-error-700={sessionViewModel.hasUnsavedChanges}
+			class="fa-solid fa-floppy-disk text-lg"
 		></i>
 	</button>
 </div>

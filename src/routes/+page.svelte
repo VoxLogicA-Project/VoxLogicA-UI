@@ -66,7 +66,7 @@
 
 			<!-- Dark Mode Button -->
 			<button
-				class="w-8 h-8 min-w-[2rem] min-h-[2rem] flex items-center justify-center flex-shrink-0 rounded-lg bg-surface-300-600-token hover:bg-primary-200-700-token transition-colors duration-200"
+				class="w-8 h-8 min-w-[2rem] min-h-[2rem] flex items-center justify-center flex-shrink-0 rounded-lg bg-surface-500/10 hover:bg-surface-500/20 border border-surface-500/20 transition-colors duration-200"
 				onclick={uiViewModel.toggleDarkMode}
 				title="Toggle dark mode"
 				aria-label="Toggle dark mode"
