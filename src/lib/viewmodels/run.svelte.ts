@@ -7,18 +7,17 @@ import {
 } from '$lib/models/repository.svelte';
 import { layerViewModel } from './layer.svelte';
 
-// Add new type for filter
+// UI state
+let isLoading = $state(false);
+let error = $state<string | null>(null);
+
+// Print filters
 interface PrintFilter {
 	label: string;
 	operation: string;
 	value: string;
 }
-
-// UI state
-let isLoading = $state(false);
-let error = $state<string | null>(null);
 let printFilters = $state<PrintFilter[]>([]);
-let visibleCasePaths = $state(new Set<string>());
 
 // Derived states
 const headerContent = $derived.by(() => {
@@ -240,23 +239,6 @@ function clearPrintFilters(): void {
 	printFilters = [];
 }
 
-// Add visibility methods
-function showRunsForCase(casePath: string): void {
-	visibleCasePaths.add(casePath);
-}
-
-function hideRunsForCase(casePath: string): void {
-	visibleCasePaths.delete(casePath);
-}
-
-function toggleRunsVisibility(casePath: string): void {
-	if (visibleCasePaths.has(casePath)) {
-		hideRunsForCase(casePath);
-	} else {
-		showRunsForCase(casePath);
-	}
-}
-
 // Public API
 export const runViewModel = {
 	// State (readonly)
@@ -281,6 +263,9 @@ export const runViewModel = {
 	get openedRunsIds() {
 		return openedRunsIds;
 	},
+	get printFilters() {
+		return printFilters;
+	},
 
 	// Queries
 	getRunsWithErrors,
@@ -294,28 +279,12 @@ export const runViewModel = {
 	saveEditorContent,
 	singleRun,
 	runAll,
-	reset,
 	selectRun,
 	deselectRun,
 	toggleRun,
-
-	// Add new filter-related exports
-	get printFilters() {
-		return printFilters;
-	},
 	addPrintFilter,
 	removePrintFilter,
 	updatePrintFilter,
 	clearPrintFilters,
-
-	// Add new visibility-related exports
-	get visibleCasePaths() {
-		return visibleCasePaths;
-	},
-	set visibleCasePaths(value: Set<string>) {
-		visibleCasePaths = value;
-	},
-	showRunsForCase,
-	hideRunsForCase,
-	toggleRunsVisibility,
+	reset,
 };

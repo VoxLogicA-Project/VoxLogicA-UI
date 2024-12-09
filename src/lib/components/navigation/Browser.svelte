@@ -5,6 +5,7 @@
 	import { sessionViewModel } from '$lib/viewmodels/session.svelte';
 	import { slide } from 'svelte/transition';
 	import { quintOut } from 'svelte/easing';
+	import { uiViewModel } from '$lib/viewmodels/ui.svelte';
 
 	let searchQuery = $state('');
 
@@ -34,25 +35,20 @@
 
 	const TRANSITION_DURATION = 200;
 
-	let expandedRunIds = $state(new Set<string>());
-
-	// Split into two effects to avoid async
+	// Update visibility effect to use uiViewModel
 	$effect(() => {
-		// Get only valid filters (non-empty values)
 		const validFilters = runViewModel.printFilters.filter(
 			(f) => f.label.trim() !== '' && f.value.trim() !== ''
 		);
 
 		if (validFilters.length > 0) {
-			// Get all cases with matching runs
 			const casesWithMatches = new Set(
 				filteredCases
 					.filter((case_) => runViewModel.getRunsForCase(case_.path).length > 0)
 					.map((case_) => case_.path)
 			);
 
-			// Only update if there are changes
-			const currentPaths = runViewModel.visibleCasePaths;
+			const currentPaths = uiViewModel.expandedCasePaths;
 			const newPaths = new Set([
 				...casesWithMatches,
 				...Array.from(currentPaths).filter(
@@ -60,43 +56,36 @@
 				),
 			]);
 
-			// Check if sets are different before updating
 			if (
 				newPaths.size !== currentPaths.size ||
 				![...newPaths].every((path) => currentPaths.has(path))
 			) {
-				runViewModel.visibleCasePaths = newPaths;
+				uiViewModel.expandedCasePaths = newPaths;
 			}
 
-			// Update expanded runs only for new matches
 			casesWithMatches.forEach((casePath) => {
 				const matchingRuns = runViewModel.getRunsForCase(casePath);
-				const newIds = matchingRuns.map((run) => run.id).filter((id) => !expandedRunIds.has(id));
+				const newIds = matchingRuns
+					.map((run) => run.id)
+					.filter((id) => !uiViewModel.expandedRunIds.has(id));
 				if (newIds.length > 0) {
-					expandedRunIds = new Set([...expandedRunIds, ...newIds]);
+					uiViewModel.expandedRunIds = new Set([...uiViewModel.expandedRunIds, ...newIds]);
 				}
 			});
 		} else {
-			// When no valid filters, hide all runs except for selected cases
 			const newPaths = new Set(
-				Array.from(runViewModel.visibleCasePaths).filter((path) => caseViewModel.isSelected(path))
+				Array.from(uiViewModel.expandedCasePaths).filter((path) => caseViewModel.isSelected(path))
 			);
 
-			if (newPaths.size !== runViewModel.visibleCasePaths.size) {
-				runViewModel.visibleCasePaths = newPaths;
+			if (newPaths.size !== uiViewModel.expandedCasePaths.size) {
+				uiViewModel.expandedCasePaths = newPaths;
 			}
 		}
 	});
 
 	function toggleRunDetails(runId: string, event: MouseEvent) {
-		event.stopPropagation(); // Prevent run selection when clicking dropdown
-		const newSet = new Set(expandedRunIds);
-		if (newSet.has(runId)) {
-			newSet.delete(runId);
-		} else {
-			newSet.add(runId);
-		}
-		expandedRunIds = newSet;
+		event.stopPropagation();
+		uiViewModel.toggleRunExpansion(runId);
 	}
 </script>
 
@@ -265,7 +254,7 @@
 													</div>
 
 													<!-- Runs -->
-													{#if runViewModel.visibleCasePaths.has(case_.path) || caseViewModel.isSelected(case_.path)}
+													{#if uiViewModel.expandedCasePaths.has(case_.path) || caseViewModel.isSelected(case_.path)}
 														<div
 															transition:slide|local={{
 																duration: TRANSITION_DURATION,
@@ -323,7 +312,7 @@
 																							onclick={(e) => toggleRunDetails(run.id, e)}
 																						>
 																							<i
-																								class="fa-solid fa-chevron-{expandedRunIds.has(
+																								class="fa-solid fa-chevron-{uiViewModel.expandedRunIds.has(
 																									run.id
 																								)
 																									? 'up'
@@ -333,7 +322,7 @@
 																					{/if}
 																				</div>
 
-																				{#if expandedRunIds.has(run.id)}
+																				{#if uiViewModel.expandedRunIds.has(run.id)}
 																					<div
 																						class="p-2 rounded-token bg-surface-50-900-token"
 																						transition:slide|local={{ duration: 200 }}
