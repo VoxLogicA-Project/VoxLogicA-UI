@@ -37,6 +37,7 @@
 					dragMode: 0,
 					smoothDisplay: false,
 					logLevel: 'error',
+					dragAndDropEnabled: false,
 				});
 				await nv.attachToCanvas(canvas);
 				isInitialized = true;

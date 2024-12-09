@@ -673,6 +673,13 @@
   dependencies:
     "@testing-library/dom" "^10.0.0"
 
+"@thisux/sveltednd@^0.0.16":
+  version "0.0.16"
+  resolved "https://registry.yarnpkg.com/@thisux/sveltednd/-/sveltednd-0.0.16.tgz#c8a5799bc0fece0587fb93cd2861eeda750a4005"
+  integrity sha512-LpJNhPSsrqYvZd5qtPjIipFZx1TlPO4oxWK5R6u4v7YpIKJzrHAPIT0XJRVLmwMkLPivBbh1BEo60Xn2czre8w==
+  dependencies:
+    "@thisux/sveltednd" "^0.0.14"
+
 "@types/aria-query@^5.0.1":
   version "5.0.4"
   resolved "https://registry.yarnpkg.com/@types/aria-query/-/aria-query-5.0.4.tgz#1a31c3d378850d2778dabb6374d036dcba4ba708"

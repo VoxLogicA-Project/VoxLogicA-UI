@@ -42,6 +42,7 @@
 		"@floating-ui/dom": "^1.6.12",
 		"@lezer/highlight": "^1.2.1",
 		"@niivue/niivue": "^0.46.0",
+		"@thisux/sveltednd": "^0.0.16",
 		"codemirror": "^6.0.1",
 		"svelte-awesome-color-picker": "^3.1.4",
 		"vite-plugin-tailwind-purgecss": "^0.3.3"

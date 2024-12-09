@@ -69,6 +69,28 @@ async function toggleCase(caseData: Case): Promise<void> {
 	}
 }
 
+function swapCases(caseIndex1: number, caseIndex2: number): void {
+	const newPaths = [...currentWorkspace.state.data.openedCasesPaths];
+
+	// Verify indices are within bounds
+	if (
+		caseIndex1 < 0 ||
+		caseIndex1 >= newPaths.length ||
+		caseIndex2 < 0 ||
+		caseIndex2 >= newPaths.length
+	) {
+		throw new Error(
+			`Invalid case indices: ${caseIndex1} and ${caseIndex2}, with length ${newPaths.length}`
+		);
+	}
+
+	// Swap the cases
+	if (caseIndex1 !== caseIndex2) {
+		[newPaths[caseIndex1], newPaths[caseIndex2]] = [newPaths[caseIndex2], newPaths[caseIndex1]];
+		currentWorkspace.state.data.openedCasesPaths = newPaths;
+	}
+}
+
 function reset(): void {
 	currentWorkspace.state.data.openedCasesPaths = [];
 	loadedData.cases = [];
@@ -109,4 +131,7 @@ export const caseViewModel = {
 	deselectCase,
 	toggleCase,
 	reset,
+
+	// New action
+	swapCases,
 };
