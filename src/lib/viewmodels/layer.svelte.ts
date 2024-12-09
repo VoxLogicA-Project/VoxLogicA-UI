@@ -33,9 +33,13 @@ const currentLayerState = $derived.by(() => {
 const openedLayersPathsByCasePath = $derived(currentLayerState.openedLayersPathsByCasePath);
 const stylesByLayerName = $derived(currentLayerState.stylesByLayerName);
 const datasetUniqueLayersNames = $derived.by(() => {
+	if (currentWorkspace.state.data.openedCasesPaths.length === 0) {
+		return [];
+	}
+
 	const layerNames = new Set<string>();
 	currentWorkspace.state.data.openedCasesPaths.forEach((casePath) => {
-		const caseLayers = loadedData.layersByCasePath[casePath];
+		const caseLayers = loadedData.layersByCasePath[casePath] ?? [];
 		caseLayers.forEach((layer) => {
 			layerNames.add(layer.name);
 		});

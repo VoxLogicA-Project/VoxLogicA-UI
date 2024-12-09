@@ -166,18 +166,10 @@ async function runAll(cases: Case[]): Promise<Run['id']> {
 				loadedData.runsByCasePath[case_.path] = [];
 			}
 			loadedData.runsByCasePath[case_.path].push(run);
-			currentWorkspace.state.runsLayersStates[run.id] = {
-				openedLayersPathsByCasePath: {},
-				// Initialize styles for each layer
-				stylesByLayerName: run.outputLayers.reduce(
-					(acc, layer) => {
-						acc[layer.name] = layerViewModel.DEFAULT_LAYER_STYLE;
-						return acc;
-					},
-					{} as Record<Layer['name'], LayerStyle>
-				),
-			};
 		}
+
+		// Select the run
+		selectRun(runId);
 
 		// Set error if any run failed
 		if (runs.some(([_, run]) => run.outputError)) {
@@ -203,11 +195,40 @@ function reset(): void {
 
 function selectRun(runId: Run['id']): void {
 	if (isRunSelected(runId)) return;
+
+	// Initialize layer states for this run if not already present
+	if (!currentWorkspace.state.runsLayersStates[runId]) {
+		// Find all layers for this run across all cases
+		const runLayers = new Set<Layer['name']>();
+		for (const casePath in loadedData.runsByCasePath) {
+			const run = loadedData.runsByCasePath[casePath].find((r) => r.id === runId);
+			if (run) {
+				run.outputLayers.forEach((layer) => runLayers.add(layer.name));
+			}
+		}
+
+		// Initialize the run's layer state
+		currentWorkspace.state.runsLayersStates[runId] = {
+			openedLayersPathsByCasePath: {},
+			stylesByLayerName: Array.from(runLayers).reduce(
+				(acc, layerName) => {
+					acc[layerName] = layerViewModel.DEFAULT_LAYER_STYLE;
+					return acc;
+				},
+				{} as Record<Layer['name'], LayerStyle>
+			),
+		};
+	}
+
 	currentWorkspace.state.data.openedRunsIds.push(runId);
 }
 
 function deselectRun(runId: Run['id']): void {
 	if (!isRunSelected(runId)) return;
+
+	// Clean up the run's layer state
+	delete currentWorkspace.state.runsLayersStates[runId];
+
 	const index = currentWorkspace.state.data.openedRunsIds.indexOf(runId);
 	if (index !== -1) {
 		currentWorkspace.state.data.openedRunsIds.splice(index, 1);
