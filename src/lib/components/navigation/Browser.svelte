@@ -6,7 +6,6 @@
 	import { slide } from 'svelte/transition';
 	import { quintOut } from 'svelte/easing';
 	import { getToastStore } from '@skeletonlabs/skeleton';
-	import NavButton from '../common/NavButton.svelte';
 
 	const toastStore = getToastStore();
 	let searchQuery = $state('');
@@ -158,12 +157,23 @@
 				{#each datasetViewModel.datasets as dataset}
 					<li>
 						<!-- Dataset button -->
-						<NavButton
-							icon="fa-database"
-							label={dataset.name}
-							isSelected={dataset.name === datasetViewModel.selectedDataset?.name}
+						<button
+							class="w-full text-left px-3 py-2 rounded-token transition-all duration-200 flex items-center min-w-0
+								hover:bg-primary-500/30 hover:pl-4 group
+								{dataset.name === datasetViewModel.selectedDataset?.name
+								? 'bg-primary-500/10 text-primary-700 dark:text-primary-400'
+								: 'text-surface-900-50-token'}"
 							onclick={() => datasetViewModel.selectDataset(dataset)}
-						/>
+						>
+							<i class="fa-solid fa-database mr-2 opacity-70 flex-shrink-0"></i>
+							<span class="truncate flex-1 font-medium">{dataset.name}</span>
+							{#if dataset.name !== datasetViewModel.selectedDataset?.name}
+								<i
+									class="fa-solid fa-chevron-right w-3 h-3 opacity-0 -translate-x-2 transition-all duration-200
+									group-hover:opacity-50 group-hover:translate-x-0"
+								></i>
+							{/if}
+						</button>
 
 						<!-- Cases -->
 						{#if dataset.name === datasetViewModel.selectedDataset?.name}
@@ -179,16 +189,29 @@
 												<li>
 													<div class="flex items-center group">
 														<!-- Case selection and toggle runs -->
-														<NavButton
-															icon="fa-folder"
-															label={case_.name}
-															isSelected={caseViewModel.isSelected(case_.path)}
-															selectionIndex={caseViewModel.isSelected(case_.path)
-																? caseViewModel.getSelectionIndex(case_.path)
-																: undefined}
+														<button
+															class="w-full text-left px-3 py-1.5 rounded-token transition-all duration-200 flex items-center min-w-0
+																hover:bg-primary-500/30 hover:pl-4 group
+																{caseViewModel.isSelected(case_.path)
+																? 'bg-primary-500/10 text-primary-700 dark:text-primary-400'
+																: 'text-surface-900-50-token'}"
 															onclick={() => caseViewModel.toggleCase(case_)}
-															indent
-														/>
+														>
+															<i class="fa-solid fa-folder mr-2 opacity-70 flex-shrink-0"></i>
+															<span class="truncate flex-1 font-medium">{case_.name}</span>
+															{#if caseViewModel.isSelected(case_.path)}
+																<div
+																	class="badge badge-sm variant-filled-primary ml-2 flex-shrink-0"
+																>
+																	{caseViewModel.getSelectionIndex(case_.path)}
+																</div>
+															{:else}
+																<i
+																	class="fa-solid fa-chevron-right w-3 h-3 opacity-0 -translate-x-2 transition-all duration-200
+																		group-hover:opacity-50 group-hover:translate-x-0"
+																></i>
+															{/if}
+														</button>
 													</div>
 
 													<!-- Runs -->
@@ -212,17 +235,28 @@
 																{:else}
 																	{#each runViewModel.getRunsForCase(case_.path) as run}
 																		<li>
-																			<NavButton
-																				icon={run.outputError
-																					? 'fa-circle-exclamation'
-																					: 'fa-circle-play'}
-																				label={`Run ${run.id}`}
-																				isSelected={runViewModel.isRunSelected(run.id)}
-																				variant={run.outputError ? 'error' : 'primary'}
-																				size="small"
-																				indent
+																			<button
+																				class="w-full text-left px-3 py-1.5 rounded-token transition-all duration-200 flex items-center min-w-0
+																					hover:bg-surface-200-700-token hover:pl-4 group
+																					{runViewModel.isRunSelected(run.id)
+																					? 'bg-primary-500/10 text-primary-700 dark:text-primary-400'
+																					: 'text-surface-900-50-token'}"
+																				class:variant-filled-error={run.outputError}
 																				onclick={() => runViewModel.toggleRun(run.id)}
-																			/>
+																			>
+																				<i
+																					class="fa-solid mr-2 opacity-70 flex-shrink-0"
+																					class:fa-circle-play={!run.outputError}
+																					class:fa-circle-exclamation={run.outputError}
+																				></i>
+																				<span class="truncate flex-1 text-sm">Run {run.id}</span>
+																				{#if !runViewModel.isRunSelected(run.id) && !run.outputError}
+																					<i
+																						class="fa-solid fa-chevron-right w-3 h-3 opacity-0 -translate-x-2 transition-all duration-200
+																						group-hover:opacity-50 group-hover:translate-x-0"
+																					></i>
+																				{/if}
+																			</button>
 																		</li>
 																	{/each}
 																{/if}
