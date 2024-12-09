@@ -7,9 +7,18 @@ import {
 } from '$lib/models/repository.svelte';
 import { layerViewModel } from './layer.svelte';
 
+// Add new type for filter
+interface PrintFilter {
+	label: string;
+	operation: string;
+	value: string;
+}
+
 // UI state
 let isLoading = $state(false);
 let error = $state<string | null>(null);
+let printFilters = $state<PrintFilter[]>([]);
+let visibleCasePaths = $state(new Set<string>());
 
 // Derived states
 const headerContent = $derived.by(() => {
@@ -45,7 +54,45 @@ const getRunPrints = $derived((runId: Run['id'], casePath: Case['path']) => {
 	return run.outputPrint;
 });
 const getRunsForCase = $derived((casePath: Case['path']) => {
-	return loadedData.runsByCasePath[casePath] ?? [];
+	const runs = loadedData.runsByCasePath[casePath] ?? [];
+
+	// If no filters, return all runs
+	if (printFilters.length === 0) return runs;
+
+	// Get only valid filters (non-empty values)
+	const validFilters = printFilters.filter((f) => f.label.trim() !== '' && f.value.trim() !== '');
+
+	// If no valid filters, return all runs
+	if (validFilters.length === 0) return runs;
+
+	return runs.filter((run) => {
+		// Run must match all valid filters (AND logic)
+		return validFilters.every((filter) => {
+			const print = run.outputPrint.find((p) => p.name === filter.label);
+			if (!print) return false;
+
+			const printValue = parseFloat(print.value);
+			const filterValue = parseFloat(filter.value);
+
+			// Skip invalid numbers
+			if (isNaN(printValue) || isNaN(filterValue)) return false;
+
+			switch (filter.operation) {
+				case '>':
+					return printValue > filterValue;
+				case '<':
+					return printValue < filterValue;
+				case '>=':
+					return printValue >= filterValue;
+				case '<=':
+					return printValue <= filterValue;
+				case '=':
+					return printValue === filterValue;
+				default:
+					return false;
+			}
+		});
+	});
 });
 const isRunSelected = $derived((runId: Run['id']) => {
 	return currentWorkspace.state.data.openedRunsIds.includes(runId);
@@ -152,6 +199,7 @@ function reset(): void {
 	currentWorkspace.state.ui.scriptEditor.content = '';
 	isLoading = false;
 	error = null;
+	printFilters = [];
 }
 
 function selectRun(runId: Run['id']): void {
@@ -172,6 +220,40 @@ function toggleRun(runId: Run['id']): void {
 		deselectRun(runId);
 	} else {
 		selectRun(runId);
+	}
+}
+
+// Add new actions for filter management
+function addPrintFilter(filter: PrintFilter): void {
+	printFilters = [...printFilters, filter];
+}
+
+function removePrintFilter(index: number): void {
+	printFilters = printFilters.filter((_, i) => i !== index);
+}
+
+function updatePrintFilter(index: number, filter: Partial<PrintFilter>): void {
+	printFilters = printFilters.map((f, i) => (i === index ? { ...f, ...filter } : f));
+}
+
+function clearPrintFilters(): void {
+	printFilters = [];
+}
+
+// Add visibility methods
+function showRunsForCase(casePath: string): void {
+	visibleCasePaths.add(casePath);
+}
+
+function hideRunsForCase(casePath: string): void {
+	visibleCasePaths.delete(casePath);
+}
+
+function toggleRunsVisibility(casePath: string): void {
+	if (visibleCasePaths.has(casePath)) {
+		hideRunsForCase(casePath);
+	} else {
+		showRunsForCase(casePath);
 	}
 }
 
@@ -216,4 +298,24 @@ export const runViewModel = {
 	selectRun,
 	deselectRun,
 	toggleRun,
+
+	// Add new filter-related exports
+	get printFilters() {
+		return printFilters;
+	},
+	addPrintFilter,
+	removePrintFilter,
+	updatePrintFilter,
+	clearPrintFilters,
+
+	// Add new visibility-related exports
+	get visibleCasePaths() {
+		return visibleCasePaths;
+	},
+	set visibleCasePaths(value: Set<string>) {
+		visibleCasePaths = value;
+	},
+	showRunsForCase,
+	hideRunsForCase,
+	toggleRunsVisibility,
 };

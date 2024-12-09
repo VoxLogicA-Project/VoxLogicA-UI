@@ -5,17 +5,8 @@
 	import { sessionViewModel } from '$lib/viewmodels/session.svelte';
 	import { slide } from 'svelte/transition';
 	import { quintOut } from 'svelte/easing';
-	import { getToastStore } from '@skeletonlabs/skeleton';
 
-	const toastStore = getToastStore();
 	let searchQuery = $state('');
-
-	interface Filter {
-		label: string;
-		operation: string;
-		value: string;
-	}
-	let filters = $state<Filter[]>([]);
 
 	// Filtered cases based on search query
 	const filteredCases = $derived(
@@ -27,17 +18,11 @@
 	);
 
 	function addFilter() {
-		if (filters.length === 0) {
-			toastStore.trigger({
-				message: 'Case filtering is not implemented yet',
-				background: 'variant-filled-warning',
-			});
-		}
-		filters = [...filters, { label: '', operation: '', value: '' }];
+		runViewModel.addPrintFilter({ label: '', operation: '>', value: '' });
 	}
 
 	function removeFilter(index: number) {
-		filters = filters.filter((_, i) => i !== index);
+		runViewModel.removePrintFilter(index);
 	}
 
 	// Load datasets when component mounts
@@ -51,14 +36,67 @@
 
 	let expandedRunIds = $state(new Set<string>());
 
+	// Split into two effects to avoid async
+	$effect(() => {
+		// Get only valid filters (non-empty values)
+		const validFilters = runViewModel.printFilters.filter(
+			(f) => f.label.trim() !== '' && f.value.trim() !== ''
+		);
+
+		if (validFilters.length > 0) {
+			// Get all cases with matching runs
+			const casesWithMatches = new Set(
+				filteredCases
+					.filter((case_) => runViewModel.getRunsForCase(case_.path).length > 0)
+					.map((case_) => case_.path)
+			);
+
+			// Only update if there are changes
+			const currentPaths = runViewModel.visibleCasePaths;
+			const newPaths = new Set([
+				...casesWithMatches,
+				...Array.from(currentPaths).filter(
+					(path) => caseViewModel.isSelected(path) || casesWithMatches.has(path)
+				),
+			]);
+
+			// Check if sets are different before updating
+			if (
+				newPaths.size !== currentPaths.size ||
+				![...newPaths].every((path) => currentPaths.has(path))
+			) {
+				runViewModel.visibleCasePaths = newPaths;
+			}
+
+			// Update expanded runs only for new matches
+			casesWithMatches.forEach((casePath) => {
+				const matchingRuns = runViewModel.getRunsForCase(casePath);
+				const newIds = matchingRuns.map((run) => run.id).filter((id) => !expandedRunIds.has(id));
+				if (newIds.length > 0) {
+					expandedRunIds = new Set([...expandedRunIds, ...newIds]);
+				}
+			});
+		} else {
+			// When no valid filters, hide all runs except for selected cases
+			const newPaths = new Set(
+				Array.from(runViewModel.visibleCasePaths).filter((path) => caseViewModel.isSelected(path))
+			);
+
+			if (newPaths.size !== runViewModel.visibleCasePaths.size) {
+				runViewModel.visibleCasePaths = newPaths;
+			}
+		}
+	});
+
 	function toggleRunDetails(runId: string, event: MouseEvent) {
 		event.stopPropagation(); // Prevent run selection when clicking dropdown
-		expandedRunIds = new Set(expandedRunIds); // Create a new Set to trigger reactivity
-		if (expandedRunIds.has(runId)) {
-			expandedRunIds.delete(runId);
+		const newSet = new Set(expandedRunIds);
+		if (newSet.has(runId)) {
+			newSet.delete(runId);
 		} else {
-			expandedRunIds.add(runId);
+			newSet.add(runId);
 		}
+		expandedRunIds = newSet;
 	}
 </script>
 
@@ -90,7 +128,7 @@
 						bind:value={searchQuery}
 					/>
 				</div>
-				{#if filters.length === 0}
+				{#if runViewModel.printFilters.length === 0}
 					<div class="flex flex-shrink-0 h-[2.25rem]">
 						<button
 							title="Filter cases by run print"
@@ -104,16 +142,22 @@
 				{/if}
 			</div>
 
-			{#each filters as filter, i}
+			{#each runViewModel.printFilters as filter, i}
 				<div class="mt-2">
 					<div class="flex justify-between items-center gap-2">
 						<input
 							type="text"
 							class="input p-1"
 							placeholder="Run print label"
-							bind:value={filter.label}
+							value={filter.label}
+							oninput={(e) => runViewModel.updatePrintFilter(i, { label: e.currentTarget.value })}
 						/>
-						<select class="input p-1 w-20" bind:value={filter.operation}>
+						<select
+							class="input p-1 w-20"
+							value={filter.operation}
+							onchange={(e) =>
+								runViewModel.updatePrintFilter(i, { operation: e.currentTarget.value })}
+						>
 							<option value=">">&gt;</option>
 							<option value="<">&lt;</option>
 							<option value=">=">&ge;</option>
@@ -124,15 +168,16 @@
 							type="number"
 							class="input p-1"
 							placeholder="Run print value"
-							bind:value={filter.value}
+							value={filter.value}
+							oninput={(e) => runViewModel.updatePrintFilter(i, { value: e.currentTarget.value })}
 						/>
 						<div class="flex flex-shrink-0 h-[2.25rem]">
-							{#if i === filters.length - 1}
+							{#if i === runViewModel.printFilters.length - 1}
 								<button
 									title="Add filter"
 									aria-label="Add filter"
 									class="btn-icon hover:variant-soft-primary rounded-full h-9 w-9 flex items-center justify-center"
-									onclick={() => addFilter()}
+									onclick={addFilter}
 								>
 									<i class="fa-solid fa-filter"></i>
 								</button>
@@ -215,17 +260,12 @@
 																>
 																	{caseViewModel.getSelectionIndex(case_.path)}
 																</div>
-															{:else}
-																<i
-																	class="fa-solid fa-chevron-right w-3 h-3 opacity-0 -translate-x-2 transition-all duration-200
-																		group-hover:opacity-50 group-hover:translate-x-0"
-																></i>
 															{/if}
 														</button>
 													</div>
 
 													<!-- Runs -->
-													{#if caseViewModel.isSelected(case_.path)}
+													{#if runViewModel.visibleCasePaths.has(case_.path) || caseViewModel.isSelected(case_.path)}
 														<div
 															transition:slide|local={{
 																duration: TRANSITION_DURATION,
