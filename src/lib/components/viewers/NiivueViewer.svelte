@@ -3,6 +3,7 @@
 	import { browser } from '$app/environment';
 	import { layerViewModel } from '$lib/viewmodels/layer.svelte';
 	import type { Case, Layer, LayerStyle } from '$lib/models/types';
+	import { debounce } from 'ts-debounce';
 
 	const { case_ } = $props<{ case_: Case }>();
 
@@ -11,7 +12,6 @@
 	let nv: any;
 	let Niivue: any;
 	let isInitialized = $state(false);
-	let loadingOperationCounter = $state(0);
 
 	function getVolumeIndex(layerPath: string) {
 		return nv.volumes.findIndex((vol: any) => vol.url === layerPath);
@@ -44,7 +44,7 @@
 
 				// Load layers if any are selected
 				if (layerViewModel.getAllSelectedLayersNoContext(case_.path).length > 0) {
-					await loadAllLayers(++loadingOperationCounter);
+					await debouncedLoadAllLayers();
 				}
 			} catch (error) {
 				console.error('Failed to initialize Niivue:', error);
@@ -52,23 +52,17 @@
 		}
 	});
 
+	// Reload layers when selected layers change
 	$effect(() => {
 		if (isInitialized) {
 			if (layerViewModel.getAllSelectedLayersNoContext(case_.path).length > 0) {
-				// Debounce loading layers to avoid multiple re-renders
-				const timeoutId = setTimeout(() => {
-					loadAllLayers(++loadingOperationCounter);
-				}, 1000);
-
-				return () => {
-					clearTimeout(timeoutId);
-				};
+				debouncedLoadAllLayers();
 			}
 		}
 	});
 
+	// Update layer styles when selected layers change
 	$effect(() => {
-		// TODO: Update only layers that have changed
 		if (isInitialized) {
 			const desiredLayers = $state.snapshot(
 				layerViewModel.getAllSelectedLayersWithLayerStylesNoContext(case_.path)
@@ -79,9 +73,10 @@
 		}
 	});
 
-	async function loadAllLayers(operationId: number) {
+	const debouncedLoadAllLayers = debounce(loadAllLayers, 1000);
+
+	async function loadAllLayers() {
 		if (!nv) return;
-		if (operationId !== loadingOperationCounter) return;
 
 		try {
 			// Get current and desired layers

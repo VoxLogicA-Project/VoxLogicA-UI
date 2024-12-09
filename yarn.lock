@@ -673,6 +673,13 @@
   dependencies:
     "@testing-library/dom" "^10.0.0"
 
+"@thisux/sveltednd@^0.0.14":
+  version "0.0.14"
+  resolved "https://registry.yarnpkg.com/@thisux/sveltednd/-/sveltednd-0.0.14.tgz#a3ccbf9830326c318bb4c1b44704659f18e3c94b"
+  integrity sha512-Vbq69SU3HUomPg6oCXtb89OG89hka0YIkdaErYibn3waK7tYE66IcQxD/Fzg8YNW3EVsXoA9kc7kW5EUBCSQGg==
+  dependencies:
+    "@thisux/sveltednd" "0.0.12"
+
 "@thisux/sveltednd@^0.0.16":
   version "0.0.16"
   resolved "https://registry.yarnpkg.com/@thisux/sveltednd/-/sveltednd-0.0.16.tgz#c8a5799bc0fece0587fb93cd2861eeda750a4005"
@@ -2370,6 +2377,11 @@ tr46@^5.0.0:
   integrity sha512-tk2G5R2KRwBd+ZN0zaEXpmzdKyOYksXwywulIX95MBODjSzMIuQnQ3m8JxgbhnL1LeVo7lqQKsYa1O3Htl7K5g==
   dependencies:
     punycode "^2.3.1"
+
+ts-debounce@^4.0.0:
+  version "4.0.0"
+  resolved "https://registry.yarnpkg.com/ts-debounce/-/ts-debounce-4.0.0.tgz#33440ef64fab53793c3d546a8ca6ae539ec15841"
+  integrity sha512-+1iDGY6NmOGidq7i7xZGA4cm8DAa6fqdYcvO5Z6yBevH++Bdo9Qt/mN0TzHUgcCcKv1gmh9+W5dHqz8pMWbCbg==
 
 ts-interface-checker@^0.1.9:
   version "0.1.13"

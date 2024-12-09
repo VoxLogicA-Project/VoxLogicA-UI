@@ -45,6 +45,7 @@
 		"@thisux/sveltednd": "^0.0.16",
 		"codemirror": "^6.0.1",
 		"svelte-awesome-color-picker": "^3.1.4",
+		"ts-debounce": "^4.0.0",
 		"vite-plugin-tailwind-purgecss": "^0.3.3"
 	}
 }
