@@ -1,16 +1,22 @@
 <script lang="ts">
+	// Layout Components
 	import CollapsibleSidebar from '$lib/components/common/CollapsibleSidebar.svelte';
+
+	// Navigation Components
+	import Browser from '$lib/components/navigation/Browser.svelte';
 	import Workspaces from '$lib/components/navigation/Workspaces.svelte';
-	import DatasetBrowser from '$lib/components/navigation/DatasetBrowser.svelte';
-	import CaseList from '$lib/components/navigation/CaseList.svelte';
-	import ViewersGrid from '$lib/components/viewers/ViewersGrid.svelte';
+	import WorkspacesFullScreen from '$lib/components/navigation/WorkspacesFullScreen.svelte';
+
+	// Feature Components
 	import LayerMatrix from '$lib/components/layers/LayerMatrix.svelte';
 	import ScriptEditor from '$lib/components/run/ScriptEditor.svelte';
-	import { datasetViewModel } from '$lib/viewmodels/dataset.svelte';
+	import ViewersGrid from '$lib/components/viewers/ViewersGrid.svelte';
+
+	// ViewModels
 	import { caseViewModel } from '$lib/viewmodels/case.svelte';
-	import { uiViewModel } from '$lib/viewmodels/ui.svelte';
-	import WorkspacesFullScreen from '$lib/components/navigation/WorkspacesFullScreen.svelte';
+	import { datasetViewModel } from '$lib/viewmodels/dataset.svelte';
 	import { sessionViewModel } from '$lib/viewmodels/session.svelte';
+	import { uiViewModel } from '$lib/viewmodels/ui.svelte';
 </script>
 
 <div class="h-screen w-screen flex overflow-hidden bg-surface-50-900-token">
@@ -78,15 +84,8 @@
 		</div>
 
 		<!-- Dataset Browser -->
-		<div class="py-6 flex-shrink-0">
-			<DatasetBrowser />
-		</div>
-
-		<!-- Case List -->
-		<div class="border-t border-surface-500/30 flex-1 overflow-hidden flex flex-col">
-			<div class="pt-6 flex-1 overflow-y-auto">
-				<CaseList />
-			</div>
+		<div class="flex-1 overflow-hidden">
+			<Browser />
 		</div>
 	</CollapsibleSidebar>
 
