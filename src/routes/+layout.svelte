@@ -7,9 +7,14 @@
 	import { storePopup } from '@skeletonlabs/skeleton';
 	import { uiViewModel } from '$lib/viewmodels/ui.svelte';
 	import { sessionViewModel } from '$lib/viewmodels/session.svelte';
+	import CreateFromIdModal from '$lib/components/navigation/CreateFromIdModal.svelte';
 
 	initializeStores();
 	storePopup.set({ computePosition, autoUpdate, offset, shift, flip, arrow });
+
+	const modalComponentRegistry = {
+		createFromIdModal: { ref: CreateFromIdModal },
+	};
 
 	// Change theme based on system preference
 	$effect(() => {
@@ -45,7 +50,7 @@
 </script>
 
 <Toast />
-<Modal />
+<Modal components={modalComponentRegistry} />
 <AppShell>
 	{@render children?.()}
 </AppShell>

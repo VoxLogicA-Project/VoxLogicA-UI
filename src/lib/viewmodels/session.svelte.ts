@@ -41,6 +41,36 @@ async function loadWorkspaces(): Promise<void> {
 	}
 }
 
+async function getWorkspace(workspaceId: Workspace['id']): Promise<Workspace> {
+	isLoading = true;
+	error = null;
+
+	try {
+		const workspace = await apiRepository.fetchWorkspace(workspaceId);
+		return workspace;
+	} finally {
+		isLoading = false;
+	}
+}
+
+async function createWorkspace(
+	workspaceName: Workspace['name'],
+	templateWorkspaceId?: Workspace['id']
+): Promise<Workspace> {
+	isLoading = true;
+	error = null;
+
+	try {
+		const newWorkspace = await apiRepository.createWorkspace(workspaceName, templateWorkspaceId);
+		return newWorkspace;
+	} catch (e) {
+		error = e instanceof Error ? e.message : 'Failed to create workspace';
+		throw e;
+	} finally {
+		isLoading = false;
+	}
+}
+
 async function selectWorkspace(workspaceId: Workspace['id']): Promise<void> {
 	if (!workspaceId) return;
 
@@ -48,7 +78,7 @@ async function selectWorkspace(workspaceId: Workspace['id']): Promise<void> {
 	error = null;
 
 	try {
-		await apiRepository.fetchWorkspace(workspaceId);
+		await apiRepository.fetchAndLoadWorkspace(workspaceId);
 		lastSavedState = JSON.stringify(currentWorkspace);
 	} catch (e) {
 		error = e instanceof Error ? e.message : 'Failed to load workspace';
@@ -66,21 +96,6 @@ async function saveWorkspace(): Promise<void> {
 		lastSavedState = JSON.stringify(currentWorkspace);
 	} catch (e) {
 		error = e instanceof Error ? e.message : 'Failed to save workspace';
-	} finally {
-		isLoading = false;
-	}
-}
-
-async function createWorkspace(workspaceName: Workspace['name']): Promise<Workspace> {
-	isLoading = true;
-	error = null;
-
-	try {
-		const newWorkspace = await apiRepository.createWorkspace(workspaceName);
-		return newWorkspace;
-	} catch (e) {
-		error = e instanceof Error ? e.message : 'Failed to create workspace';
-		throw e;
 	} finally {
 		isLoading = false;
 	}
@@ -127,8 +142,9 @@ export const sessionViewModel = {
 
 	// Actions
 	loadWorkspaces,
+	getWorkspace,
+	createWorkspace,
 	selectWorkspace,
 	saveWorkspace,
-	createWorkspace,
 	reset,
 };

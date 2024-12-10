@@ -1,4 +1,4 @@
-import { json, error } from '@sveltejs/kit';
+import { json, error, isHttpError } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import fs from 'fs/promises';
 import path from 'path';
@@ -45,24 +45,60 @@ export const GET: RequestHandler = async () => {
 
 export const POST: RequestHandler = async ({ request }) => {
 	try {
-		const workspace = (await request.json()) as Omit<Workspace, 'id' | 'createdAt' | 'updatedAt'>;
-
-		// Generate a new workspace ID using timestamp and UUID for uniqueness
-		const newId = `${Date.now()}_${crypto.randomUUID()}`;
-
-		const newWorkspace: Workspace = {
-			...workspace,
-			id: newId,
-			createdAt: new Date(),
-			updatedAt: new Date(),
+		const { sourceId, workspace } = (await request.json()) as {
+			sourceId?: Workspace['id'];
+			workspace: Omit<Workspace, 'id' | 'createdAt' | 'updatedAt'>;
 		};
 
-		await fs.mkdir(WORKSPACE_PATH(newId), { recursive: true });
-		await fs.writeFile(WORKSPACE_JSON_PATH(newId), JSON.stringify(newWorkspace, null, 2));
+		const newId = `${Date.now()}_${crypto.randomUUID()}`;
 
-		return json(newWorkspace);
+		if (sourceId) {
+			try {
+				const sourceWorkspaceJson = await fs.readFile(WORKSPACE_JSON_PATH(sourceId), 'utf-8');
+				const sourceWorkspace = JSON.parse(sourceWorkspaceJson);
+
+				const newWorkspace: Workspace = {
+					...sourceWorkspace,
+					id: newId,
+					name: workspace.name,
+					createdAt: new Date(),
+					updatedAt: new Date(),
+				};
+
+				await fs.cp(WORKSPACE_PATH(sourceId), WORKSPACE_PATH(newId), { recursive: true });
+				await fs.writeFile(WORKSPACE_JSON_PATH(newId), JSON.stringify(newWorkspace, null, 2));
+
+				return json(newWorkspace);
+			} catch (err) {
+				console.error('Failed to clone workspace:', err);
+				error(404, {
+					message: 'Source workspace not found',
+				});
+			}
+		} else {
+			try {
+				const newWorkspace: Workspace = {
+					...workspace,
+					id: newId,
+					createdAt: new Date(),
+					updatedAt: new Date(),
+				};
+
+				await fs.mkdir(WORKSPACE_PATH(newId), { recursive: true });
+				await fs.writeFile(WORKSPACE_JSON_PATH(newId), JSON.stringify(newWorkspace, null, 2));
+
+				return json(newWorkspace);
+			} catch (err) {
+				console.error('Failed to create workspace:', err);
+				error(500, {
+					message: 'Failed to create workspace',
+				});
+			}
+		}
 	} catch (err) {
-		console.error(err);
-		throw error(500, 'Failed to create workspace');
+		console.error('Unexpected error:', err);
+		error(500, {
+			message: 'Internal server error',
+		});
 	}
 };

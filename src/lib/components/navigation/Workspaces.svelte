@@ -143,6 +143,16 @@
 					<span class="text-sm">New Workspace</span>
 				</div>
 			</button>
+
+			<button
+				class="option !px-2 !py-1.5 rounded-lg hover:!bg-surface-500/20 w-full text-left"
+				onclick={() => workspaceService.showCreateFromIdModal()}
+			>
+				<div class="flex items-center gap-2">
+					<i class="fa-solid fa-copy"></i>
+					<span class="text-sm">Create from ID</span>
+				</div>
+			</button>
 		</nav>
 	{/if}
 	<div class="arrow bg-surface-200-700-token"></div>

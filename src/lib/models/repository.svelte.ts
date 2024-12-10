@@ -126,8 +126,12 @@ export const apiRepository = {
 	},
 
 	async fetchWorkspace(workspaceId: Workspace['id']) {
+		return api.fetch<Workspace>(`/workspaces/${workspaceId}`);
+	},
+
+	async fetchAndLoadWorkspace(workspaceId: Workspace['id']) {
 		try {
-			const workspace = await api.fetch<Workspace>(`/workspaces/${workspaceId}`);
+			const workspace = await this.fetchWorkspace(workspaceId);
 
 			// Reset current state before loading new workspace
 			loadedData.datasets = [];
@@ -156,16 +160,14 @@ export const apiRepository = {
 		});
 	},
 
-	async createWorkspace(workspaceName: string) {
-		const newWorkspace: Omit<Workspace, 'id' | 'createdAt' | 'updatedAt'> = {
-			name: workspaceName,
-			state: DEFAULT_WORKSPACE_STATE,
-		};
-
+	async createWorkspace(workspaceName: string, templateWorkspaceId?: Workspace['id']) {
 		return api.fetch<Workspace>('/workspaces', {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify(newWorkspace),
+			body: JSON.stringify({
+				sourceId: templateWorkspaceId,
+				workspace: { name: workspaceName, state: DEFAULT_WORKSPACE_STATE },
+			}),
 		});
 	},
 

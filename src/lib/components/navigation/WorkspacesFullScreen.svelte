@@ -49,13 +49,21 @@
 		</div>
 
 		<!-- Fixed Footer -->
-		<div class="p-8 pt-4">
+		<div class="p-8 pt-4 space-y-2">
 			<button
 				class="w-full p-4 rounded-lg bg-primary-500 hover:bg-primary-600 text-white transition-colors flex items-center justify-center gap-2"
 				onclick={() => workspaceService.showCreateWorkspaceModal()}
 			>
 				<i class="fa-solid fa-plus"></i>
 				<span>New Workspace</span>
+			</button>
+
+			<button
+				class="w-full p-4 rounded-lg bg-surface-500/10 hover:bg-surface-500/20 border border-surface-500/30 transition-colors flex items-center justify-center gap-2"
+				onclick={() => workspaceService.showCreateFromIdModal()}
+			>
+				<i class="fa-solid fa-copy"></i>
+				<span>Create from ID</span>
 			</button>
 		</div>
 	</div>
