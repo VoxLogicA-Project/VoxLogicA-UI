@@ -3,7 +3,7 @@
 	import CollapsibleSidebar from '$lib/components/common/CollapsibleSidebar.svelte';
 
 	// Navigation Components
-	import Browser from '$lib/components/navigation/Browser.svelte';
+	import Browser from '$lib/components/navigation/browser/Browser.svelte';
 	import Workspaces from '$lib/components/navigation/Workspaces.svelte';
 	import WorkspacesFullScreen from '$lib/components/navigation/WorkspacesFullScreen.svelte';
 
