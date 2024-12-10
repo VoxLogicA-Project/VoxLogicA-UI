@@ -2,13 +2,9 @@
 
 ## UI
 
-- Rework the left sidebar (after workspaces are implemented):
+- Rework the left sidebar
 
-  - Dataset selection able to handle a large number of dataset folders
   - Able to select multiple datasets
-  - Cases selection also showing runs of the session
-  - Implement runs filtering
-  - Allow open/close runs
 
 - Stretch goal:
   - Add view-only mode:

@@ -5,6 +5,7 @@
 	import type { PopupSettings } from '@skeletonlabs/skeleton';
 	import { onMount } from 'svelte';
 	import { createWorkspaceService } from './workspaceService';
+	import FullscreenLoader from '$lib/components/common/FullscreenLoader.svelte';
 
 	const toastStore = getToastStore();
 	const modalStore = getModalStore();
@@ -26,7 +27,20 @@
 			? 'bg-error-500/20 hover:bg-error-500/30 shadow-lg shadow-error-500/20 ring-1 ring-error-500/50'
 			: 'bg-surface-500/10 hover:bg-surface-500/20'
 	);
+
+	$effect(() => {
+		if (sessionViewModel.error) {
+			toastStore.trigger({
+				message: sessionViewModel.error,
+				background: 'variant-filled-error',
+			});
+		}
+	});
 </script>
+
+{#if sessionViewModel.isLoading}
+	<FullscreenLoader text="Loading Workspace..." />
+{/if}
 
 <!-- Save Button and Workspace Button side by side -->
 <div class="flex gap-2 w-full">
@@ -67,93 +81,83 @@
 	data-popup="workspace-menu"
 	style="z-index: 1000;"
 >
-	{#if sessionViewModel.isLoading}
-		<div class="p-2 text-center">
-			<i class="fa-solid fa-spinner animate-spin"></i>
-		</div>
-	{:else if sessionViewModel.error}
-		<div class="p-2 text-error-500 text-center text-sm">
-			{sessionViewModel.error}
-		</div>
-	{:else}
-		<nav class="list-nav p-1 flex flex-col" style="max-height: 60vh;">
-			{#if sessionViewModel.hasWorkspaces}
-				<div class="px-2 py-0.5 text-xs font-semibold uppercase text-surface-500-400-token">
-					Your Workspaces
-				</div>
-				<div class="overflow-y-auto overflow-x-hidden">
-					{#each sessionViewModel.availableWorkspacesIdsAndNames as { id, name }}
+	<nav class="list-nav p-1 flex flex-col" style="max-height: 60vh;">
+		{#if sessionViewModel.hasWorkspaces}
+			<div class="px-2 py-0.5 text-xs font-semibold uppercase text-surface-500-400-token">
+				Your Workspaces
+			</div>
+			<div class="overflow-y-auto overflow-x-hidden">
+				{#each sessionViewModel.availableWorkspacesIdsAndNames as { id, name }}
+					<div
+						class="option !px-2 !py-1.5 rounded-lg {id === sessionViewModel.selectedWorkspaceId
+							? '!bg-primary-500/40 hover:!bg-primary-500/60'
+							: 'hover:!bg-surface-500/20'} flex items-center"
+					>
 						<div
-							class="option !px-2 !py-1.5 rounded-lg {id === sessionViewModel.selectedWorkspaceId
-								? '!bg-primary-500/40 hover:!bg-primary-500/60'
-								: 'hover:!bg-surface-500/20'} flex items-center"
+							class="flex-1 cursor-pointer max-w-full"
+							role="button"
+							tabindex="0"
+							onclick={() => workspaceService.handleSelect(id)}
+							onkeydown={(e) => e.key === 'Enter' && workspaceService.handleSelect(id)}
 						>
-							<div
-								class="flex-1 cursor-pointer max-w-full"
-								role="button"
-								tabindex="0"
-								onclick={() => workspaceService.handleSelect(id)}
-								onkeydown={(e) => e.key === 'Enter' && workspaceService.handleSelect(id)}
-							>
-								<div class="flex flex-col">
-									<span class="font-medium text-sm">{name}</span>
-									<div class="flex items-start justify-between gap-1 max-w-full">
-										<span class="text-xs opacity-50 font-mono truncate mt-0.5">{id}</span>
-										<div
-											class="inline-flex items-center justify-center p-0.5 hover:bg-surface-500/20 rounded-full opacity-50 hover:opacity-100 transition-opacity cursor-pointer"
-											role="button"
-											tabindex="0"
-											title="Copy Workspace ID"
-											onclick={(event) => {
-												event.stopPropagation();
+							<div class="flex flex-col">
+								<span class="font-medium text-sm">{name}</span>
+								<div class="flex items-start justify-between gap-1 max-w-full">
+									<span class="text-xs opacity-50 font-mono truncate mt-0.5">{id}</span>
+									<div
+										class="inline-flex items-center justify-center p-0.5 hover:bg-surface-500/20 rounded-full opacity-50 hover:opacity-100 transition-opacity cursor-pointer"
+										role="button"
+										tabindex="0"
+										title="Copy Workspace ID"
+										onclick={(event) => {
+											event.stopPropagation();
+											navigator.clipboard.writeText(id);
+											toastStore.trigger({
+												message: 'Workspace ID copied',
+												background: 'variant-filled-success',
+											});
+										}}
+										onkeydown={(e) => {
+											if (e.key === 'Enter') {
+												e.stopPropagation();
 												navigator.clipboard.writeText(id);
 												toastStore.trigger({
 													message: 'Workspace ID copied',
 													background: 'variant-filled-success',
 												});
-											}}
-											onkeydown={(e) => {
-												if (e.key === 'Enter') {
-													e.stopPropagation();
-													navigator.clipboard.writeText(id);
-													toastStore.trigger({
-														message: 'Workspace ID copied',
-														background: 'variant-filled-success',
-													});
-												}
-											}}
-										>
-											<i class="fa-solid fa-copy text-xs"></i>
-										</div>
+											}
+										}}
+									>
+										<i class="fa-solid fa-copy text-xs"></i>
 									</div>
 								</div>
 							</div>
 						</div>
-					{/each}
-				</div>
-				<hr class="!my-1 opacity-50" />
-			{/if}
+					</div>
+				{/each}
+			</div>
+			<hr class="!my-1 opacity-50" />
+		{/if}
 
-			<button
-				class="option !px-2 !py-1.5 rounded-lg hover:!bg-surface-500/20 w-full text-left"
-				onclick={() => workspaceService.showCreateWorkspaceModal()}
-			>
-				<div class="flex items-center gap-2">
-					<i class="fa-solid fa-plus"></i>
-					<span class="text-sm">New Workspace</span>
-				</div>
-			</button>
+		<button
+			class="option !px-2 !py-1.5 rounded-lg hover:!bg-surface-500/20 w-full text-left"
+			onclick={() => workspaceService.showCreateWorkspaceModal()}
+		>
+			<div class="flex items-center gap-2">
+				<i class="fa-solid fa-plus"></i>
+				<span class="text-sm">New Workspace</span>
+			</div>
+		</button>
 
-			<button
-				class="option !px-2 !py-1.5 rounded-lg hover:!bg-surface-500/20 w-full text-left"
-				onclick={() => workspaceService.showCreateFromIdModal()}
-			>
-				<div class="flex items-center gap-2">
-					<i class="fa-solid fa-copy"></i>
-					<span class="text-sm">Create from ID</span>
-				</div>
-			</button>
-		</nav>
-	{/if}
+		<button
+			class="option !px-2 !py-1.5 rounded-lg hover:!bg-surface-500/20 w-full text-left"
+			onclick={() => workspaceService.showCreateFromIdModal()}
+		>
+			<div class="flex items-center gap-2">
+				<i class="fa-solid fa-copy"></i>
+				<span class="text-sm">Create from ID</span>
+			</div>
+		</button>
+	</nav>
 	<div class="arrow bg-surface-200-700-token"></div>
 </div>
