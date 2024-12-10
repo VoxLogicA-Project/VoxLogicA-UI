@@ -1,8 +1,16 @@
-import type { Dataset, Case, Layer, PresetScript, Workspace, Run } from './types';
+import type {
+	Dataset,
+	Case,
+	Layer,
+	PresetScript,
+	Workspace,
+	LocalWorkspaceEntry,
+	Run,
+} from './types';
 
 // Types
 interface LoadedData {
-	availableWorkspacesIdsAndNames: { id: Workspace['id']; name: Workspace['name'] }[];
+	availableWorkspacesIdsAndNames: LocalWorkspaceEntry[];
 	datasets: Dataset[];
 	cases: Case[];
 	layersByCasePath: Record<Case['path'], Layer[]>;
@@ -98,6 +106,16 @@ const api = {
 	},
 };
 
+// Add these functions to manage localStorage
+function getLocalWorkspaces(): LocalWorkspaceEntry[] {
+	const stored = localStorage.getItem('workspaces');
+	return stored ? JSON.parse(stored) : [];
+}
+
+function saveLocalWorkspaces(workspaces: LocalWorkspaceEntry[]): void {
+	localStorage.setItem('workspaces', JSON.stringify(workspaces));
+}
+
 // Repository Functions
 export const apiRepository = {
 	async fetchDatasets() {
@@ -121,8 +139,7 @@ export const apiRepository = {
 	},
 
 	async fetchWorkspaces() {
-		loadedData.availableWorkspacesIdsAndNames =
-			await api.fetch<Array<Pick<Workspace, 'id' | 'name'>>>('/workspaces');
+		loadedData.availableWorkspacesIdsAndNames = getLocalWorkspaces();
 	},
 
 	async fetchWorkspace(workspaceId: Workspace['id']) {
@@ -161,7 +178,7 @@ export const apiRepository = {
 	},
 
 	async createWorkspace(workspaceName: string, templateWorkspaceId?: Workspace['id']) {
-		return api.fetch<Workspace>('/workspaces', {
+		const workspace = await api.fetch<Workspace>('/workspaces', {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
 			body: JSON.stringify({
@@ -169,6 +186,13 @@ export const apiRepository = {
 				workspace: { name: workspaceName, state: DEFAULT_WORKSPACE_STATE },
 			}),
 		});
+
+		// Add to localStorage after successful creation
+		const localWorkspaces = getLocalWorkspaces();
+		localWorkspaces.push({ id: workspace.id, name: workspace.name });
+		saveLocalWorkspaces(localWorkspaces);
+
+		return workspace;
 	},
 
 	async fetchWorkspaceRuns(workspaceId: Workspace['id']) {

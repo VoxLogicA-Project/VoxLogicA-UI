@@ -93,3 +93,8 @@ export interface Workspace {
 	updatedAt: Date;
 	state: SerializedWorkspaceState;
 }
+
+export interface LocalWorkspaceEntry {
+	id: Workspace['id'];
+	name: Workspace['name'];
+}
