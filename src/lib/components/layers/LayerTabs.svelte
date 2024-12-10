@@ -7,6 +7,25 @@
 	// Initialize currentTabId
 	let currentTabId = $state('dataset');
 
+	// Compute tabs based on opened runs
+	const tabs: { id: string; layerContext: LayerContext; label: string }[] = $derived.by(() => {
+		var res: { id: string; layerContext: LayerContext; label: string }[] = [
+			{
+				id: 'dataset',
+				layerContext: { type: 'dataset' },
+				label: 'Dataset Layers',
+			},
+		];
+		for (const [index, runId] of runViewModel.openedRunsIds.entries()) {
+			res.push({
+				id: `run-${runId}`,
+				layerContext: { type: 'run', runId },
+				label: `Run ${index + 1}`,
+			});
+		}
+		return res;
+	});
+
 	// Initialize currentTabId based on the layerContext when component mounts
 	$effect.pre(() => {
 		const context = uiViewModel.layerContext;
@@ -36,29 +55,20 @@
 		}
 	});
 
-	// Compute tabs based on opened runs
-	const tabs: { id: string; layerContext: LayerContext; label: string }[] = $derived.by(() => {
-		var res: { id: string; layerContext: LayerContext; label: string }[] = [
-			{
-				id: 'dataset',
-				layerContext: { type: 'dataset' },
-				label: 'Dataset Layers',
-			},
-		];
-		for (const [index, runId] of runViewModel.openedRunsIds.entries()) {
-			res.push({
-				id: `run-${runId}`,
-				layerContext: { type: 'run', runId },
-				label: `Run ${index + 1}`,
-			});
+	// If current tab no longer exists (so, if openedRunsIds changes), switch to the first available tab
+	$effect(() => {
+		if (
+			uiViewModel.layerContext.runId &&
+			!runViewModel.openedRunsIds.some((id) => id === uiViewModel.layerContext.runId)
+		) {
+			uiViewModel.layerContext = { type: 'dataset' };
 		}
-		return res;
 	});
 
-	// Watch for changes to blinkingTabLayerContext
+	// Countdown for blinking tab
 	$effect(() => {
 		if (uiViewModel.blinkingTabLayerContext) {
-			// Reset after 3 blinks (1s each) plus a small buffer
+			// Remove after 3 blinks (1s each) plus a small buffer
 			setTimeout(() => {
 				uiViewModel.blinkingTabLayerContext = null;
 			}, 3100);

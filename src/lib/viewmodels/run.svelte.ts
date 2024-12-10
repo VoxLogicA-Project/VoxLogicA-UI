@@ -94,7 +94,7 @@ const getRunsForCase = $derived((casePath: Case['path']) => {
 	});
 });
 const isRunSelected = $derived((runId: Run['id']) => {
-	return currentWorkspace.state.data.openedRunsIds.includes(runId);
+	return currentWorkspace.state.data.openedRunsIds.some((id) => id === runId);
 });
 
 // Actions
@@ -158,15 +158,8 @@ async function runAll(cases: Case[]): Promise<Run['id']> {
 		// Get the run ID (all runs share the same ID)
 		const runId = runs[0].id;
 
-		// Load the runs
-		const runsByCasePath: Record<Case['path'], Run[]> = {};
-		for (const run of runs) {
-			if (!runsByCasePath[run.casePath]) {
-				runsByCasePath[run.casePath] = [];
-			}
-			runsByCasePath[run.casePath].push(run);
-		}
-		loadedData.runsByCasePath = runsByCasePath;
+		// Refetch runs
+		await apiRepository.fetchWorkspaceRuns(currentWorkspace.id);
 
 		// Select the run
 		selectRun(runId);
@@ -226,13 +219,12 @@ function selectRun(runId: Run['id']): void {
 function deselectRun(runId: Run['id']): void {
 	if (!isRunSelected(runId)) return;
 
-	// Clean up the run's layer state
-	delete currentWorkspace.state.runsLayersStates[runId];
-
 	const index = currentWorkspace.state.data.openedRunsIds.indexOf(runId);
 	if (index !== -1) {
 		currentWorkspace.state.data.openedRunsIds.splice(index, 1);
 	}
+
+	delete currentWorkspace.state.runsLayersStates[runId];
 }
 
 function toggleRun(runId: Run['id']): void {

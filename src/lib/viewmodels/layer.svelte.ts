@@ -24,8 +24,19 @@ const currentLayerState = $derived.by(() => {
 	if (currentWorkspace.state.ui.layers.layerContext.type === 'dataset') {
 		return currentWorkspace.state.datasetLayersState;
 	}
+	if (
+		!currentWorkspace.state.ui.layers.layerContext.runId ||
+		!(
+			currentWorkspace.state.ui.layers.layerContext.runId in currentWorkspace.state.runsLayersStates
+		)
+	) {
+		return {
+			openedLayersPathsByCasePath: {},
+			stylesByLayerName: {},
+		};
+	}
 	return currentWorkspace.state.runsLayersStates[
-		currentWorkspace.state.ui.layers.layerContext.runId ?? ''
+		currentWorkspace.state.ui.layers.layerContext.runId
 	];
 });
 

@@ -27,44 +27,46 @@
 			</div>
 		</th>
 		{#each layerViewModel.uniqueLayersNames as layerName}
-			<th class="text-center p-2 border-b border-surface-500/30 font-medium">
-				<div class="flex flex-col items-center">
-					<div class:dark={uiViewModel.state.isDarkMode} title="Click to change layer color">
-						<ColorMapPicker
-							id={layerName}
-							bind:colormapValue={layerViewModel.stylesByLayerName[layerName].colorMap}
-							bind:alphaValue={layerViewModel.stylesByLayerName[layerName].alpha}
-						/>
-					</div>
-					<div class="flex items-center gap-1">
-						<button
-							class="flex items-center gap-1 px-2 py-1 rounded hover:bg-surface-500/20 transition-colors group"
-							onclick={() => {
-								const isLayerSelectedForAllCases =
-									layerViewModel.isLayerSelectedForAllOpenedCases(layerName);
-								if (isLayerSelectedForAllCases) {
-									layerViewModel.deselectLayerForAllOpenedCases(layerName);
-								} else {
-									layerViewModel.selectLayerForAllOpenedCases(layerName);
-								}
-							}}
-							title={layerViewModel.isLayerSelectedForAllOpenedCases(layerName)
-								? `Hide ${layerName} layer for all cases`
-								: `Show ${layerName} layer for all cases`}
-						>
-							<span class="truncate text-surface-900 dark:text-surface-50">
-								{layerName.length > 20 ? '...' + layerName.slice(-20) : layerName}
-							</span>
-							<i
-								class="fa-solid fa-check-to-slot text-sm transition-colors duration-200
+			{#if layerViewModel.stylesByLayerName[layerName]}
+				<th class="text-center p-2 border-b border-surface-500/30 font-medium">
+					<div class="flex flex-col items-center">
+						<div class:dark={uiViewModel.state.isDarkMode} title="Click to change layer color">
+							<ColorMapPicker
+								id={layerName}
+								bind:colormapValue={layerViewModel.stylesByLayerName[layerName].colorMap}
+								bind:alphaValue={layerViewModel.stylesByLayerName[layerName].alpha}
+							/>
+						</div>
+						<div class="flex items-center gap-1">
+							<button
+								class="flex items-center gap-1 px-2 py-1 rounded hover:bg-surface-500/20 transition-colors group"
+								onclick={() => {
+									const isLayerSelectedForAllCases =
+										layerViewModel.isLayerSelectedForAllOpenedCases(layerName);
+									if (isLayerSelectedForAllCases) {
+										layerViewModel.deselectLayerForAllOpenedCases(layerName);
+									} else {
+										layerViewModel.selectLayerForAllOpenedCases(layerName);
+									}
+								}}
+								title={layerViewModel.isLayerSelectedForAllOpenedCases(layerName)
+									? `Hide ${layerName} layer for all cases`
+									: `Show ${layerName} layer for all cases`}
+							>
+								<span class="truncate text-surface-900 dark:text-surface-50">
+									{layerName.length > 20 ? '...' + layerName.slice(-20) : layerName}
+								</span>
+								<i
+									class="fa-solid fa-check-to-slot text-sm transition-colors duration-200
                             {layerViewModel.isLayerSelectedForAllOpenedCases(layerName)
-									? 'text-primary-500'
-									: 'text-surface-300/70 group-hover:text-surface-500 dark:text-surface-400/50 dark:group-hover:text-surface-300'}"
-							></i>
-						</button>
+										? 'text-primary-500'
+										: 'text-surface-300/70 group-hover:text-surface-500 dark:text-surface-400/50 dark:group-hover:text-surface-300'}"
+								></i>
+							</button>
+						</div>
 					</div>
-				</div>
-			</th>
+				</th>
+			{/if}
 		{/each}
 	</tr>
 </thead>
