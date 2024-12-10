@@ -73,7 +73,7 @@
 
 <!-- Popup content -->
 <div
-	class="card p-4 variant-filled-surface shadow-xl fixed"
+	class="card p-4 bg-surface-50-900-token border border-surface-400-500-token shadow-xl fixed"
 	data-popup="layer-matrix-help"
 	style="z-index: 1000;"
 >
@@ -106,5 +106,5 @@
 			<span>Click to toggle layer visibility for all cases</span>
 		</div>
 	</div>
-	<div class="arrow variant-filled-surface"></div>
+	<div class="arrow bg-surface-400-500-token"></div>
 </div>
