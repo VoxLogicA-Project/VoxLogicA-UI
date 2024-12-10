@@ -69,7 +69,7 @@
 			<label class="space-y-2">
 				<div class="font-medium">Workspace ID</div>
 				<input
-					class="input"
+					class="input p-2 rounded-lg w-full"
 					type="text"
 					bind:value={formData.id}
 					placeholder="Enter workspace ID..."
@@ -84,7 +84,7 @@
 			<label class="space-y-2">
 				<div class="font-medium">New Workspace Name</div>
 				<input
-					class="input"
+					class="input p-2 rounded-lg w-full"
 					type="text"
 					bind:value={formData.name}
 					placeholder="Enter workspace name..."
