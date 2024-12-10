@@ -3,20 +3,11 @@ import type {
 	Case,
 	Layer,
 	PresetScript,
+	Run,
+	LoadedData,
 	Workspace,
 	LocalWorkspaceEntry,
-	Run,
 } from './types';
-
-// Types
-interface LoadedData {
-	availableWorkspacesIdsAndNames: LocalWorkspaceEntry[];
-	datasets: Dataset[];
-	cases: Case[];
-	layersByCasePath: Record<Case['path'], Layer[]>;
-	runsByCasePath: Record<Case['path'], Run[]>;
-	presetScripts: PresetScript[];
-}
 
 // State Management
 export const loadedData = $state<LoadedData>({

@@ -153,26 +153,26 @@ async function runAll(cases: Case[]): Promise<Run['id']> {
 			throw new Error(errorData.message || response.statusText);
 		}
 
-		const runs: [Case, Run][] = await response.json();
+		const runs: Run[] = await response.json();
 
 		// Get the run ID (all runs share the same ID)
-		const runId = runs[0][1].id;
+		const runId = runs[0].id;
 
-		currentWorkspace.state.data.openedRunsIds.push(runId);
-
-		// Load the runs into loadedData
-		for (const [case_, run] of runs) {
-			if (!loadedData.runsByCasePath[case_.path]) {
-				loadedData.runsByCasePath[case_.path] = [];
+		// Load the runs
+		const runsByCasePath: Record<Case['path'], Run[]> = {};
+		for (const run of runs) {
+			if (!runsByCasePath[run.casePath]) {
+				runsByCasePath[run.casePath] = [];
 			}
-			loadedData.runsByCasePath[case_.path].push(run);
+			runsByCasePath[run.casePath].push(run);
 		}
+		loadedData.runsByCasePath = runsByCasePath;
 
 		// Select the run
 		selectRun(runId);
 
 		// Set error if any run failed
-		if (runs.some(([_, run]) => run.outputError)) {
+		if (runs.some((run) => run.outputError)) {
 			error = 'Some runs failed. Check individual results for details.';
 		}
 

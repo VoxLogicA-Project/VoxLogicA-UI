@@ -49,6 +49,15 @@ export interface Run {
 	outputError?: string;
 }
 
+export interface LoadedData {
+	availableWorkspacesIdsAndNames: LocalWorkspaceEntry[];
+	datasets: Dataset[];
+	cases: Case[];
+	layersByCasePath: Record<Case['path'], Layer[]>;
+	runsByCasePath: Record<Case['path'], Run[]>;
+	presetScripts: PresetScript[];
+}
+
 export interface LayersState {
 	openedLayersPathsByCasePath: Record<Case['path'], Layer['path'][]>;
 	stylesByLayerName: Record<Layer['name'], LayerStyle>;

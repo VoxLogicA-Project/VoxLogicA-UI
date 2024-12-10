@@ -155,20 +155,20 @@ export const POST: RequestHandler = async ({ request, fetch }) => {
 		throw error(400, 'Missing required fields: workspaceId, scriptContent or cases');
 	}
 
-	const results: [Case, Run][] = [];
+	const results: Run[] = [];
 
 	for (const case_ of cases) {
-		const caseOutputDir = RUN_OUTPUT_PATH(workspaceId, case_.id, runId);
+		const runOutputPath = RUN_OUTPUT_PATH(workspaceId, case_.id, runId);
 
 		try {
 			// Create case-specific directory
-			await fs.mkdir(caseOutputDir, { recursive: true });
-			const scriptPath = path.join(caseOutputDir, 'script.imgql');
+			await fs.mkdir(runOutputPath, { recursive: true });
+			const scriptPath = path.join(runOutputPath, 'script.imgql');
 
 			const substitutedScriptContent = await substituteUiPathVariables(
 				scriptContent,
 				case_,
-				caseOutputDir,
+				runOutputPath,
 				fetch
 			);
 			await fs.writeFile(scriptPath, substitutedScriptContent);
@@ -195,12 +195,13 @@ export const POST: RequestHandler = async ({ request, fetch }) => {
 			};
 
 			// Dump the run into a file
-			await fs.writeFile(path.join(caseOutputDir, 'run.json'), JSON.stringify(run, null, 2));
+			await fs.writeFile(path.join(runOutputPath, 'run.json'), JSON.stringify(run, null, 2));
 
-			// Don't cleanup temp directory as we need it for layer access
-			results.push([case_, run]);
+			results.push(run);
 		} catch (err) {
-			await cleanup(caseOutputDir);
+			// Clean up output directory: we don't save runs with errors
+			await cleanup(runOutputPath);
+
 			if (err instanceof Error && 'code' in err && err.code === 'ENOENT') {
 				throw error(400, 'VoxLogicA binary not found. Please check your installation.');
 			}
@@ -218,19 +219,16 @@ export const POST: RequestHandler = async ({ request, fetch }) => {
 				'layers' in err.voxlogicaResult
 			) {
 				console.error(`Error processing case ${case_.name}:`, err);
-				results.push([
-					case_,
-					{
-						id: runId,
-						timestamp: new Date(),
-						casePath: case_.path,
-						scriptContent: scriptContent,
-						outputPrint: err.voxlogicaResult.print as PrintOutput[],
-						outputLog: err.voxlogicaResult.log as string,
-						outputError: err.voxlogicaResult.error as string,
-						outputLayers: err.voxlogicaResult.layers as Layer[],
-					},
-				]);
+				results.push({
+					id: runId,
+					timestamp: new Date(),
+					casePath: case_.path,
+					scriptContent: scriptContent,
+					outputPrint: err.voxlogicaResult.print as PrintOutput[],
+					outputLog: err.voxlogicaResult.log as string,
+					outputError: err.voxlogicaResult.error as string,
+					outputLayers: err.voxlogicaResult.layers as Layer[],
+				});
 			}
 		}
 	}
