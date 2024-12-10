@@ -264,12 +264,12 @@
 			<i class="fa-solid {isHeaderCollapsed ? 'fa-chevron-down' : 'fa-chevron-up'}"></i>
 		</button>
 		{#if !isHeaderCollapsed}
-			<div id="header-editor"></div>
+			<div id="header-editor" class="text-surface-900-50-token"></div>
 		{/if}
 	</div>
 
 	<!-- Main editor -->
-	<div id="editor" class="flex-1 p-4 overflow-auto"></div>
+	<div id="editor" class="flex-1 p-4 overflow-auto text-surface-900-50-token"></div>
 
 	<!-- Run buttons at bottom -->
 	<div class="p-4 border-t border-surface-500/30 flex gap-2">
