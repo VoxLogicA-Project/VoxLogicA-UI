@@ -58,16 +58,13 @@
 
 	{#if uiViewModel.expandedRunIds.has(run.id)}
 		<div
-			class="p-2 rounded-token bg-surface-50-900-token"
+			class="p-2 rounded-token text-xs font-mono bg-surface-50-900-token text-surface-900-50-token"
 			transition:slide|local={{ duration: 200 }}
 		>
-			<div class="grid grid-cols-[auto_1fr] gap-x-2 gap-y-1 text-sm">
+			<div class="grid grid-cols-[auto_1fr] gap-x-2 gap-y-1">
 				{#each run.outputPrint as print}
-					<span
-						class="text-surface-700-200-token font-medium whitespace-nowrap select-text truncate"
-						>{print.name}:</span
-					>
-					<span class="text-surface-900-50-token select-text truncate">{print.value}</span>
+					<span class="select-text truncate">{print.name}:</span>
+					<span class="font-bold select-text truncate">{print.value}</span>
 				{/each}
 			</div>
 		</div>

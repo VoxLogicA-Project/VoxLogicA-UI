@@ -4,6 +4,8 @@
 	import { layerViewModel } from '$lib/viewmodels/layer.svelte';
 	import { uiViewModel } from '$lib/viewmodels/ui.svelte';
 	import { runViewModel } from '$lib/viewmodels/run.svelte';
+	import { slide } from 'svelte/transition';
+
 	let { case_ = $bindable<Case>() } = $props();
 
 	let runPrints = $derived.by(() => {
@@ -55,19 +57,16 @@
 
 			<!-- Prints section (only shown when expanded and in run view) -->
 			{#if runPrints.length > 0 && isPrintsExpanded}
-				<div class="text-xs font-mono bg-surface-300/30 dark:bg-surface-500/30 rounded p-2">
-					<ul class="list-disc list-inside space-y-0.5">
-						{#each runPrints as runPrint}
-							<li class="break-all select-text" title={formatPrint(runPrint)}>
-								{runPrint.name}:
-								<span class="font-bold select-text"
-									>{runPrint.vltype === 'number' || runPrint.vltype === 'string'
-										? runPrint.value
-										: `[${runPrint.vltype}] ${runPrint.value}`}</span
-								>
-							</li>
+				<div
+					class="p-2 rounded-token text-xs font-mono bg-surface-50-900-token text-surface-900-50-token"
+					transition:slide|local={{ duration: 200 }}
+				>
+					<div class="grid grid-cols-[auto_1fr] gap-x-2 gap-y-1">
+						{#each runPrints as print}
+							<span class="select-text truncate">{print.name}:</span>
+							<span class="font-bold select-text truncate">{print.value}</span>
 						{/each}
-					</ul>
+					</div>
 				</div>
 			{/if}
 		</div>
