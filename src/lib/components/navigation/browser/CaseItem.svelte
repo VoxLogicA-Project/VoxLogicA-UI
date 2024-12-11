@@ -29,13 +29,16 @@
 					? `Select case "${case_.name}"`
 					: `Cannot select more than ${caseViewModel.MAX_SELECTED_CASES} cases`}
 		>
-			<i class="fa-solid fa-folder mr-2 opacity-70 flex-shrink-0"></i>
+			<div class="w-6 flex justify-center mr-2 flex-shrink-0">
+				{#if caseViewModel.isSelected(case_.path)}
+					<div class="badge badge-sm variant-filled-primary">
+						{caseViewModel.getSelectionIndex(case_.path)}
+					</div>
+				{:else}
+					<i class="fa-solid fa-folder opacity-70"></i>
+				{/if}
+			</div>
 			<span class="truncate flex-1 font-medium">{case_.name}</span>
-			{#if caseViewModel.isSelected(case_.path)}
-				<div class="badge badge-sm variant-filled-primary ml-2 flex-shrink-0">
-					{caseViewModel.getSelectionIndex(case_.path)}
-				</div>
-			{/if}
 		</button>
 	</div>
 
