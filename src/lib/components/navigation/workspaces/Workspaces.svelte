@@ -6,6 +6,7 @@
 	import { onMount } from 'svelte';
 	import { createWorkspaceService } from './workspaceService';
 	import FullscreenLoader from '$lib/components/common/FullscreenLoader.svelte';
+	import { debounce } from 'ts-debounce';
 
 	const toastStore = getToastStore();
 	const modalStore = getModalStore();
@@ -27,6 +28,17 @@
 			? 'bg-error-500/20 hover:bg-error-500/30 shadow-lg shadow-error-500/20 ring-1 ring-error-500/50'
 			: 'bg-surface-500/10 hover:bg-surface-500/20'
 	);
+
+	// Auto-save workspace when there are unsaved changes
+	const debouncedSaveWorkspace = debounce(async () => {
+		if (!sessionViewModel.hasUnsavedChanges) return;
+
+		await workspaceService.handleSave(false);
+	}, 5000);
+	$effect(() => {
+		if (!sessionViewModel.hasUnsavedChanges) return;
+		debouncedSaveWorkspace();
+	});
 </script>
 
 {#if sessionViewModel.isLoading}
@@ -53,15 +65,30 @@
 	</button>
 
 	<button
-		class="w-8 h-8 min-w-[2rem] min-h-[2rem] flex-shrink-0 rounded-lg {saveButtonClass} border border-surface-500/30 flex items-center justify-center transition-all duration-200"
+		class="w-8 h-8 min-w-[2rem] min-h-[2rem] flex-shrink-0 rounded-lg border border-surface-500/30 flex items-center justify-center transition-all duration-200
+			{sessionViewModel.hasUnsavedChanges
+			? 'bg-error-500/20 hover:bg-error-500/30 shadow-lg shadow-error-500/20 ring-1 ring-error-500/50'
+			: 'bg-surface-500/10 hover:bg-surface-500/20'}
+		"
 		onclick={() => workspaceService.handleSave()}
-		title={sessionViewModel.hasUnsavedChanges ? 'Save changes' : 'No unsaved changes'}
-		aria-label={sessionViewModel.hasUnsavedChanges ? 'Save changes' : 'No unsaved changes'}
+		title={sessionViewModel.isSaving
+			? 'Saving...'
+			: sessionViewModel.hasUnsavedChanges
+				? 'Save changes'
+				: 'No unsaved changes'}
+		aria-label={sessionViewModel.isSaving
+			? 'Saving...'
+			: sessionViewModel.hasUnsavedChanges
+				? 'Save changes'
+				: 'No unsaved changes'}
 	>
 		<i
-			class:animate-pulse={sessionViewModel.hasUnsavedChanges}
+			class:fa-floppy-disk={!sessionViewModel.isSaving}
+			class:fa-spinner={sessionViewModel.isSaving}
+			class:fa-spin={sessionViewModel.isSaving}
+			class:animate-pulse={sessionViewModel.hasUnsavedChanges && !sessionViewModel.isSaving}
 			class:text-error-700={sessionViewModel.hasUnsavedChanges}
-			class="fa-solid fa-floppy-disk text-lg"
+			class="fa-solid text-lg"
 		></i>
 	</button>
 </div>

@@ -51,16 +51,16 @@ export const createWorkspaceService = (toastStore: ToastStore, modalStore: Modal
 		}
 	},
 
-	async handleSave() {
-		try {
-			await sessionViewModel.saveWorkspace();
+	async handleSave(showToastSuccess: boolean = true) {
+		await sessionViewModel.saveWorkspace();
+		if (showToastSuccess && !sessionViewModel.errorSaving) {
 			toastStore.trigger({
-				message: 'Workspace saved',
+				message: 'Workspace saved successfully',
 				background: 'variant-filled-success',
 			});
-		} catch {
+		} else if (sessionViewModel.errorSaving) {
 			toastStore.trigger({
-				message: 'Failed to save workspace',
+				message: sessionViewModel.errorSaving,
 				background: 'variant-filled-error',
 			});
 		}

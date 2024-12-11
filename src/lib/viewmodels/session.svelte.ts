@@ -7,7 +7,9 @@ import {
 } from '$lib/models/repository.svelte';
 
 // UI state
+let isSaving = $state(false);
 let isLoading = $state(false);
+let errorSaving = $state<string | null>(null);
 let error = $state<string | null>(null);
 
 // Derived states
@@ -88,16 +90,19 @@ async function selectWorkspace(workspaceId: Workspace['id']): Promise<void> {
 }
 
 async function saveWorkspace(): Promise<void> {
-	isLoading = true;
-	error = null;
+	isSaving = true;
+	errorSaving = null;
 
 	try {
 		await apiRepository.saveWorkspace(currentWorkspace);
 		lastSavedState = JSON.stringify(currentWorkspace);
 	} catch (e) {
-		error = e instanceof Error ? e.message : 'Failed to save workspace';
+		errorSaving =
+			e instanceof Error
+				? e.message
+				: 'Failed to save workspace. Please check your internet connection and that the service is running.';
 	} finally {
-		isLoading = false;
+		isSaving = false;
 	}
 }
 
@@ -184,6 +189,12 @@ export const sessionViewModel = {
 	},
 	get isWorkspaceSelected() {
 		return !!selectedWorkspaceId;
+	},
+	get isSaving() {
+		return isSaving;
+	},
+	get errorSaving() {
+		return errorSaving;
 	},
 
 	// Actions
