@@ -1,12 +1,13 @@
 <script lang="ts">
 	import { slide } from 'svelte/transition';
 	import { quintOut } from 'svelte/easing';
+	import type { Case } from '$lib/models/types';
 	import { datasetViewModel } from '$lib/viewmodels/dataset.svelte';
 	import { caseViewModel } from '$lib/viewmodels/case.svelte';
 	import CaseItem from './CaseItem.svelte';
 
 	export let searchQuery: string;
-	export let filteredCases: any[]; // Add proper type
+	export let filteredCases: Case[];
 	const TRANSITION_DURATION = 200;
 </script>
 

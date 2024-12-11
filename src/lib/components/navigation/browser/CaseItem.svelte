@@ -1,12 +1,13 @@
 <script lang="ts">
 	import { slide } from 'svelte/transition';
 	import { quintOut } from 'svelte/easing';
+	import type { Case } from '$lib/models/types';
 	import { caseViewModel } from '$lib/viewmodels/case.svelte';
 	import { runViewModel } from '$lib/viewmodels/run.svelte';
 	import { uiViewModel } from '$lib/viewmodels/ui.svelte';
 	import RunItem from './RunItem.svelte';
 
-	export let case_: any; // Add proper type
+	export let case_: Case;
 	const TRANSITION_DURATION = 200;
 </script>
 
