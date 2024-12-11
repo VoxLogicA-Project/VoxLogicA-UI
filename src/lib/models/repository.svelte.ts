@@ -67,6 +67,10 @@ export class RepositoryError extends Error {
 		super(message);
 		this.name = 'RepositoryError';
 	}
+
+	get isNotFound() {
+		return this.statusCode === 404;
+	}
 }
 
 // API Utilities
@@ -97,16 +101,6 @@ const api = {
 	},
 };
 
-// Add these functions to manage localStorage
-function getLocalWorkspaces(): LocalWorkspaceEntry[] {
-	const stored = localStorage.getItem('workspaces');
-	return stored ? JSON.parse(stored) : [];
-}
-
-function saveLocalWorkspaces(workspaces: LocalWorkspaceEntry[]): void {
-	localStorage.setItem('workspaces', JSON.stringify(workspaces));
-}
-
 // Repository Functions
 export const apiRepository = {
 	async fetchDatasets() {
@@ -132,7 +126,7 @@ export const apiRepository = {
 	},
 
 	async fetchWorkspaces() {
-		loadedData.availableWorkspacesIdsAndNames = getLocalWorkspaces();
+		loadedData.availableWorkspacesIdsAndNames = this.getLocalWorkspaces();
 	},
 
 	async fetchWorkspace(workspaceId: Workspace['id']) {
@@ -181,9 +175,9 @@ export const apiRepository = {
 		});
 
 		// Add to localStorage after successful creation
-		const localWorkspaces = getLocalWorkspaces();
+		const localWorkspaces = this.getLocalWorkspaces();
 		localWorkspaces.push({ id: workspace.id, name: workspace.name });
-		saveLocalWorkspaces(localWorkspaces);
+		this.saveLocalWorkspaces(localWorkspaces);
 
 		return workspace;
 	},
@@ -211,8 +205,22 @@ export const apiRepository = {
 		});
 
 		// Remove from localStorage
-		const localWorkspaces = getLocalWorkspaces();
-		saveLocalWorkspaces(localWorkspaces.filter((w) => w.id !== workspaceId));
+		const localWorkspaces = this.getLocalWorkspaces();
+		this.saveLocalWorkspaces(localWorkspaces.filter((w) => w.id !== workspaceId));
+	},
+
+	getLocalWorkspaces(): LocalWorkspaceEntry[] {
+		const stored = localStorage.getItem('workspaces');
+		return stored ? JSON.parse(stored) : [];
+	},
+
+	saveLocalWorkspaces(workspaces: LocalWorkspaceEntry[]): void {
+		localStorage.setItem('workspaces', JSON.stringify(workspaces));
+	},
+
+	removeLocalWorkspace(workspaceId: Workspace['id']): void {
+		const workspaces = this.getLocalWorkspaces();
+		this.saveLocalWorkspaces(workspaces.filter((w) => w.id !== workspaceId));
 	},
 };
 

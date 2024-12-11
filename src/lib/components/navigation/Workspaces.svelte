@@ -27,15 +27,6 @@
 			? 'bg-error-500/20 hover:bg-error-500/30 shadow-lg shadow-error-500/20 ring-1 ring-error-500/50'
 			: 'bg-surface-500/10 hover:bg-surface-500/20'
 	);
-
-	$effect(() => {
-		if (sessionViewModel.error) {
-			toastStore.trigger({
-				message: sessionViewModel.error,
-				background: 'variant-filled-error',
-			});
-		}
-	});
 </script>
 
 {#if sessionViewModel.isLoading}
@@ -95,8 +86,8 @@
 							class="flex-1 cursor-pointer max-w-full"
 							role="button"
 							tabindex="0"
-							onclick={() => workspaceService.handleSelect(id)}
-							onkeydown={(e) => e.key === 'Enter' && workspaceService.handleSelect(id)}
+							onclick={() => workspaceService.handleSelect(id, name)}
+							onkeydown={(e) => e.key === 'Enter' && workspaceService.handleSelect(id, name)}
 						>
 							<div class="flex flex-col">
 								<span class="font-medium text-sm">{name}</span>
@@ -137,34 +128,12 @@
 											title="Delete Workspace"
 											onclick={(event) => {
 												event.stopPropagation();
-												modalStore.trigger({
-													type: 'confirm',
-													title: 'Delete Workspace',
-													body: `Are you sure you want to delete "${name}"? This action cannot be undone.`,
-													response: (r) => {
-														if (r) {
-															sessionViewModel.deleteWorkspace(id).catch(() => {
-																// Error is already handled by the viewmodel
-															});
-														}
-													},
-												});
+												workspaceService.showDeleteWorkspaceModal(id, name);
 											}}
 											onkeydown={(e) => {
 												if (e.key === 'Enter') {
 													e.stopPropagation();
-													modalStore.trigger({
-														type: 'confirm',
-														title: 'Delete Workspace',
-														body: `Are you sure you want to delete "${name}"? This action cannot be undone.`,
-														response: (r) => {
-															if (r) {
-																sessionViewModel.deleteWorkspace(id).catch(() => {
-																	// Error is already handled by the viewmodel
-																});
-															}
-														},
-													});
+													workspaceService.showDeleteWorkspaceModal(id, name);
 												}
 											}}
 										>

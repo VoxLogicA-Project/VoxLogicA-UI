@@ -1,4 +1,4 @@
-import type { Workspace } from '$lib/models/types';
+import type { LocalWorkspaceEntry, Workspace } from '$lib/models/types';
 import {
 	loadedData,
 	currentWorkspace,
@@ -123,12 +123,29 @@ async function deleteWorkspace(workspaceId: Workspace['id']): Promise<void> {
 	}
 }
 
+function getLocalWorkspaces(): LocalWorkspaceEntry[] {
+	return apiRepository.getLocalWorkspaces();
+}
+
+function saveLocalWorkspaces(workspaces: LocalWorkspaceEntry[]): void {
+	apiRepository.saveLocalWorkspaces(workspaces);
+}
+
+function removeLocalWorkspace(workspaceId: Workspace['id']): void {
+	apiRepository.removeLocalWorkspace(workspaceId);
+
+	// If we're removing the current workspace, reset the state
+	if (workspaceId === currentWorkspace.id) {
+		reset();
+	}
+}
+
 function reset(): void {
 	// Reset workspace state to initial values
+	currentWorkspace.id = '';
+	currentWorkspace.name = '';
 	Object.assign(currentWorkspace, DEFAULT_WORKSPACE_STATE);
 
-	// Reset loaded data and state tracking
-	loadedData.availableWorkspacesIdsAndNames = [];
 	isLoading = false;
 	error = null;
 	lastSavedState = '';
@@ -169,5 +186,8 @@ export const sessionViewModel = {
 	selectWorkspace,
 	saveWorkspace,
 	deleteWorkspace,
+	getLocalWorkspaces,
+	saveLocalWorkspaces,
+	removeLocalWorkspace,
 	reset,
 };

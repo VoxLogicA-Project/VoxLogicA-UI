@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { sessionViewModel } from '$lib/viewmodels/session.svelte';
 	import { getToastStore, getModalStore } from '@skeletonlabs/skeleton';
+	import { sessionViewModel } from '$lib/viewmodels/session.svelte';
 	import { createWorkspaceService } from './workspaceService';
 
 	const toastStore = getToastStore();
@@ -29,16 +29,12 @@
 				<div class="text-center py-4">
 					<i class="fa-solid fa-spinner animate-spin text-2xl"></i>
 				</div>
-			{:else if sessionViewModel.error}
-				<div class="text-error-500 text-center py-4">
-					{sessionViewModel.error}
-				</div>
 			{:else if sessionViewModel.hasWorkspaces}
 				<div class="space-y-2 py-4">
 					{#each sessionViewModel.availableWorkspacesIdsAndNames as { id, name }}
 						<button
 							class="w-full p-4 rounded-lg bg-surface-100-800-token hover:bg-primary-500/20 transition-colors flex flex-col gap-1"
-							onclick={() => workspaceService.handleSelect(id)}
+							onclick={async () => await workspaceService.handleSelect(id, name)}
 						>
 							<span class="font-medium">{name}</span>
 							<span class="text-xs opacity-50 font-mono">{id}</span>
