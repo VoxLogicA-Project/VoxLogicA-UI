@@ -36,10 +36,10 @@
 			backgroundColor: 'rgba(255, 255, 255, 0.05)',
 		},
 		'.cm-selectionBackground': {
-			backgroundColor: 'rgb(var(--color-primary-500) / 0.2) !important',
+			backgroundColor: 'rgb(var(--color-surface-500) / 0.2) !important',
 		},
 		'&.cm-focused .cm-selectionBackground': {
-			backgroundColor: 'rgb(var(--color-primary-500) / 0.3) !important',
+			backgroundColor: 'rgb(var(--color-surface-500) / 0.3) !important',
 		},
 		'.cm-content': {
 			caretColor: 'rgb(var(--color-surface-900-50-token))',
