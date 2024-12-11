@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { slide } from 'svelte/transition';
+	import { quintOut } from 'svelte/easing';
 	import { layerViewModel } from '$lib/viewmodels/layer.svelte';
 	import { caseViewModel } from '$lib/viewmodels/case.svelte';
 	import { uiViewModel } from '$lib/viewmodels/ui.svelte';
@@ -56,13 +58,13 @@
 						></i>
 					</button>
 					{#if errorsPanelExpanded}
-						<div class="px-4 pb-2">
+						<div class="px-4 pb-2" transition:slide|local={{ duration: 200, easing: quintOut }}>
 							{#each Object.entries(currentRunsWithErrors) as [caseId, run]}
 								<div class="text-sm font-mono text-error-600 dark:text-error-400 mb-4 last:mb-0">
-									<div class="font-bold text-error-700 dark:text-error-300">
+									<div class="font-bold text-error-700 dark:text-error-300 select-text">
 										Case {caseId}:
 									</div>
-									<div class="pl-4 whitespace-pre-wrap">
+									<div class="pl-4 whitespace-pre-wrap select-text">
 										{run.outputError}
 									</div>
 								</div>

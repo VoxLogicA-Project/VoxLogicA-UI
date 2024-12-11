@@ -158,8 +158,24 @@ async function runAll(cases: Case[]): Promise<Run['id']> {
 		// Get the run ID (all runs share the same ID)
 		const runId = runs[0].id;
 
-		// Refetch runs
-		await apiRepository.fetchWorkspaceRuns(currentWorkspace.id);
+		// Update the state by adding the new runs
+		const runsByCasePath: Record<Case['path'], Run[]> = {};
+
+		for (const run of runs) {
+			if (!runsByCasePath[run.casePath]) {
+				runsByCasePath[run.casePath] = [];
+			}
+			runsByCasePath[run.casePath].push(run);
+		}
+
+		// Update the state by adding the new runs
+		for (const casePath in runsByCasePath) {
+			const runs = runsByCasePath[casePath];
+			if (!loadedData.runsByCasePath[casePath]) {
+				loadedData.runsByCasePath[casePath] = [];
+			}
+			loadedData.runsByCasePath[casePath].push(...runs);
+		}
 
 		// Select the run
 		selectRun(runId);

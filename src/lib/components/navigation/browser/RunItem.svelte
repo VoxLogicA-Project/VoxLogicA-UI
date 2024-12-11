@@ -21,13 +21,12 @@
                 {runViewModel.isRunSelected(run.id)
 				? 'bg-primary-500/10 text-primary-700 dark:text-primary-400'
 				: 'text-surface-900-50-token'}"
-			class:variant-filled-error={run.outputError}
 			onclick={() => runViewModel.toggleRun(run.id)}
 		>
 			<i
-				class="fa-solid mr-2 opacity-70 flex-shrink-0"
+				class="fa-solid mr-2 opacity-70 flex-shrink-0 {run.outputError ? 'text-red-500' : ''}"
 				class:fa-circle-play={!run.outputError}
-				class:fa-circle-exclamation={run.outputError}
+				class:fa-triangle-exclamation={run.outputError}
 			></i>
 			<span class="truncate flex-1 text-sm flex items-center gap-2">
 				{new Date(run.timestamp).toLocaleString(undefined, {

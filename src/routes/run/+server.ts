@@ -125,15 +125,6 @@ const runVoxLogica = async (binaryPath: string, scriptPath: string): Promise<Vox
 	});
 };
 
-// Temporary file cleanup
-async function cleanup(outputDir: string): Promise<void> {
-	try {
-		await fs.rm(outputDir, { recursive: true, force: true });
-	} catch (err) {
-		console.error(`Failed to cleanup output directory ${outputDir}:`, err);
-	}
-}
-
 // Main API endpoint handler
 export const POST: RequestHandler = async ({ request, fetch }) => {
 	const runId = randomUUID();
@@ -199,9 +190,6 @@ export const POST: RequestHandler = async ({ request, fetch }) => {
 
 			results.push(run);
 		} catch (err) {
-			// Clean up output directory: we don't save runs with errors
-			await cleanup(runOutputPath);
-
 			if (err instanceof Error && 'code' in err && err.code === 'ENOENT') {
 				throw error(400, 'VoxLogicA binary not found. Please check your installation.');
 			}
@@ -218,8 +206,7 @@ export const POST: RequestHandler = async ({ request, fetch }) => {
 				'error' in err.voxlogicaResult &&
 				'layers' in err.voxlogicaResult
 			) {
-				console.error(`Error processing case ${case_.name}:`, err);
-				results.push({
+				const run: Run = {
 					id: runId,
 					timestamp: new Date(),
 					casePath: case_.path,
@@ -228,7 +215,10 @@ export const POST: RequestHandler = async ({ request, fetch }) => {
 					outputLog: err.voxlogicaResult.log as string,
 					outputError: err.voxlogicaResult.error as string,
 					outputLayers: err.voxlogicaResult.layers as Layer[],
-				});
+				};
+
+				await fs.writeFile(path.join(runOutputPath, 'run.json'), JSON.stringify(run, null, 2));
+				results.push(run);
 			}
 		}
 	}
