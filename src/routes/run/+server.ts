@@ -5,9 +5,8 @@ import path from 'path';
 import { spawn } from 'child_process';
 import { DATASET_PATH, RUN_OUTPUT_PATH, VOXLOGICA_BINARY_PATH } from '../config';
 import { randomUUID } from 'crypto';
-import type { Case, Layer, PrintOutput, Run } from '$lib/models/types';
+import type { Case, Layer, Run } from '$lib/models/types';
 
-// Types for API responses and internal data structures
 interface VoxLogicaResult {
 	print: any[];
 	layers: any[];
@@ -15,106 +14,89 @@ interface VoxLogicaResult {
 	error: string;
 }
 
-// Script variable substitution and path processing
-const substituteUiPathVariables = async (
+async function processLayerPaths(
+	scriptContent: string,
+	layers: Layer[],
+	datasetId: string,
+	caseName: string
+): Promise<string> {
+	let processedScript = scriptContent;
+
+	for (const layer of layers) {
+		const layerFilename = layer.path.split('/').pop();
+		if (!layerFilename) {
+			error(400, `Invalid layer path for layer ${layer.name}`);
+		}
+
+		processedScript = processedScript.replace(
+			new RegExp(`\\$\\{LAYER_PATH:${layer.name}\\}`, 'g'),
+			path.join(DATASET_PATH, datasetId, caseName, layerFilename)
+		);
+	}
+
+	return processedScript;
+}
+
+async function processOutputPaths(scriptContent: string, outputDir: string): Promise<string> {
+	return scriptContent.replace(/save\s+"([^"]+)"/g, (match, filepath) => {
+		if (filepath.match(/\$\{?OUTPUT_?DIR\}?/)) {
+			return match.replace(/[\\,/]/g, path.sep).replace(/\$\{?OUTPUT_?DIR\}?/g, outputDir);
+		}
+		return `save "${path.join(outputDir, filepath)}"`;
+	});
+}
+
+async function prepareScript(
 	scriptContent: string,
 	case_: Case,
 	outputDir: string,
 	fetch: Function
-): Promise<string> => {
+): Promise<string> {
 	const datasetId = case_.path.split('/')[2];
+	const response = await fetch(case_.path);
+	const layers: Layer[] = await response.json();
 
-	try {
-		const response = await fetch(case_.path);
-		const layers: Layer[] = await response.json();
+	const withLayerPaths = await processLayerPaths(scriptContent, layers, datasetId, case_.name);
+	return processOutputPaths(withLayerPaths, outputDir);
+}
 
-		// Process layer paths
-		let processedScript = scriptContent;
-		for (const layer of layers) {
-			const layerFilename = layer.path.split('/').pop();
-			if (!layerFilename) {
-				throw error(400, `Invalid layer path for layer ${layer.name}`);
-			}
+async function executeVoxLogica(binaryPath: string, scriptPath: string): Promise<VoxLogicaResult> {
+	const process = spawn(binaryPath, [scriptPath, '--json']);
+	let stdout = '';
+	let stderr = '';
 
-			processedScript = processedScript.replace(
-				new RegExp(`\\$\\{LAYER_PATH:${layer.name}\\}`, 'g'),
-				path.join(DATASET_PATH, datasetId, case_.name, layerFilename)
-			);
-		}
-
-		// Process output paths
-		return processedScript.replace(/save\s+"([^"]+)"/g, (match, filepath) => {
-			if (filepath.match(/\$\{?OUTPUT_?DIR\}?/)) {
-				return match.replace(/[\\,/]/g, path.sep).replace(/\$\{?OUTPUT_?DIR\}?/g, outputDir);
-			}
-			return `save "${path.join(outputDir, filepath)}"`;
-		});
-	} catch (err) {
-		throw error(
-			400,
-			`Failed to process script: ${err instanceof Error ? err.message : String(err)}`
-		);
-	}
-};
-
-// VoxLogicA process execution and output parsing
-const runVoxLogica = async (binaryPath: string, scriptPath: string): Promise<VoxLogicaResult> => {
-	return new Promise((resolve, reject) => {
-		const process = spawn(binaryPath, [scriptPath, '--json']);
-		let stdout = '';
-		let stderr = '';
-
+	const processPromise = new Promise<VoxLogicaResult>((resolve, reject) => {
 		const timeout = setTimeout(
 			() => {
 				process.kill();
 				reject(new Error('VoxLogicA process timed out after 5 minutes'));
 			},
-			5 * 60 * 1000 // 5 minutes
+			5 * 60 * 1000
 		);
 
-		process.stdout.on('data', (data) => {
-			stdout += data.toString();
-		});
-
-		process.stderr.on('data', (data) => {
-			stderr += data.toString();
-		});
+		process.stdout.on('data', (data) => (stdout += data.toString()));
+		process.stderr.on('data', (data) => (stderr += data.toString()));
 
 		process.on('close', (code) => {
 			clearTimeout(timeout);
-			if (code === 0) {
-				try {
-					const parsedOutput = JSON.parse(stdout);
-					// If VoxLogicA returns success but contains error message, treat as error
-					// (should never happen)
-					if (parsedOutput.error) {
-						reject({
-							code,
-							message: parsedOutput.error,
-							voxlogicaResult: parsedOutput,
-						});
-						return;
-					}
+			try {
+				const parsedOutput: VoxLogicaResult = JSON.parse(stdout);
+				if (code === 0 && !parsedOutput.error) {
 					resolve({
-						print: parsedOutput.print || [],
-						layers: parsedOutput.layers || [],
-						log: parsedOutput.log || '',
-						error: '',
+						print: parsedOutput.print,
+						layers: parsedOutput.layers,
+						log: parsedOutput.log,
+						error: parsedOutput.error,
 					});
-				} catch (e) {
-					reject(new Error(`Failed to parse JSON output: ${e}. Output was: ${stdout}, ${stderr}`));
-				}
-			} else {
-				try {
-					const parsedOutput = JSON.parse(stdout);
+				} else {
 					reject({
 						code,
-						message: 'VoxLogicA failed during execution.',
+						message: 'VoxLogicA execution failed',
 						voxlogicaResult: parsedOutput,
 					});
-				} catch (e) {
-					reject(new Error(`Failed to parse JSON output: ${e}. Output was: ${stdout}, ${stderr}`));
 				}
+			} catch (e) {
+				reject(new Error(`Failed to parse output: ${e}. stdout: ${stdout}, stderr: ${stderr}`));
 			}
 		});
 
@@ -123,105 +105,86 @@ const runVoxLogica = async (binaryPath: string, scriptPath: string): Promise<Vox
 			reject(new Error(`Failed to start VoxLogicA: ${err.message}`));
 		});
 	});
-};
 
-// Main API endpoint handler
-export const POST: RequestHandler = async ({ request, fetch }) => {
-	const runId = randomUUID();
+	return processPromise;
+}
 
-	let workspaceId: string;
-	let scriptContent: string;
-	let cases: Case[];
+async function processCase(
+	case_: Case,
+	runId: string,
+	workspaceId: string,
+	scriptContent: string,
+	fetch: Function
+): Promise<Run> {
+	const runOutputPath = RUN_OUTPUT_PATH(workspaceId, case_.id, runId);
+	await fs.mkdir(runOutputPath, { recursive: true });
+
+	const scriptPath = path.join(runOutputPath, 'script.imgql');
+	const substitutedScript = await prepareScript(scriptContent, case_, runOutputPath, fetch);
+	await fs.writeFile(scriptPath, substitutedScript);
 
 	try {
-		const body = await request.json();
-		workspaceId = body.workspaceId;
-		scriptContent = body.scriptContent;
-		cases = body.cases;
-
-		if (!Array.isArray(cases)) {
-			throw error(400, '"cases" must be an array');
-		}
-	} catch (err) {
-		throw error(400, 'Missing required fields: workspaceId, scriptContent or cases');
-	}
-
-	const results: Run[] = [];
-
-	for (const case_ of cases) {
-		const runOutputPath = RUN_OUTPUT_PATH(workspaceId, case_.id, runId);
-
-		try {
-			// Create case-specific directory
-			await fs.mkdir(runOutputPath, { recursive: true });
-			const scriptPath = path.join(runOutputPath, 'script.imgql');
-
-			const substitutedScriptContent = await substituteUiPathVariables(
-				scriptContent,
-				case_,
-				runOutputPath,
-				fetch
-			);
-			await fs.writeFile(scriptPath, substitutedScriptContent);
-
-			// Verify VoxLogicA binary exists and run the process
-			await fs.access(VOXLOGICA_BINARY_PATH);
-			const voxlogicaResult = await runVoxLogica(VOXLOGICA_BINARY_PATH, scriptPath);
-
-			// Convert VoxLogicA layers to Layer objects
-			const layers = voxlogicaResult.layers.map((layer) => ({
+		const voxlogicaResult = await executeVoxLogica(VOXLOGICA_BINARY_PATH, scriptPath);
+		const run: Run = {
+			id: runId,
+			timestamp: new Date(),
+			casePath: case_.path,
+			scriptContent,
+			outputLayers: voxlogicaResult.layers.map((layer) => ({
 				name: layer.name,
 				path: `/workspaces/${workspaceId}/${case_.id}/${runId}/layers/${layer.name}.nii.gz`,
-			}));
+			})),
+			outputPrint: voxlogicaResult.print,
+			outputLog: voxlogicaResult.log,
+			outputError: voxlogicaResult.error,
+		};
 
-			const run: Run = {
+		await fs.writeFile(path.join(runOutputPath, 'run.json'), JSON.stringify(run, null, 2));
+		return run;
+	} catch (err: any) {
+		if ('voxlogicaResult' in err) {
+			const errorRun: Run = {
 				id: runId,
 				timestamp: new Date(),
 				casePath: case_.path,
-				scriptContent: scriptContent,
-				outputLayers: layers,
-				outputPrint: voxlogicaResult.print,
-				outputLog: voxlogicaResult.log,
-				outputError: voxlogicaResult.error,
+				scriptContent,
+				outputPrint: err.voxlogicaResult.print,
+				outputLog: err.voxlogicaResult.log,
+				outputError: err.voxlogicaResult.error,
+				outputLayers: err.voxlogicaResult.layers,
 			};
 
-			// Dump the run into a file
-			await fs.writeFile(path.join(runOutputPath, 'run.json'), JSON.stringify(run, null, 2));
-
-			results.push(run);
-		} catch (err) {
-			if (err instanceof Error && 'code' in err && err.code === 'ENOENT') {
-				throw error(400, 'VoxLogicA binary not found. Please check your installation.');
-			}
-
-			// Handle errors for individual cases but continue processing others
-			if (
-				err &&
-				typeof err === 'object' &&
-				'voxlogicaResult' in err &&
-				err.voxlogicaResult &&
-				typeof err.voxlogicaResult === 'object' &&
-				'print' in err.voxlogicaResult &&
-				'log' in err.voxlogicaResult &&
-				'error' in err.voxlogicaResult &&
-				'layers' in err.voxlogicaResult
-			) {
-				const run: Run = {
-					id: runId,
-					timestamp: new Date(),
-					casePath: case_.path,
-					scriptContent: scriptContent,
-					outputPrint: err.voxlogicaResult.print as PrintOutput[],
-					outputLog: err.voxlogicaResult.log as string,
-					outputError: err.voxlogicaResult.error as string,
-					outputLayers: err.voxlogicaResult.layers as Layer[],
-				};
-
-				await fs.writeFile(path.join(runOutputPath, 'run.json'), JSON.stringify(run, null, 2));
-				results.push(run);
-			}
+			await fs.writeFile(path.join(runOutputPath, 'run.json'), JSON.stringify(errorRun, null, 2));
+			return errorRun;
 		}
+
+		error(500, {
+			message: err instanceof Error ? err.message : 'An unexpected error occurred',
+		});
 	}
+}
+
+export const POST: RequestHandler = async ({ request, fetch }) => {
+	const { workspaceId, scriptContent, cases } = await request.json();
+
+	if (!Array.isArray(cases)) {
+		error(400, '"cases" must be an array');
+	}
+
+	if (!workspaceId || !scriptContent) {
+		error(400, 'Missing required fields: workspaceId or scriptContent');
+	}
+
+	try {
+		await fs.access(VOXLOGICA_BINARY_PATH);
+	} catch (err) {
+		error(400, 'VoxLogicA binary not found. Please check your installation.');
+	}
+
+	const runId = randomUUID();
+	const results = await Promise.all(
+		cases.map((case_) => processCase(case_, runId, workspaceId, scriptContent, fetch))
+	);
 
 	return json(results);
 };
