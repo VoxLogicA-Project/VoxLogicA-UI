@@ -92,7 +92,7 @@
 		class="btn-icon variant-soft hover:!bg-gradient-to-r hover:!from-[#8B0000B3] hover:!via-[#006400B3] hover:!to-[#00008BB3] hover:!text-white w-8 h-8 !rounded-md"
 		style="background: {typeof colormapValue === 'string'
 			? (presetColorMapping[colormapValue] ?? 'rgb(255, 255, 255)')
-			: `rgb(${colormapValue?.R?.[2] ?? 255}, ${colormapValue?.G?.[2] ?? 255}, ${colormapValue?.B?.[2] ?? 255})`}"
+			: `linear-gradient(to right, #000000B3, rgb(${colormapValue?.R?.[2] ?? 255}, ${colormapValue?.G?.[2] ?? 255}, ${colormapValue?.B?.[2] ?? 255})`}"
 		aria-label="Color Map Picker"
 	>
 		<i
