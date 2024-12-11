@@ -7,7 +7,8 @@
 	import { uiViewModel } from '$lib/viewmodels/ui.svelte';
 	import RunItem from './RunItem.svelte';
 
-	export let case_: Case;
+	let { case_ }: { case_: Case } = $props();
+
 	const TRANSITION_DURATION = 200;
 </script>
 

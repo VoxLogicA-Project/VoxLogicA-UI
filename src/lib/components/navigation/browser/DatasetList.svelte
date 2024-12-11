@@ -6,8 +6,8 @@
 	import { caseViewModel } from '$lib/viewmodels/case.svelte';
 	import CaseItem from './CaseItem.svelte';
 
-	export let searchQuery: string;
-	export let filteredCases: Case[];
+	let { searchQuery, filteredCases }: { searchQuery: string; filteredCases: Case[] } = $props();
+
 	const TRANSITION_DURATION = 200;
 </script>
 
@@ -17,22 +17,24 @@
 			<button
 				class="w-full text-left px-3 py-2 rounded-token transition-all duration-200 flex items-center min-w-0
                     hover:bg-primary-500/30 hover:pl-4 group
-                    {dataset.name === datasetViewModel.selectedDataset?.name
+                    {datasetViewModel.selectedDatasets.some((d) => d.name === dataset.name)
 					? 'bg-primary-500/10 text-primary-700 dark:text-primary-400'
 					: 'text-surface-900-50-token'}"
-				onclick={() => datasetViewModel.selectDataset(dataset)}
+				onclick={() => datasetViewModel.toggleDataset(dataset)}
 			>
 				<i class="fa-solid fa-database mr-2 opacity-70 flex-shrink-0"></i>
 				<span class="truncate flex-1 font-medium">{dataset.name}</span>
-				{#if dataset.name !== datasetViewModel.selectedDataset?.name}
+				{#if !datasetViewModel.selectedDatasets.some((d) => d.name === dataset.name)}
 					<i
 						class="fa-solid fa-chevron-right w-3 h-3 opacity-0 -translate-x-2 transition-all duration-200
                         group-hover:opacity-50 group-hover:translate-x-0"
 					></i>
+				{:else}
+					<i class="fa-solid fa-chevron-down w-3 h-3 opacity-50"></i>
 				{/if}
 			</button>
 
-			{#if dataset.name === datasetViewModel.selectedDataset?.name}
+			{#if datasetViewModel.selectedDatasets.some((d) => d.name === dataset.name)}
 				{#if caseViewModel.isLoading}
 					<div class="pl-6 py-2">
 						<i class="fa-solid fa-spinner fa-spin opacity-50"></i>
@@ -41,7 +43,9 @@
 					<div transition:slide|local={{ duration: TRANSITION_DURATION, easing: quintOut }}>
 						{#if filteredCases.length > 0}
 							<ul class="pl-4 space-y-0.5 mt-0.5">
-								{#each filteredCases as case_}
+								{#each filteredCases.filter((c) => caseViewModel
+										.casesOfDataset(dataset.name)
+										.includes(c)) as case_}
 									<CaseItem {case_} />
 								{/each}
 							</ul>

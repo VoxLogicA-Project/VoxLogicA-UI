@@ -8,9 +8,9 @@ let error = $state<string | null>(null);
 
 // Derived states
 const datasets = $derived(loadedData.datasets);
-const selectedDataset = $derived.by(() => {
-	const datasetName = currentWorkspace.state.data.openedDatasetName;
-	return loadedData.datasets.find((d) => d.name === datasetName) ?? null;
+const selectedDatasets = $derived.by(() => {
+	const datasetNames = currentWorkspace.state.data.openedDatasetsNames;
+	return loadedData.datasets.filter((d) => datasetNames.includes(d.name));
 });
 
 // Actions
@@ -34,21 +34,37 @@ async function selectDataset(dataset: Dataset): Promise<void> {
 	error = null;
 
 	try {
-		// Update workspace state
-		currentWorkspace.state.data.openedDatasetName = dataset.name;
+		if (!currentWorkspace.state.data.openedDatasetsNames.includes(dataset.name)) {
+			currentWorkspace.state.data.openedDatasetsNames.push(dataset.name);
+		}
+
 		await apiRepository.fetchCases(dataset);
 	} catch (e) {
 		error = e instanceof Error ? e.message : 'Failed to load cases';
-		currentWorkspace.state.data.openedDatasetName = null;
+		currentWorkspace.state.data.openedDatasetsNames =
+			currentWorkspace.state.data.openedDatasetsNames.filter((name) => name !== dataset.name);
 	} finally {
 		caseViewModel.isLoading = false;
 	}
 }
 
+function deselectDataset(dataset: Dataset): void {
+	currentWorkspace.state.data.openedDatasetsNames =
+		currentWorkspace.state.data.openedDatasetsNames.filter((name) => name !== dataset.name);
+}
+
+function toggleDataset(dataset: Dataset): void {
+	if (selectedDatasets.some((d) => d.name === dataset.name)) {
+		deselectDataset(dataset);
+	} else {
+		selectDataset(dataset);
+	}
+}
+
 function reset(): void {
-	currentWorkspace.state.data.openedDatasetName = null;
+	currentWorkspace.state.data.openedDatasetsNames = [];
 	loadedData.datasets = [];
-	loadedData.cases = [];
+	loadedData.casesByDataset = {};
 	isLoading = false;
 	error = null;
 }
@@ -65,8 +81,8 @@ export const datasetViewModel = {
 	get datasets() {
 		return datasets;
 	},
-	get selectedDataset() {
-		return selectedDataset;
+	get selectedDatasets() {
+		return selectedDatasets;
 	},
 	get hasDatasets() {
 		return loadedData.datasets.length > 0;
@@ -75,5 +91,7 @@ export const datasetViewModel = {
 	// Actions
 	loadDatasets,
 	selectDataset,
+	deselectDataset,
+	toggleDataset,
 	reset,
 };

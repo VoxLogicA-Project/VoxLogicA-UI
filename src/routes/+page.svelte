@@ -92,7 +92,7 @@
 
 	<!-- Main Content -->
 	<div class="flex-1 flex flex-col overflow-hidden">
-		{#if datasetViewModel.selectedDataset}
+		{#if datasetViewModel.selectedDatasets.length > 0}
 			<div class="flex-1 flex flex-col min-h-0">
 				<!-- Viewer Grid -->
 				<div class="flex-1 overflow-auto">

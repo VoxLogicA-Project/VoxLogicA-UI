@@ -52,7 +52,7 @@ export interface Run {
 export interface LoadedData {
 	availableWorkspacesIdsAndNames: LocalWorkspaceEntry[];
 	datasets: Dataset[];
-	cases: Case[];
+	casesByDataset: Record<Dataset['name'], Case[]>;
 	layersByCasePath: Record<Case['path'], Layer[]>;
 	runsByCasePath: Record<Case['path'], Run[]>;
 	presetScripts: PresetScript[];
@@ -70,7 +70,7 @@ export interface LayerContext {
 
 export interface SerializedWorkspaceState {
 	data: {
-		openedDatasetName: Dataset['name'] | null;
+		openedDatasetsNames: Dataset['name'][];
 		openedCasesPaths: Case['path'][];
 		openedRunsIds: Run['id'][];
 	};

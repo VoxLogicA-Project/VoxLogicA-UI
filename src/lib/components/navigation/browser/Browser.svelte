@@ -11,7 +11,7 @@
 	let searchQuery = $state('');
 	let hadFilters = $state(false);
 
-	// Filtered cases based on search query
+	// Filtered cases based on search query across all selected datasets
 	const filteredCases = $derived(
 		searchQuery
 			? caseViewModel.cases.filter((caseData) =>

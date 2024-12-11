@@ -10,7 +10,10 @@ let isLoading = $state(false);
 let error = $state<string | null>(null);
 
 // Derived states
-const cases = $derived(loadedData.cases);
+const cases = $derived.by(() => {
+	// Combine cases from all selected datasets
+	return loadedData.datasets.flatMap((dataset) => loadedData.casesByDataset[dataset.name] || []);
+});
 const selectedCases = $derived.by(() => {
 	const selectedPaths = currentWorkspace.state.data.openedCasesPaths;
 	return selectedPaths
@@ -18,6 +21,9 @@ const selectedCases = $derived.by(() => {
 		.filter((c): c is Case => c !== undefined);
 });
 const canSelectMore = $derived(selectedCases.length < MAX_SELECTED_CASES);
+const casesOfDataset = $derived((datasetName: string) => {
+	return loadedData.casesByDataset[datasetName] || [];
+});
 const getSelectionIndex = $derived((casePath: Case['path']) => {
 	return (currentWorkspace.state.data.openedCasesPaths.indexOf(casePath) + 1).toString();
 });
@@ -93,7 +99,7 @@ function swapCases(caseIndex1: number, caseIndex2: number): void {
 
 function reset(): void {
 	currentWorkspace.state.data.openedCasesPaths = [];
-	loadedData.cases = [];
+	loadedData.casesByDataset = {};
 	loadedData.layersByCasePath = {};
 	isLoading = false;
 	error = null;
@@ -120,9 +126,12 @@ export const caseViewModel = {
 	get selectedCases() {
 		return selectedCases;
 	},
+	get canSelectMore() {
+		return canSelectMore;
+	},
 
 	// Queries
-	canSelectMore,
+	casesOfDataset,
 	getSelectionIndex,
 	isSelected,
 
