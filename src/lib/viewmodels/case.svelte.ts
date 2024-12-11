@@ -21,8 +21,13 @@ const selectedCases = $derived.by(() => {
 		.filter((c): c is Case => c !== undefined);
 });
 const canSelectMore = $derived(selectedCases.length < MAX_SELECTED_CASES);
+
+// Queries
 const casesOfDataset = $derived((datasetName: string) => {
 	return loadedData.casesByDataset[datasetName] || [];
+});
+const getSelectedCasesForDataset = $derived((datasetName: string) => {
+	return selectedCases.filter((c) => casesOfDataset(datasetName).includes(c));
 });
 const getSelectionIndex = $derived((casePath: Case['path']) => {
 	return (currentWorkspace.state.data.openedCasesPaths.indexOf(casePath) + 1).toString();
@@ -132,6 +137,7 @@ export const caseViewModel = {
 
 	// Queries
 	casesOfDataset,
+	getSelectedCasesForDataset,
 	getSelectionIndex,
 	isSelected,
 

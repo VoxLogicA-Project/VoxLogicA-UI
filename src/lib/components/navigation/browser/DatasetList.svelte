@@ -22,7 +22,15 @@
 					: 'text-surface-900-50-token'}"
 				onclick={() => datasetViewModel.toggleDataset(dataset)}
 			>
-				<i class="fa-solid fa-database mr-2 opacity-70 flex-shrink-0"></i>
+				<div class="w-6 flex justify-center mr-2 flex-shrink-0">
+					{#if !datasetViewModel.selectedDatasets.some((d) => d.name === dataset.name) && caseViewModel.getSelectedCasesForDataset(dataset.name).length > 0}
+						<div class="badge badge-sm bg-surface-400-500-token text-surface-900-50-token">
+							{caseViewModel.getSelectedCasesForDataset(dataset.name).length}
+						</div>
+					{:else}
+						<i class="fa-solid fa-database opacity-70"></i>
+					{/if}
+				</div>
 				<span class="truncate flex-1 font-medium">{dataset.name}</span>
 				{#if !datasetViewModel.selectedDatasets.some((d) => d.name === dataset.name)}
 					<i
