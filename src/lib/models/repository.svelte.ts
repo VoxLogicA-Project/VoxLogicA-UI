@@ -256,7 +256,7 @@ async function loadWorkspaceData(workspace: Workspace) {
 
 	// Load layers for opened cases
 	for (const casePath of workspace.state.data.openedCasesPaths) {
-		const datasetName = casePath.split('/')[1];
+		const datasetName = casePath.split('/')[2];
 		const caseData = loadedData.casesByDataset[datasetName]?.find((c) => c.path === casePath);
 		if (caseData) {
 			await apiRepository.fetchLayers(caseData);
