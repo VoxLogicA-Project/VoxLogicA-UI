@@ -165,24 +165,25 @@
 
 			if (runViewModel.error) {
 				toastStore.trigger({
-					message: runViewModel.error ?? 'Run failed',
+					message: runViewModel.error ?? 'Run failed, check the tab for more details',
 					background: 'variant-filled-error',
 				});
 			} else {
-				const newLayerContext: LayerContext = { type: 'run', runId: runId };
-				// Switch to the newly created run tab
-				uiViewModel.layerContext = newLayerContext;
-				// And make it blink
-				uiViewModel.blinkingTabLayerContext = newLayerContext;
-
 				toastStore.trigger({
 					message: 'Run completed successfully!',
 					background: 'variant-filled-success',
 				});
 			}
+
+			// Switch to the newly created run tab
+			const newLayerContext: LayerContext = { type: 'run', runId: runId };
+			uiViewModel.layerContext = newLayerContext;
+
+			// And make it blink
+			uiViewModel.blinkingTabLayerContext = newLayerContext;
 		} catch (error) {
 			toastStore.trigger({
-				message: runViewModel.error ?? 'Run failed',
+				message: runViewModel.error ?? 'Run failed (unknown error)',
 				background: 'variant-filled-error',
 			});
 		}
