@@ -77,21 +77,19 @@
 
 <!-- Popup Menu -->
 <div
-	class="card w-64 shadow-xl bg-surface-200-700-token ring-surface-500/30"
+	class="card w-64 bg-surface-50-900-token border border-surface-400-500-token shadow-xl"
 	data-popup="workspace-menu"
 	style="z-index: 1000;"
 >
 	<nav class="list-nav p-1 flex flex-col" style="max-height: 60vh;">
 		{#if sessionViewModel.hasWorkspaces}
-			<div class="px-2 py-0.5 text-xs font-semibold uppercase text-surface-500-400-token">
-				Your Workspaces
-			</div>
-			<div class="overflow-y-auto overflow-x-hidden">
+			<div class="px-2 py-0.5 text-xs font-semibold uppercase">Your Workspaces</div>
+			<div class="overflow-y-auto overflow-x-hidden text-surface-900-50-token">
 				{#each sessionViewModel.availableWorkspacesIdsAndNames as { id, name }}
 					<div
 						class="option !px-2 !py-1.5 rounded-lg {id === sessionViewModel.selectedWorkspaceId
 							? '!bg-primary-500/40 hover:!bg-primary-500/60'
-							: 'hover:!bg-surface-500/20'} flex items-center"
+							: 'hover:!bg-surface-400/10'} flex items-center"
 					>
 						<div
 							class="flex-1 cursor-pointer max-w-full"
@@ -159,5 +157,5 @@
 			</div>
 		</button>
 	</nav>
-	<div class="arrow bg-surface-200-700-token"></div>
+	<div class="arrow bg-surface-400-500-token"></div>
 </div>
