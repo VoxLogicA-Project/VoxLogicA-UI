@@ -146,6 +146,13 @@ function reset(): void {
 	currentWorkspace.name = '';
 	Object.assign(currentWorkspace, DEFAULT_WORKSPACE_STATE);
 
+	loadedData.availableWorkspacesIdsAndNames = [];
+	loadedData.datasets = [];
+	loadedData.casesByDataset = {};
+	loadedData.layersByCasePath = {};
+	loadedData.runsByCasePath = {};
+	loadedData.presetScripts = [];
+
 	isLoading = false;
 	error = null;
 	lastSavedState = '';
