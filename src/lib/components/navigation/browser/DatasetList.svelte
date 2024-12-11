@@ -17,13 +17,13 @@
 			<button
 				class="w-full text-left px-3 py-2 rounded-token transition-all duration-200 flex items-center min-w-0
                     hover:bg-primary-500/30 hover:pl-4 group
-                    {datasetViewModel.selectedDatasets.some((d) => d.name === dataset.name)
+                    {datasetViewModel.isSelected(dataset)
 					? 'bg-primary-500/10 text-primary-700 dark:text-primary-400'
 					: 'text-surface-900-50-token'}"
 				onclick={() => datasetViewModel.toggleDataset(dataset)}
 			>
 				<div class="w-6 flex justify-center mr-2 flex-shrink-0">
-					{#if !datasetViewModel.selectedDatasets.some((d) => d.name === dataset.name) && caseViewModel.getSelectedCasesForDataset(dataset.name).length > 0}
+					{#if !datasetViewModel.isSelected(dataset) && caseViewModel.getSelectedCasesForDataset(dataset.name).length > 0}
 						<div class="badge badge-sm bg-surface-400-500-token text-surface-900-50-token">
 							{caseViewModel.getSelectedCasesForDataset(dataset.name).length}
 						</div>
@@ -32,7 +32,7 @@
 					{/if}
 				</div>
 				<span class="truncate flex-1 font-medium">{dataset.name}</span>
-				{#if !datasetViewModel.selectedDatasets.some((d) => d.name === dataset.name)}
+				{#if !datasetViewModel.isSelected(dataset)}
 					<i
 						class="fa-solid fa-chevron-right w-3 h-3 opacity-0 -translate-x-2 transition-all duration-200
                         group-hover:opacity-50 group-hover:translate-x-0"
@@ -42,7 +42,7 @@
 				{/if}
 			</button>
 
-			{#if datasetViewModel.selectedDatasets.some((d) => d.name === dataset.name)}
+			{#if datasetViewModel.isSelected(dataset)}
 				{#if caseViewModel.isLoading}
 					<div class="pl-6 py-2">
 						<i class="fa-solid fa-spinner fa-spin opacity-50"></i>

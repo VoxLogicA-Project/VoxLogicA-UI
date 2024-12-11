@@ -13,6 +13,11 @@ const selectedDatasets = $derived.by(() => {
 	return loadedData.datasets.filter((d) => datasetNames.includes(d.name));
 });
 
+// Queries
+function isSelected(dataset: Dataset): boolean {
+	return selectedDatasets.some((d) => d.name === dataset.name);
+}
+
 // Actions
 async function loadDatasets(): Promise<void> {
 	isLoading = true;
@@ -87,6 +92,9 @@ export const datasetViewModel = {
 	get hasDatasets() {
 		return loadedData.datasets.length > 0;
 	},
+
+	// Queries
+	isSelected,
 
 	// Actions
 	loadDatasets,
