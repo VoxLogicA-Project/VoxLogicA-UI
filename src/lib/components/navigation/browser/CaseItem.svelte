@@ -16,11 +16,18 @@
 	<div class="flex items-center group">
 		<button
 			class="w-full text-left px-3 py-1.5 rounded-token transition-all duration-200 flex items-center min-w-0
-                hover:bg-primary-500/30 hover:pl-4 group
-                {caseViewModel.isSelected(case_.path)
-				? 'bg-primary-500/10 text-primary-700 dark:text-primary-400'
-				: 'text-surface-900-50-token'}"
+				{caseViewModel.isSelected(case_.path)
+				? 'bg-primary-500/10 text-primary-700 dark:text-primary-400 hover:bg-primary-500/30 hover:pl-4'
+				: caseViewModel.canSelectMore
+					? 'text-surface-900-50-token hover:bg-primary-500/30 hover:pl-4'
+					: 'text-surface-900-50-token opacity-50 cursor-not-allowed'}"
 			onclick={() => caseViewModel.toggleCase(case_)}
+			disabled={!caseViewModel.canSelectMore && !caseViewModel.isSelected(case_.path)}
+			title={caseViewModel.isSelected(case_.path)
+				? `Unselect case "${case_.name}"`
+				: caseViewModel.canSelectMore
+					? `Select case "${case_.name}"`
+					: `Cannot select more than ${caseViewModel.MAX_SELECTED_CASES} cases`}
 		>
 			<i class="fa-solid fa-folder mr-2 opacity-70 flex-shrink-0"></i>
 			<span class="truncate flex-1 font-medium">{case_.name}</span>
