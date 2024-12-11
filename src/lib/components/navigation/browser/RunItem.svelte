@@ -23,11 +23,19 @@
 				: 'text-surface-900-50-token'}"
 			onclick={() => runViewModel.toggleRun(run.id)}
 		>
-			<i
-				class="fa-solid mr-2 opacity-70 flex-shrink-0 {run.outputError ? 'text-red-500' : ''}"
-				class:fa-circle-play={!run.outputError}
-				class:fa-triangle-exclamation={run.outputError}
-			></i>
+			<div class="w-6 flex justify-center mr-2 flex-shrink-0">
+				{#if runViewModel.isRunSelected(run.id)}
+					<div class="badge badge-sm rounded-full bg-primary-900 text-primary-200">
+						{runViewModel.getSelectionIndex(run.id)}
+					</div>
+				{:else}
+					<i
+						class="fa-solid opacity-70 {run.outputError ? 'text-red-500' : ''}"
+						class:fa-circle-play={!run.outputError}
+						class:fa-triangle-exclamation={run.outputError}
+					></i>
+				{/if}
+			</div>
 			<span class="truncate flex-1 text-sm flex items-center gap-2">
 				{new Date(run.timestamp).toLocaleString(undefined, {
 					month: 'short',

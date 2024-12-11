@@ -96,6 +96,9 @@ const getRunsForCase = $derived((casePath: Case['path']) => {
 const isRunSelected = $derived((runId: Run['id']) => {
 	return currentWorkspace.state.data.openedRunsIds.some((id) => id === runId);
 });
+const getSelectionIndex = $derived((runId: Run['id']) => {
+	return (currentWorkspace.state.data.openedRunsIds.indexOf(runId) + 1).toString();
+});
 
 // Actions
 async function loadPresets(): Promise<void> {
@@ -194,14 +197,6 @@ async function runAll(cases: Case[]): Promise<Run['id']> {
 	}
 }
 
-function reset(): void {
-	currentWorkspace.state.data.openedRunsIds = [];
-	currentWorkspace.state.ui.scriptEditor.content = '';
-	isLoading = false;
-	error = null;
-	printFilters = [];
-}
-
 function selectRun(runId: Run['id']): void {
 	if (isRunSelected(runId)) return;
 
@@ -251,7 +246,7 @@ function toggleRun(runId: Run['id']): void {
 	}
 }
 
-// Add new actions for filter management
+// Actions for filter management
 function addPrintFilter(filter: PrintFilter): void {
 	printFilters = [...printFilters, filter];
 }
@@ -265,6 +260,14 @@ function updatePrintFilter(index: number, filter: Partial<PrintFilter>): void {
 }
 
 function clearPrintFilters(): void {
+	printFilters = [];
+}
+
+function reset(): void {
+	currentWorkspace.state.data.openedRunsIds = [];
+	currentWorkspace.state.ui.scriptEditor.content = '';
+	isLoading = false;
+	error = null;
 	printFilters = [];
 }
 
@@ -301,6 +304,7 @@ export const runViewModel = {
 	getRunPrints,
 	getRunsForCase,
 	isRunSelected,
+	getSelectionIndex,
 
 	// Actions
 	loadPresets,

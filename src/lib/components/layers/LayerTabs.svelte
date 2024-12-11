@@ -94,7 +94,18 @@
 					? 'blink-tab'
 					: ''}"
 			>
-				{tab.label}
+				{#if tab.layerContext.type === 'run' && tab.layerContext.runId}
+					<div class="flex items-center gap-2">
+						Run
+						<div
+							class="badge badge-sm bg-primary-900 text-primary-200 rounded-full w-5 h-5 flex items-center justify-center"
+						>
+							{runViewModel.getSelectionIndex(tab.layerContext.runId)}
+						</div>
+					</div>
+				{:else}
+					{tab.label}
+				{/if}
 			</Tab>
 		{/each}
 	</TabGroup>
