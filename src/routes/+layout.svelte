@@ -7,7 +7,7 @@
 	import { storePopup } from '@skeletonlabs/skeleton';
 	import { uiViewModel } from '$lib/viewmodels/ui.svelte';
 	import { sessionViewModel } from '$lib/viewmodels/session.svelte';
-	import CreateFromIdModal from '$lib/components/navigation/CreateFromIdModal.svelte';
+	import CreateFromIdModal from '$lib/components/navigation/workspaces/CreateFromIdModal.svelte';
 
 	initializeStores();
 	storePopup.set({ computePosition, autoUpdate, offset, shift, flip, arrow });

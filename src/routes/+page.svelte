@@ -4,8 +4,8 @@
 
 	// Navigation Components
 	import Browser from '$lib/components/navigation/browser/Browser.svelte';
-	import Workspaces from '$lib/components/navigation/Workspaces.svelte';
-	import WorkspacesFullScreen from '$lib/components/navigation/WorkspacesFullScreen.svelte';
+	import Workspaces from '$lib/components/navigation/workspaces/Workspaces.svelte';
+	import WorkspacesFullScreen from '$lib/components/navigation/workspaces/WorkspacesFullScreen.svelte';
 
 	// Feature Components
 	import LayerMatrix from '$lib/components/layers/LayerMatrix.svelte';
