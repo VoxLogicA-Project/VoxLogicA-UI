@@ -204,6 +204,16 @@ export const apiRepository = {
 		// Update the state
 		loadedData.runsByCasePath = runsByCasePath;
 	},
+
+	async deleteWorkspace(workspaceId: Workspace['id']) {
+		await api.fetch(`/workspaces/${workspaceId}`, {
+			method: 'DELETE',
+		});
+
+		// Remove from localStorage
+		const localWorkspaces = getLocalWorkspaces();
+		saveLocalWorkspaces(localWorkspaces.filter((w) => w.id !== workspaceId));
+	},
 };
 
 async function loadWorkspaceData(workspace: Workspace) {

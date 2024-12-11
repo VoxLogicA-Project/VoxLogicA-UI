@@ -102,31 +102,74 @@
 								<span class="font-medium text-sm">{name}</span>
 								<div class="flex items-start justify-between gap-1 max-w-full">
 									<span class="text-xs opacity-50 font-mono truncate mt-0.5">{id}</span>
-									<div
-										class="inline-flex items-center justify-center p-0.5 hover:bg-surface-500/20 rounded-full opacity-50 hover:opacity-100 transition-opacity cursor-pointer"
-										role="button"
-										tabindex="0"
-										title="Copy Workspace ID"
-										onclick={(event) => {
-											event.stopPropagation();
-											navigator.clipboard.writeText(id);
-											toastStore.trigger({
-												message: 'Workspace ID copied',
-												background: 'variant-filled-success',
-											});
-										}}
-										onkeydown={(e) => {
-											if (e.key === 'Enter') {
-												e.stopPropagation();
+									<div class="flex gap-1">
+										<div
+											class="inline-flex items-center justify-center p-0.5 hover:bg-surface-500/20 rounded-full opacity-50 hover:opacity-100 transition-opacity cursor-pointer"
+											role="button"
+											tabindex="0"
+											title="Copy Workspace ID"
+											onclick={(event) => {
+												event.stopPropagation();
 												navigator.clipboard.writeText(id);
 												toastStore.trigger({
 													message: 'Workspace ID copied',
 													background: 'variant-filled-success',
 												});
-											}
-										}}
-									>
-										<i class="fa-solid fa-copy text-xs"></i>
+											}}
+											onkeydown={(e) => {
+												if (e.key === 'Enter') {
+													e.stopPropagation();
+													navigator.clipboard.writeText(id);
+													toastStore.trigger({
+														message: 'Workspace ID copied',
+														background: 'variant-filled-success',
+													});
+												}
+											}}
+										>
+											<i class="fa-solid fa-copy text-xs"></i>
+										</div>
+
+										<div
+											class="inline-flex items-center justify-center p-0.5 hover:bg-error-500/20 rounded-full opacity-50 hover:opacity-100 transition-opacity cursor-pointer"
+											role="button"
+											tabindex="0"
+											title="Delete Workspace"
+											onclick={(event) => {
+												event.stopPropagation();
+												modalStore.trigger({
+													type: 'confirm',
+													title: 'Delete Workspace',
+													body: `Are you sure you want to delete "${name}"? This action cannot be undone.`,
+													response: (r) => {
+														if (r) {
+															sessionViewModel.deleteWorkspace(id).catch(() => {
+																// Error is already handled by the viewmodel
+															});
+														}
+													},
+												});
+											}}
+											onkeydown={(e) => {
+												if (e.key === 'Enter') {
+													e.stopPropagation();
+													modalStore.trigger({
+														type: 'confirm',
+														title: 'Delete Workspace',
+														body: `Are you sure you want to delete "${name}"? This action cannot be undone.`,
+														response: (r) => {
+															if (r) {
+																sessionViewModel.deleteWorkspace(id).catch(() => {
+																	// Error is already handled by the viewmodel
+																});
+															}
+														},
+													});
+												}
+											}}
+										>
+											<i class="fa-solid fa-trash text-xs"></i>
+										</div>
 									</div>
 								</div>
 							</div>

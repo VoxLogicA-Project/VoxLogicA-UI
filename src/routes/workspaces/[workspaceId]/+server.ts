@@ -1,9 +1,9 @@
 import { json, error } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import fs from 'fs/promises';
-import { WORKSPACE_JSON_PATH } from '../../config';
+import { WORKSPACE_JSON_PATH, WORKSPACE_PATH } from '../../config';
 import type { Workspace } from '$lib/models/types';
-import path from 'path';
+import { rm } from 'fs/promises';
 
 export const GET: RequestHandler = async ({ params }) => {
 	const { workspaceId } = params;
@@ -40,5 +40,20 @@ export const PUT: RequestHandler = async ({ params, request }) => {
 	} catch (err) {
 		console.error(err);
 		throw error(500, 'Failed to save workspace');
+	}
+};
+
+export const DELETE: RequestHandler = async ({ params }) => {
+	const { workspaceId } = params;
+
+	try {
+		// Delete the entire workspace directory recursively
+		await rm(WORKSPACE_PATH(workspaceId), { recursive: true, force: true });
+		return json({ success: true });
+	} catch (err) {
+		if (err instanceof Error && 'code' in err && err.code === 'ENOENT') {
+			throw error(404, 'Workspace not found');
+		}
+		throw error(500, 'Failed to delete workspace');
 	}
 };

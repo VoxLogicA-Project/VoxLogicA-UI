@@ -101,6 +101,28 @@ async function saveWorkspace(): Promise<void> {
 	}
 }
 
+async function deleteWorkspace(workspaceId: Workspace['id']): Promise<void> {
+	isLoading = true;
+	error = null;
+
+	try {
+		await apiRepository.deleteWorkspace(workspaceId);
+
+		// If we're deleting the current workspace, reset the state
+		if (workspaceId === currentWorkspace.id) {
+			reset();
+		}
+
+		// Refresh the workspace list
+		await loadWorkspaces();
+	} catch (e) {
+		error = e instanceof Error ? e.message : 'Failed to delete workspace';
+		throw e;
+	} finally {
+		isLoading = false;
+	}
+}
+
 function reset(): void {
 	// Reset workspace state to initial values
 	Object.assign(currentWorkspace, DEFAULT_WORKSPACE_STATE);
@@ -146,5 +168,6 @@ export const sessionViewModel = {
 	createWorkspace,
 	selectWorkspace,
 	saveWorkspace,
+	deleteWorkspace,
 	reset,
 };
