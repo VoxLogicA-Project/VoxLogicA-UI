@@ -11,14 +11,27 @@
 	let searchQuery = $state('');
 	let hadFilters = $state(false);
 
-	// Filtered cases based on search query across all selected datasets
-	const filteredCases = $derived(
-		searchQuery
+	// Filtered cases based on search query and run print filters
+	const filteredCases = $derived.by(() => {
+		// First filter by search query
+		const searchFiltered = searchQuery
 			? caseViewModel.cases.filter((caseData) =>
 					caseData.id.toLowerCase().includes(searchQuery.toLowerCase())
 				)
-			: caseViewModel.cases
-	);
+			: caseViewModel.cases;
+
+		// Then filter by run print filters if any exist
+		const validFilters = runViewModel.printFilters.filter((f) => f.label.trim() && f.value.trim());
+		if (validFilters.length === 0) {
+			return searchFiltered;
+		}
+
+		// Only return cases that have at least one matching run
+		return searchFiltered.filter((case_) => {
+			const caseRuns = runViewModel.getRunsForCase(case_.path);
+			return caseRuns.length > 0;
+		});
+	});
 
 	// Load datasets when component mounts
 	$effect(() => {

@@ -55,7 +55,7 @@
 		{/if}
 	</div>
 
-	{#if uiViewModel.expandedRunIds.has(run.id)}
+	{#if uiViewModel.expandedRunIds.has(run.id) && run.outputPrint?.length > 0}
 		<div
 			class="p-2 rounded-token text-xs font-mono bg-surface-50-900-token text-surface-900-50-token"
 			transition:slide|local={{ duration: 200 }}
