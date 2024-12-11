@@ -70,7 +70,7 @@ export interface LayerContext {
 
 export interface SerializedWorkspaceState {
 	data: {
-		openedDatasetsNames: Dataset['name'][];
+		openedDatasetsNames: Dataset['name'][]; // TODO: we actually don't need them here: right now it's just used for expanding/collapsing the datasets in the UI
 		openedCasesPaths: Case['path'][];
 		openedRunsIds: Run['id'][];
 	};

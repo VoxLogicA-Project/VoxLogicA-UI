@@ -232,23 +232,34 @@ async function loadWorkspaceData(workspace: Workspace) {
 	// TODO: this could be optimized by fetching only the runs that are needed
 	await apiRepository.fetchWorkspaceRuns(workspace.id);
 
-	// Load cases for all opened datasets
-	for (const datasetName of workspace.state.data.openedDatasetsNames) {
+	// Create a Set of required dataset names based on opened cases and explicitly opened datasets
+	const requiredDatasets = new Set<string>();
+
+	// Add explicitly opened datasets
+	workspace.state.data.openedDatasetsNames.forEach((name) => requiredDatasets.add(name));
+
+	// Find which datasets contain the opened cases
+	for (const casePath of workspace.state.data.openedCasesPaths) {
+		const datasetName = casePath.split('/')[2]; // Assuming path format is '/datasets/datasetName/...'
+		if (datasetName) {
+			requiredDatasets.add(datasetName);
+		}
+	}
+
+	// Load cases for all required datasets
+	for (const datasetName of requiredDatasets) {
 		const dataset = loadedData.datasets.find((d) => d.name === datasetName);
 		if (dataset) {
 			await apiRepository.fetchCases(dataset);
 		}
 	}
 
-	// Load layers for each opened case
+	// Load layers for opened cases
 	for (const casePath of workspace.state.data.openedCasesPaths) {
-		// Find which dataset this case belongs to
-		for (const datasetName of workspace.state.data.openedDatasetsNames) {
-			const caseData = loadedData.casesByDataset[datasetName]?.find((c) => c.path === casePath);
-			if (caseData) {
-				await apiRepository.fetchLayers(caseData);
-				break; // Found the case, no need to check other datasets
-			}
+		const datasetName = casePath.split('/')[1];
+		const caseData = loadedData.casesByDataset[datasetName]?.find((c) => c.path === casePath);
+		if (caseData) {
+			await apiRepository.fetchLayers(caseData);
 		}
 	}
 }
