@@ -21,6 +21,10 @@
 		'magma',
 		'inferno',
 		'cividis',
+		// Monochrome
+		'red',
+		'green',
+		'blue',
 	];
 
 	// Add mapping for preset colors with gradients
@@ -41,6 +45,9 @@
 			'linear-gradient(to right, #000004B3, #420a68B3, #932667B3, #dd513aB3, #fca50aB3, #fcffa4B3)',
 		cividis:
 			'linear-gradient(to right, #002051B3, #322682B3, #6b4c9fB3, #9b7abaB3, #cabfd6B3, #fde4a6B3)',
+		red: 'linear-gradient(to right, #000000B3, #ff0000B3)',
+		green: 'linear-gradient(to right, #000000B3, #00ff00B3)',
+		blue: 'linear-gradient(to right, #000000B3, #0000ffB3)',
 	};
 
 	function createCustomColorMap(r: number, g: number, b: number) {
@@ -85,7 +92,7 @@
 		class="btn-icon variant-soft hover:!bg-gradient-to-r hover:!from-[#8B0000B3] hover:!via-[#006400B3] hover:!to-[#00008BB3] hover:!text-white w-8 h-8 !rounded-md"
 		style="background: {typeof colormapValue === 'string'
 			? (presetColorMapping[colormapValue] ?? 'rgb(255, 255, 255)')
-			: `rgb(${colormapValue?.R?.[2] ?? 255}, ${colormapValue?.G?.[2] ?? 255}, ${colormapValue?.B?.[2] ?? 255})`}"
+			: `linear-gradient(to right, #000000B3, rgb(${colormapValue?.R?.[2] ?? 255}, ${colormapValue?.G?.[2] ?? 255}, ${colormapValue?.B?.[2] ?? 255})`}"
 		aria-label="Color Map Picker"
 	>
 		<i
@@ -151,7 +158,7 @@
 						<input
 							name="colormap_custom"
 							type="color"
-							class="w-full h-12 rounded-container-token cursor-pointer appearance-none border-0 !p-0 hover:scale-[1.02] transition-transform"
+							class="w-full h-12 cursor-pointer hover:scale-[1.02] transition-transform"
 							style="background-color: transparent;"
 							oninput={(e) => {
 								const hex = e.currentTarget.value;
@@ -174,6 +181,7 @@
 					</span>
 					<div class="input-group input-group-divider grid-cols-[1fr_auto] w-20">
 						<input
+							name="colormap_opacity"
 							type="number"
 							bind:value={alphaValue}
 							min="0"

@@ -1,110 +1,152 @@
-import { BaseViewModel } from './base.svelte';
 import type { Case } from '$lib/models/types';
-import { apiRepository } from '$lib/models/repository';
-import { datasetViewModel } from './dataset.svelte';
-import { layerViewModel } from './layer.svelte';
-import { stateManager } from './statemanager.svelte';
+import { loadedData, currentWorkspace, apiRepository } from '$lib/models/repository.svelte';
+import { layerViewModel } from '$lib/viewmodels/layer.svelte';
 
-interface CaseState {
-	available: Case[];
-	selected: Case[];
-	maxCases: number;
-}
+// Constants
+const MAX_SELECTED_CASES = 16;
 
-export class CaseViewModel extends BaseViewModel {
-	private state = $state<CaseState>({
-		available: [],
-		selected: [],
-		maxCases: 16,
-	});
+// UI state
+let isLoading = $state(false);
+let error = $state<string | null>(null);
 
-	// State Access Methods
-	getState() {
-		return this.state;
+// Derived states
+const cases = $derived.by(() => {
+	// Combine cases from all selected datasets
+	return loadedData.datasets.flatMap((dataset) => loadedData.casesByDataset[dataset.name] || []);
+});
+const selectedCases = $derived.by(() => {
+	const selectedPaths = currentWorkspace.state.data.openedCasesPaths;
+	return selectedPaths
+		.map((path) => cases.find((c) => c.path === path))
+		.filter((c): c is Case => c !== undefined);
+});
+const canSelectMore = $derived(selectedCases.length < MAX_SELECTED_CASES);
+
+// Queries
+const casesOfDataset = $derived((datasetName: string) => {
+	return loadedData.casesByDataset[datasetName] || [];
+});
+const getSelectedCasesForDataset = $derived((datasetName: string) => {
+	return selectedCases.filter((c) => casesOfDataset(datasetName).includes(c));
+});
+const getSelectionIndex = $derived((casePath: Case['path']) => {
+	return (currentWorkspace.state.data.openedCasesPaths.indexOf(casePath) + 1).toString();
+});
+const isSelected = $derived((casePath: Case['path']) => {
+	return currentWorkspace.state.data.openedCasesPaths.includes(casePath);
+});
+
+// Actions
+async function selectCase(caseData: Case): Promise<void> {
+	if (isSelected(caseData.path)) return;
+	if (!canSelectMore) {
+		error = `Cannot select more than ${MAX_SELECTED_CASES} cases`;
+		return;
 	}
 
+	error = null;
+
+	try {
+		await apiRepository.fetchLayers(caseData);
+		currentWorkspace.state.data.openedCasesPaths = [
+			...currentWorkspace.state.data.openedCasesPaths,
+			caseData.path,
+		];
+		// Initialize default styles for each layer
+		layerViewModel.uniqueLayersNames.forEach((layerName) => {
+			if (!currentWorkspace.state.datasetLayersState.stylesByLayerName[layerName]) {
+				currentWorkspace.state.datasetLayersState.stylesByLayerName[layerName] =
+					layerViewModel.DEFAULT_LAYER_STYLE;
+			}
+		});
+	} catch (e) {
+		error = e instanceof Error ? e.message : `Failed to load layers for case: ${caseData.name}`;
+	}
+}
+
+function deselectCase(caseData: Case): void {
+	currentWorkspace.state.data.openedCasesPaths =
+		currentWorkspace.state.data.openedCasesPaths.filter((path) => path !== caseData.path);
+	// Clean up any associated layers state
+	delete loadedData.layersByCasePath[caseData.path];
+	delete currentWorkspace.state.datasetLayersState.openedLayersPathsByCasePath[caseData.path];
+}
+
+async function toggleCase(caseData: Case): Promise<void> {
+	if (isSelected(caseData.path)) {
+		deselectCase(caseData);
+	} else {
+		await selectCase(caseData);
+	}
+}
+
+function swapCases(caseIndex1: number, caseIndex2: number): void {
+	const newPaths = [...currentWorkspace.state.data.openedCasesPaths];
+
+	// Verify indices are within bounds
+	if (
+		caseIndex1 < 0 ||
+		caseIndex1 >= newPaths.length ||
+		caseIndex2 < 0 ||
+		caseIndex2 >= newPaths.length
+	) {
+		throw new Error(
+			`Invalid case indices: ${caseIndex1} and ${caseIndex2}, with length ${newPaths.length}`
+		);
+	}
+
+	// Swap the cases
+	if (caseIndex1 !== caseIndex2) {
+		[newPaths[caseIndex1], newPaths[caseIndex2]] = [newPaths[caseIndex2], newPaths[caseIndex1]];
+		currentWorkspace.state.data.openedCasesPaths = newPaths;
+	}
+}
+
+function reset(): void {
+	currentWorkspace.state.data.openedCasesPaths = [];
+	loadedData.casesByDataset = {};
+	loadedData.layersByCasePath = {};
+	isLoading = false;
+	error = null;
+}
+
+// Public API
+export const caseViewModel = {
+	// Constants
+	MAX_SELECTED_CASES,
+
+	// State (readonly)
+	get isLoading() {
+		return isLoading;
+	},
+	set isLoading(value: boolean) {
+		isLoading = value;
+	},
+	get error() {
+		return error;
+	},
 	get cases() {
-		return this.state.available;
-	}
-
+		return cases;
+	},
 	get selectedCases() {
-		return this.state.selected;
-	}
+		return selectedCases;
+	},
+	get canSelectMore() {
+		return canSelectMore;
+	},
 
-	get maxCases() {
-		return this.state.maxCases;
-	}
+	// Queries
+	casesOfDataset,
+	getSelectedCasesForDataset,
+	getSelectionIndex,
+	isSelected,
 
-	// Case Loading Methods
-	async loadCases() {
-		this.reset();
+	// Actions
+	selectCase,
+	deselectCase,
+	toggleCase,
+	reset,
 
-		const dataset = datasetViewModel.selectedDataset;
-		if (!dataset) return;
-
-		this.setLoading(true);
-		this.setError(null);
-
-		try {
-			const cases = await apiRepository.getCases(dataset);
-			this.state.available = cases;
-		} catch (error) {
-			this.setError(error instanceof Error ? error.message : 'Failed to load cases');
-		} finally {
-			this.setLoading(false);
-		}
-	}
-
-	// Case Selection Methods
-	async selectCase(caseData: Case) {
-		if (this.state.selected.length >= this.state.maxCases) {
-			this.setError(`Cannot select more than ${this.state.maxCases} cases`);
-			return;
-		}
-
-		if (this.state.selected.some((c) => c.id === caseData.id)) {
-			return;
-		}
-
-		await layerViewModel.loadLayersFromDataset(caseData);
-
-		this.state.selected = [...this.state.selected, caseData];
-		this.setError(null);
-		stateManager.markAsUnsaved();
-	}
-
-	deselectCase(caseData: Case) {
-		this.state.selected = this.state.selected.filter((c) => c.id !== caseData.id);
-		this.setError(null);
-		layerViewModel.removeCaseLayers(caseData.id);
-		stateManager.markAsUnsaved();
-	}
-
-	async toggleCase(caseData: Case) {
-		const isSelected = this.state.selected.some((c) => c.id === caseData.id);
-		if (isSelected) {
-			this.deselectCase(caseData);
-		} else {
-			await this.selectCase(caseData);
-		}
-	}
-
-	// Selection State Derived Properties
-	canSelectMore = $derived(() => this.state.selected.length < this.state.maxCases);
-
-	isSelected = $derived((caseData: Case) => this.state.selected.some((c) => c.id === caseData.id));
-
-	getSelectionIndex = $derived((caseData: Case) =>
-		this.state.selected.findIndex((c) => c.id === caseData.id)
-	);
-
-	// State Management
-	reset() {
-		this.state.available = [];
-		this.state.selected = [];
-		this.setError(null);
-		this.setLoading(false);
-	}
-}
-
-export const caseViewModel = new CaseViewModel();
+	// New action
+	swapCases,
+};

@@ -1,222 +1,323 @@
-import { BaseViewModel } from './base.svelte';
-import type { Case, ColorMap, Layer, LayerStyle, PresetScript, Run } from '$lib/models/types';
-import { LayerViewModel, layerViewModel } from './layer.svelte';
-import { apiRepository } from '$lib/models/repository';
-import { stateManager } from './statemanager.svelte';
+import type { Case, Layer, LayerStyle, PresetScript, Run } from '$lib/models/types';
+import {
+	loadedData,
+	currentWorkspace,
+	apiRepository,
+	RepositoryError,
+} from '$lib/models/repository.svelte';
+import { layerViewModel } from './layer.svelte';
 
-interface RunState {
-	availablePresets: PresetScript[];
-	editorContent: string;
-	history: Run[][];
-	layersStates: LayerViewModel[];
+// UI state
+let isLoading = $state(false);
+let error = $state<string | null>(null);
+
+// Print filters
+interface PrintFilter {
+	label: string;
+	operation: string;
+	value: string;
+}
+let printFilters = $state<PrintFilter[]>([]);
+
+// Derived states
+const headerContent = $derived.by(() => {
+	const layersIds = layerViewModel.datasetUniqueLayersNames;
+	return [
+		'import "stdlib.imgql"',
+		'',
+		'// Load layers',
+		...layersIds.map((layerId) => `load ${layerId} = "\$\{LAYER_PATH:${layerId}\}"`),
+	].join('\n');
+});
+const fullScriptContent = $derived(
+	`${headerContent}\n\n${currentWorkspace.state.ui.scriptEditor.content}`
+);
+const openedRunsIds = $derived(currentWorkspace.state.data.openedRunsIds);
+const getRunsWithErrors = $derived((runId: Run['id']) => {
+	const runsErrors: Record<Case['path'], Run> = {};
+	for (const casePath in loadedData.runsByCasePath) {
+		const runs = loadedData.runsByCasePath[casePath];
+		// Find run with given runId
+		const run = runs.find((r) => r.id === runId);
+		if (run && run.outputError) {
+			runsErrors[casePath] = run;
+		}
+	}
+	return runsErrors;
+});
+const getRunPrints = $derived((runId: Run['id'], casePath: Case['path']) => {
+	const runsForCase = loadedData.runsByCasePath[casePath];
+	if (!runsForCase) return [];
+	const run = runsForCase.find((r) => r.id === runId);
+	if (!run) return [];
+	return run.outputPrint;
+});
+const getRunsForCase = $derived((casePath: Case['path']) => {
+	const runs = loadedData.runsByCasePath[casePath] ?? [];
+
+	// If no filters, return all runs
+	if (printFilters.length === 0) return runs;
+
+	// Get only valid filters (non-empty values)
+	const validFilters = printFilters.filter((f) => f.label.trim() !== '' && f.value.trim() !== '');
+
+	// If no valid filters, return all runs
+	if (validFilters.length === 0) return runs;
+
+	return runs.filter((run) => {
+		// Run must match all valid filters (AND logic)
+		return validFilters.every((filter) => {
+			const print = run.outputPrint.find((p) => p.name === filter.label);
+			if (!print) return false;
+
+			const printValue = parseFloat(print.value);
+			const filterValue = parseFloat(filter.value);
+
+			// Skip invalid numbers
+			if (isNaN(printValue) || isNaN(filterValue)) return false;
+
+			switch (filter.operation) {
+				case '>':
+					return printValue > filterValue;
+				case '<':
+					return printValue < filterValue;
+				case '>=':
+					return printValue >= filterValue;
+				case '<=':
+					return printValue <= filterValue;
+				case '=':
+					return printValue === filterValue;
+				default:
+					return false;
+			}
+		});
+	});
+});
+const isRunSelected = $derived((runId: Run['id']) => {
+	return currentWorkspace.state.data.openedRunsIds.some((id) => id === runId);
+});
+const getSelectionIndex = $derived((runId: Run['id']) => {
+	return (currentWorkspace.state.data.openedRunsIds.indexOf(runId) + 1).toString();
+});
+
+// Actions
+async function loadPresets(): Promise<void> {
+	isLoading = true;
+	error = null;
+
+	try {
+		await apiRepository.fetchPresetsScripts();
+	} catch (err) {
+		error = err instanceof RepositoryError ? err.message : 'Failed to load presets';
+	} finally {
+		isLoading = false;
+	}
 }
 
-export class RunViewModel extends BaseViewModel {
-	private state = $state<RunState>({
-		availablePresets: [],
-		editorContent: '',
-		history: [],
-		layersStates: [],
-	});
+async function loadPresetScript(preset: PresetScript): Promise<void> {
+	isLoading = true;
+	error = null;
 
-	// State Access Methods
-	getState() {
-		return this.state;
+	try {
+		const code = await apiRepository.fetchPresetScriptCode(preset);
+		currentWorkspace.state.ui.scriptEditor.content = code;
+	} catch (err) {
+		error = err instanceof RepositoryError ? err.message : 'Failed to load preset script';
+	} finally {
+		isLoading = false;
 	}
+}
 
-	get history() {
-		return this.state.history;
-	}
+function saveEditorContent(content: string): void {
+	currentWorkspace.state.ui.scriptEditor.content = content;
+}
 
-	get layerStates() {
-		return this.state.layersStates;
-	}
+async function singleRun(caseData: Case): Promise<void> {
+	await runAll([caseData]);
+}
 
-	get availablePresets() {
-		return this.state.availablePresets;
-	}
+async function runAll(cases: Case[]): Promise<Run['id']> {
+	isLoading = true;
+	error = null;
 
-	get editorContent() {
-		return this.state.editorContent;
-	}
-
-	// Script Content Management
-	headerContent = $derived.by(() => {
-		const layersIds = layerViewModel.uniqueLayersIds;
-		return `import "stdlib.imgql"\n\n// Load layers\n${layersIds
-			.map((layerId) => {
-				return `load ${layerId} = "\$\{LAYER_PATH:${layerId}\}"`;
-			})
-			.join('\n')}`;
-	});
-
-	get fullScriptContent() {
-		return this.headerContent + '\n\n' + this.state.editorContent;
-	}
-
-	saveEditorContent(content: string) {
-		this.state.editorContent = content;
-		stateManager.markAsUnsaved();
-	}
-
-	// Preset Management
-	async loadPresets() {
-		this.setLoading(true);
-		this.setError(null);
-
-		try {
-			const presets = await apiRepository.getPresetScripts();
-			this.state.availablePresets = presets;
-		} catch (error) {
-			this.setError(error instanceof Error ? error.message : 'Failed to load presets');
-		} finally {
-			this.setLoading(false);
-		}
-	}
-
-	async loadPresetScript(preset: PresetScript) {
-		this.setLoading(true);
-		this.setError(null);
-
-		try {
-			const code = await apiRepository.getPresetScriptCode(preset);
-			this.state.editorContent = code;
-		} catch (error) {
-			this.state.availablePresets = [];
-			this.setError(error instanceof Error ? error.message : 'Failed to load preset script');
-		} finally {
-			this.setLoading(false);
-		}
-	}
-
-	// Run Execution Methods
-	private async singleRun(case_: Case): Promise<Run> {
+	try {
 		const response = await fetch('/run', {
 			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json',
-			},
-			body: JSON.stringify({ scriptContent: this.fullScriptContent, case_ }),
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify({
+				workspaceId: currentWorkspace.id,
+				scriptContent: fullScriptContent,
+				cases: cases,
+			}),
 		});
 
-		const result = await response.json();
 		if (!response.ok) {
-			const errorMessage = result.message || response.statusText;
-			throw new Error(errorMessage);
+			const errorData = await response.json();
+			throw new Error(errorData.message || response.statusText);
 		}
 
-		const run: Run = {
-			id: result.id,
-			scriptContent: result.scriptContent,
-			case: result.case,
-			timestamp: result.timestamp,
-			outputPrint: result.outputPrint,
-			outputLayers: result.outputLayers,
-			outputError: result.outputError,
-			outputLog: result.outputLog,
-		};
+		const runs: Run[] = await response.json();
 
-		return run;
-	}
+		// Get the run ID (all runs share the same ID)
+		const runId = runs[0].id;
 
-	async runAll(cases: Case[]) {
-		this.setLoading(true);
-		this.setError(null);
+		// Update the state by adding the new runs
+		const runsByCasePath: Record<Case['path'], Run[]> = {};
 
-		try {
-			// Run all cases in parallel
-			const runPromises = cases.map(async (case_) => {
-				try {
-					return await this.singleRun(case_);
-				} catch (error) {
-					// If a single run fails, return an error run object
-					const errorRun: Run = {
-						id: '',
-						scriptContent: this.fullScriptContent,
-						case: case_,
-						timestamp: new Date(),
-						outputPrint: [],
-						outputLayers: [],
-						outputError: error instanceof Error ? error.message : 'Unknown error',
-						outputLog: '',
-					};
-					return errorRun;
-				}
-			});
-
-			const runs = await Promise.all(runPromises);
-
-			// Add runs to history and initialize a new layersState
-			this.state.history = [...this.state.history, runs];
-
-			// Initialize new layersState
-			const newLayerViewModel = new LayerViewModel();
-
-			// Populate availableByCase and styles from run results
-			runs.forEach((run) => {
-				newLayerViewModel.loadLayersFromRun(run.case, run.outputLayers);
-			});
-
-			this.state.layersStates = [...this.state.layersStates, newLayerViewModel];
-			stateManager.markAsUnsaved();
-
-			// Set error if any run had an error
-			const anyError = runs.find((run) => run.outputError);
-			if (anyError) {
-				this.setError('Some (or all) runs failed.');
+		for (const run of runs) {
+			if (!runsByCasePath[run.casePath]) {
+				runsByCasePath[run.casePath] = [];
 			}
-
-			return runs;
-		} catch (error) {
-			this.setError('Frontend Error: please check console');
-			console.error(error);
-			throw error;
-		} finally {
-			this.setLoading(false);
+			runsByCasePath[run.casePath].push(run);
 		}
-	}
 
-	// Layer Selection Derived Properties
-	selectedLayersForCase = $derived((caseId: string) => {
-		const allSelectedLayers: Layer[] = [];
-		this.state.layersStates.forEach((state) => {
-			const layersForCase = state.selectedLayersForCase(caseId) || [];
-			allSelectedLayers.push(...layersForCase);
-		});
-		return allSelectedLayers;
-	});
+		// Update the state by adding the new runs
+		for (const casePath in runsByCasePath) {
+			const runs = runsByCasePath[casePath];
+			if (!loadedData.runsByCasePath[casePath]) {
+				loadedData.runsByCasePath[casePath] = [];
+			}
+			loadedData.runsByCasePath[casePath].push(...runs);
+		}
 
-	selectedLayersWithLayerStylesForCase = $derived((caseId: string) => {
-		const allSelectedLayersWithLayerStyles: {
-			runIndex: number;
-			layer: Layer;
-			style: LayerStyle;
-		}[] = [];
-		this.state.layersStates.forEach((state, index) => {
-			const layersWithLayerStyles = state.selectedLayersWithLayerStylesForCase(caseId);
-			allSelectedLayersWithLayerStyles.push(
-				...layersWithLayerStyles.map((item) => ({
-					...item,
-					runIndex: index,
-				}))
-			);
-		});
-		return allSelectedLayersWithLayerStyles;
-	});
+		// Select the run
+		selectRun(runId);
 
-	uniqueLayerIdsByRun = $derived((runIndex: number) => {
-		return this.state.layersStates[runIndex]?.uniqueLayersIds || [];
-	});
+		// Set error if any run failed
+		if (runs.some((run) => run.outputError)) {
+			error = 'Some runs failed. Check individual results for details.';
+		}
 
-	// State Management
-	reset() {
-		this.state.history = [];
-		this.state.layersStates = [];
-		this.state.availablePresets = [];
-		this.state.editorContent = '';
-		this.setError(null);
-		this.setLoading(false);
+		return runId;
+	} catch (err) {
+		error = err instanceof Error ? err.message : 'Failed to execute runs';
+		throw err;
+	} finally {
+		isLoading = false;
 	}
 }
 
-export const runViewModel = new RunViewModel();
+function selectRun(runId: Run['id']): void {
+	if (isRunSelected(runId)) return;
+
+	// Initialize layer states for this run if not already present
+	if (!currentWorkspace.state.runsLayersStates[runId]) {
+		// Find all layers for this run across all cases
+		const runLayers = new Set<Layer['name']>();
+		for (const casePath in loadedData.runsByCasePath) {
+			const run = loadedData.runsByCasePath[casePath].find((r) => r.id === runId);
+			if (run) {
+				run.outputLayers.forEach((layer) => runLayers.add(layer.name));
+			}
+		}
+
+		// Initialize the run's layer state
+		currentWorkspace.state.runsLayersStates[runId] = {
+			openedLayersPathsByCasePath: {},
+			stylesByLayerName: Array.from(runLayers).reduce(
+				(acc, layerName) => {
+					acc[layerName] = layerViewModel.DEFAULT_LAYER_STYLE;
+					return acc;
+				},
+				{} as Record<Layer['name'], LayerStyle>
+			),
+		};
+	}
+
+	currentWorkspace.state.data.openedRunsIds.push(runId);
+}
+
+function deselectRun(runId: Run['id']): void {
+	if (!isRunSelected(runId)) return;
+
+	const index = currentWorkspace.state.data.openedRunsIds.indexOf(runId);
+	if (index !== -1) {
+		currentWorkspace.state.data.openedRunsIds.splice(index, 1);
+	}
+
+	delete currentWorkspace.state.runsLayersStates[runId];
+}
+
+function toggleRun(runId: Run['id']): void {
+	if (isRunSelected(runId)) {
+		deselectRun(runId);
+	} else {
+		selectRun(runId);
+	}
+}
+
+// Actions for filter management
+function addPrintFilter(filter: PrintFilter): void {
+	printFilters = [...printFilters, filter];
+}
+
+function removePrintFilter(index: number): void {
+	printFilters = printFilters.filter((_, i) => i !== index);
+}
+
+function updatePrintFilter(index: number, filter: Partial<PrintFilter>): void {
+	printFilters = printFilters.map((f, i) => (i === index ? { ...f, ...filter } : f));
+}
+
+function clearPrintFilters(): void {
+	printFilters = [];
+}
+
+function reset(): void {
+	currentWorkspace.state.data.openedRunsIds = [];
+	currentWorkspace.state.ui.scriptEditor.content = '';
+	isLoading = false;
+	error = null;
+	printFilters = [];
+}
+
+// Public API
+export const runViewModel = {
+	// State (readonly)
+	get isLoading() {
+		return isLoading;
+	},
+	get error() {
+		return error;
+	},
+	get presetScripts() {
+		return loadedData.presetScripts;
+	},
+	get headerContent() {
+		return headerContent;
+	},
+	get editorContent() {
+		return currentWorkspace.state.ui.scriptEditor.content;
+	},
+	get fullScriptContent() {
+		return fullScriptContent;
+	},
+	get openedRunsIds() {
+		return openedRunsIds;
+	},
+	get printFilters() {
+		return printFilters;
+	},
+
+	// Queries
+	getRunsWithErrors,
+	getRunPrints,
+	getRunsForCase,
+	isRunSelected,
+	getSelectionIndex,
+
+	// Actions
+	loadPresets,
+	loadPresetScript,
+	saveEditorContent,
+	singleRun,
+	runAll,
+	selectRun,
+	deselectRun,
+	toggleRun,
+	addPrintFilter,
+	removePrintFilter,
+	updatePrintFilter,
+	clearPrintFilters,
+	reset,
+};

@@ -40,7 +40,7 @@ export const GET: RequestHandler = async ({ params }) => {
 
 		const { layout } = config;
 		const dataset: Dataset = {
-			id: params.dataset,
+			name: params.dataset,
 			layout,
 		};
 

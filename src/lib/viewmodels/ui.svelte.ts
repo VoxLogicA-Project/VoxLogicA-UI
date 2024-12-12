@@ -1,112 +1,106 @@
-import { BaseViewModel } from './base.svelte';
+import { currentWorkspace } from '$lib/models/repository.svelte';
+import type { LayerContext, Case } from '$lib/models/types';
 
-interface UIState {
-	datasetSidebarCollapsed: boolean;
-	layerSidebarCollapsed: boolean;
-	fullscreenCaseId: string | null;
-	scriptSidebarCollapsed: boolean;
-	bottomPanelTab: string;
-	bottomPanelBlinkingTab: string | null;
-	isDarkMode: boolean;
-}
+// UI State
+let blinkingTabLayerContext: LayerContext | null = $state(null);
+let expandedCasePaths = $state(new Set<string>());
+let expandedRunIds = $state(new Set<string>());
 
-export class UIViewModel extends BaseViewModel {
-	private state = $state<UIState>({
-		datasetSidebarCollapsed: false,
-		layerSidebarCollapsed: false,
-		fullscreenCaseId: null,
-		scriptSidebarCollapsed: false,
-		bottomPanelTab: 'layers',
-		bottomPanelBlinkingTab: null,
+function reset(): void {
+	Object.assign(currentWorkspace.state.ui, {
 		isDarkMode: false,
+		sidebars: {
+			datasetCollapsed: false,
+			layerCollapsed: false,
+			scriptCollapsed: false,
+		},
+		viewers: {
+			fullscreenCasePath: null,
+		},
+		layers: {
+			bottomPanelTab: 'layers',
+		},
+		scriptEditor: {
+			content: '',
+		},
 	});
+	expandedCasePaths = new Set();
+	expandedRunIds = new Set();
+}
 
-	// State Access Methods
-	getState() {
-		return this.state;
-	}
+function toggleDarkMode(): void {
+	currentWorkspace.state.ui.isDarkMode = !currentWorkspace.state.ui.isDarkMode;
+}
 
-	// Sidebar Collapse State Management
-	get datasetSidebarCollapsed() {
-		return this.state.datasetSidebarCollapsed;
-	}
+function setLayerContext(context: LayerContext): void {
+	currentWorkspace.state.ui.layers.layerContext = context;
+}
 
-	set datasetSidebarCollapsed(value: boolean) {
-		this.state.datasetSidebarCollapsed = value;
-	}
+// Case visibility methods
+function showRunsForCase(casePath: Case['path']): void {
+	expandedCasePaths.add(casePath);
+}
 
-	get layerSidebarCollapsed() {
-		return this.state.layerSidebarCollapsed;
-	}
+function hideRunsForCase(casePath: Case['path']): void {
+	expandedCasePaths.delete(casePath);
+}
 
-	set layerSidebarCollapsed(value: boolean) {
-		this.state.layerSidebarCollapsed = value;
-	}
-
-	get scriptSidebarCollapsed() {
-		return this.state.scriptSidebarCollapsed;
-	}
-
-	set scriptSidebarCollapsed(value: boolean) {
-		this.state.scriptSidebarCollapsed = value;
-	}
-
-	// Viewer Panel Management
-	get fullscreenCaseId() {
-		return this.state.fullscreenCaseId;
-	}
-
-	set fullscreenCaseId(value: string | null) {
-		this.state.fullscreenCaseId = value;
-	}
-
-	// Bottom Panel Management
-	get bottomPanelTab() {
-		return this.state.bottomPanelTab;
-	}
-
-	set bottomPanelTab(value: string) {
-		this.state.bottomPanelTab = value;
-	}
-
-	get bottomPanelRunIndex() {
-		if (this.state.bottomPanelTab.startsWith('run-')) {
-			return parseInt(this.state.bottomPanelTab.split('-')[1]);
-		}
-		return -1;
-	}
-
-	get bottomPanelBlinkingTab() {
-		return this.state.bottomPanelBlinkingTab;
-	}
-
-	set bottomPanelBlinkingTab(value: string | null) {
-		this.state.bottomPanelBlinkingTab = value;
-	}
-
-	// Theme Management
-	get isDarkMode() {
-		return this.state.isDarkMode;
-	}
-
-	set isDarkMode(value: boolean) {
-		this.state.isDarkMode = value;
-	}
-
-	toggleDarkMode() {
-		this.isDarkMode = !this.isDarkMode;
-	}
-
-	// State Management
-	reset() {
-		this.state.datasetSidebarCollapsed = false;
-		this.state.layerSidebarCollapsed = false;
-		this.state.scriptSidebarCollapsed = false;
-		this.state.isDarkMode = false;
-		if (typeof document !== 'undefined') {
-			document.documentElement.classList.remove('dark');
-		}
+function toggleRunsVisibility(casePath: Case['path']): void {
+	if (expandedCasePaths.has(casePath)) {
+		hideRunsForCase(casePath);
+	} else {
+		showRunsForCase(casePath);
 	}
 }
 
-export const uiViewModel = new UIViewModel();
+// Run expansion methods
+function toggleRunExpansion(runId: string): void {
+	const newSet = new Set(expandedRunIds);
+	if (newSet.has(runId)) {
+		newSet.delete(runId);
+	} else {
+		newSet.add(runId);
+	}
+	expandedRunIds = newSet;
+}
+
+// Public API
+export const uiViewModel = {
+	// Bindable state
+	get state() {
+		return currentWorkspace.state.ui;
+	},
+	get blinkingTabLayerContext() {
+		return blinkingTabLayerContext;
+	},
+	set blinkingTabLayerContext(context: LayerContext | null) {
+		blinkingTabLayerContext = context;
+	},
+	get layerContext() {
+		return currentWorkspace.state.ui.layers.layerContext;
+	},
+	set layerContext(context: LayerContext) {
+		currentWorkspace.state.ui.layers.layerContext = context;
+	},
+	get expandedCasePaths() {
+		return expandedCasePaths;
+	},
+	set expandedCasePaths(value: Set<string>) {
+		expandedCasePaths = value;
+	},
+	get expandedRunIds() {
+		return expandedRunIds;
+	},
+	set expandedRunIds(value: Set<string>) {
+		expandedRunIds = value;
+	},
+
+	// Actions
+	toggleDarkMode,
+	setLayerContext,
+	showRunsForCase,
+	hideRunsForCase,
+	toggleRunsVisibility,
+	toggleRunExpansion,
+	reset,
+};

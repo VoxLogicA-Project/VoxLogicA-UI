@@ -1,66 +1,105 @@
-import { BaseViewModel } from './base.svelte';
 import type { Dataset } from '$lib/models/types';
-import { apiRepository } from '$lib/models/repository';
+import { loadedData, currentWorkspace, apiRepository } from '$lib/models/repository.svelte';
 import { caseViewModel } from './case.svelte';
-import { layerViewModel } from './layer.svelte';
-import { stateManager } from './statemanager.svelte';
 
-interface DatasetState {
-	available: Dataset[];
-	selected: Dataset | null;
+// UI state
+let isLoading = $state(false);
+let error = $state<string | null>(null);
+
+// Derived states
+const datasets = $derived(loadedData.datasets);
+const selectedDatasets = $derived.by(() => {
+	const datasetNames = currentWorkspace.state.data.openedDatasetsNames;
+	return loadedData.datasets.filter((d) => datasetNames.includes(d.name));
+});
+
+// Queries
+function isSelected(dataset: Dataset): boolean {
+	return selectedDatasets.some((d) => d.name === dataset.name);
 }
 
-export class DatasetViewModel extends BaseViewModel {
-	private state = $state<DatasetState>({
-		available: [],
-		selected: null,
-	});
+// Actions
+async function loadDatasets(): Promise<void> {
+	isLoading = true;
+	error = null;
 
-	// State Access Methods
-	getState() {
-		return this.state;
+	try {
+		await apiRepository.fetchDatasets();
+	} catch (e) {
+		error = e instanceof Error ? e.message : 'Failed to load datasets';
+	} finally {
+		isLoading = false;
 	}
+}
 
-	get datasets() {
-		return this.state.available;
-	}
+async function selectDataset(dataset: Dataset): Promise<void> {
+	if (!dataset) return;
 
-	get selectedDataset() {
-		return this.state.selected;
-	}
+	caseViewModel.isLoading = true;
+	error = null;
 
-	// Dataset Loading Methods
-	async loadDatasets() {
-		this.reset();
-		this.setLoading(true);
-		this.setError(null);
-
-		try {
-			const datasets = await apiRepository.getDatasets();
-			this.state.available = datasets;
-		} catch (error) {
-			this.state.available = [];
-			this.setError(error instanceof Error ? error.message : 'Failed to load datasets');
-		} finally {
-			this.setLoading(false);
+	try {
+		if (!currentWorkspace.state.data.openedDatasetsNames.includes(dataset.name)) {
+			currentWorkspace.state.data.openedDatasetsNames.push(dataset.name);
 		}
-	}
 
-	// Dataset Selection Methods
-	selectDataset(dataset: Dataset) {
-		this.state.selected = dataset;
-		caseViewModel.loadCases();
-		layerViewModel.reset();
-		stateManager.markAsUnsaved();
-	}
-
-	// State Management
-	reset() {
-		this.state.available = [];
-		this.state.selected = null;
-		caseViewModel.reset();
-		layerViewModel.reset();
+		await apiRepository.fetchCases(dataset);
+	} catch (e) {
+		error = e instanceof Error ? e.message : 'Failed to load cases';
+		currentWorkspace.state.data.openedDatasetsNames =
+			currentWorkspace.state.data.openedDatasetsNames.filter((name) => name !== dataset.name);
+	} finally {
+		caseViewModel.isLoading = false;
 	}
 }
 
-export const datasetViewModel = new DatasetViewModel();
+function deselectDataset(dataset: Dataset): void {
+	currentWorkspace.state.data.openedDatasetsNames =
+		currentWorkspace.state.data.openedDatasetsNames.filter((name) => name !== dataset.name);
+}
+
+function toggleDataset(dataset: Dataset): void {
+	if (selectedDatasets.some((d) => d.name === dataset.name)) {
+		deselectDataset(dataset);
+	} else {
+		selectDataset(dataset);
+	}
+}
+
+function reset(): void {
+	currentWorkspace.state.data.openedDatasetsNames = [];
+	loadedData.datasets = [];
+	loadedData.casesByDataset = {};
+	isLoading = false;
+	error = null;
+}
+
+// Public API
+export const datasetViewModel = {
+	// State (readonly)
+	get isLoading() {
+		return isLoading;
+	},
+	get error() {
+		return error;
+	},
+	get datasets() {
+		return datasets;
+	},
+	get selectedDatasets() {
+		return selectedDatasets;
+	},
+	get hasDatasets() {
+		return loadedData.datasets.length > 0;
+	},
+
+	// Queries
+	isSelected,
+
+	// Actions
+	loadDatasets,
+	selectDataset,
+	deselectDataset,
+	toggleDataset,
+	reset,
+};

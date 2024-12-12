@@ -1,193 +1,260 @@
-import { BaseViewModel } from './base.svelte';
-import { datasetViewModel } from './dataset.svelte';
-import type { Case, Layer, ColorMap, LayerStyle } from '$lib/models/types';
-import { apiRepository } from '$lib/models/repository';
-import { caseViewModel } from './case.svelte';
-import { stateManager } from './statemanager.svelte';
+import type { Case, Layer, LayerStyle, Run } from '$lib/models/types';
+import { loadedData, currentWorkspace } from '$lib/models/repository.svelte';
 
-export interface LayerState {
-	availableByCase: Record<string, Layer[]>;
-	selected: Record<string, Layer[]>;
-	styles: Record<string, LayerStyle>;
-}
-
-const defaultLayerStyle: LayerStyle = {
+const DEFAULT_LAYER_STYLE: LayerStyle = {
 	colorMap: 'gray',
 	alpha: 1.0,
 };
 
-export class LayerViewModel extends BaseViewModel {
-	private state = $state<LayerState>({
-		availableByCase: {},
-		selected: {},
-		styles: {},
-	});
+// UI state
+let isLoading = $state(false);
+let error = $state<string | null>(null);
 
-	// State Access Methods
-	getState() {
-		return this.state;
+// Context-dependent states
+const currentLayersByCase = $derived((casePath: Case['path']) => {
+	if (currentWorkspace.state.ui.layers.layerContext.type === 'dataset') {
+		return loadedData.layersByCasePath[casePath] ?? [];
+	}
+	// For runs, we need to get layers from the specific run
+	const runs = loadedData.runsByCasePath[casePath] ?? [];
+	const run = runs.find((r) => r.id === currentWorkspace.state.ui.layers.layerContext.runId);
+	return run?.outputLayers ?? [];
+});
+const currentLayerState = $derived.by(() => {
+	if (currentWorkspace.state.ui.layers.layerContext.type === 'dataset') {
+		return currentWorkspace.state.datasetLayersState;
+	}
+	if (
+		!currentWorkspace.state.ui.layers.layerContext.runId ||
+		!(
+			currentWorkspace.state.ui.layers.layerContext.runId in currentWorkspace.state.runsLayersStates
+		)
+	) {
+		return {
+			openedLayersPathsByCasePath: {},
+			stylesByLayerName: {},
+		};
+	}
+	return currentWorkspace.state.runsLayersStates[
+		currentWorkspace.state.ui.layers.layerContext.runId
+	];
+});
+
+// Derived states
+const openedLayersPathsByCasePath = $derived(currentLayerState.openedLayersPathsByCasePath);
+const stylesByLayerName = $derived(currentLayerState.stylesByLayerName);
+const datasetUniqueLayersNames = $derived.by(() => {
+	if (currentWorkspace.state.data.openedCasesPaths.length === 0) {
+		return [];
 	}
 
-	get styles() {
-		return this.state.styles;
-	}
-
-	getAvailableLayersForCase(caseId: string) {
-		return this.state.availableByCase[caseId] || [];
-	}
-
-	// Layer Lookup Methods
-	getAvailableLayerFromId(caseId: string, layerId: string) {
-		return this.state.availableByCase[caseId]?.find((l) => l.id === layerId);
-	}
-
-	getSelectedLayerFromIds(caseId: string, layerId: string) {
-		return this.state.selected[caseId]?.find((l) => l.id === layerId);
-	}
-
-	// Derived Properties
-	uniqueLayersIds = $derived.by(() => {
-		const layerIds = new Set<string>();
-		caseViewModel.selectedCases.forEach((caseData) => {
-			const caseLayers = this.state.availableByCase[caseData.id] || [];
-			caseLayers.forEach((layer) => {
-				layerIds.add(layer.id);
-			});
+	const layerNames = new Set<string>();
+	currentWorkspace.state.data.openedCasesPaths.forEach((casePath) => {
+		const caseLayers = loadedData.layersByCasePath[casePath] ?? [];
+		caseLayers.forEach((layer) => {
+			layerNames.add(layer.name);
 		});
-		return Array.from(layerIds);
 	});
-
-	selectedLayersForCase = $derived((caseId: string) => this.state.selected[caseId] || []);
-
-	selectedLayersWithLayerStylesForCase = $derived((caseId: string) => {
-		const layers = this.selectedLayersForCase(caseId);
-		return layers.map((layer) => ({
-			layer,
-			style: this.state.styles[layer.id],
-		}));
+	return Array.from(layerNames);
+});
+const uniqueLayersNames = $derived.by(() => {
+	// Return unique layer names from all cases
+	const layerNames = new Set<string>();
+	currentWorkspace.state.data.openedCasesPaths.forEach((casePath) => {
+		const caseLayers = currentLayersByCase(casePath);
+		caseLayers.forEach((layer) => {
+			layerNames.add(layer.name);
+		});
 	});
+	return Array.from(layerNames);
+});
 
-	isLayerSelectedForAllCases = $derived((layerId: string) => {
-		return (
-			Object.keys(this.state.selected).length > 0 &&
-			Object.values(this.state.selected).every((layers) => layers?.some((l) => l.id === layerId))
+// Queries
+const openedLayersByCasePath = $derived((casePath: Case['path']) => {
+	return openedLayersPathsByCasePath[casePath]
+		?.map((path) => currentLayersByCase(casePath).find((l) => l.path === path))
+		.filter((l): l is Layer => l !== undefined);
+});
+
+const getSelectedLayers = $derived((casePath: Case['path']) => {
+	return openedLayersPathsByCasePath[casePath];
+});
+
+const isLayerSelected = $derived((casePath: Case['path'], layerPath: Layer['path']) => {
+	const selectedLayers = openedLayersPathsByCasePath[casePath] ?? [];
+	return selectedLayers.includes(layerPath);
+});
+
+const isLayerSelectedForAllOpenedCases = $derived((layerName: Layer['name']) => {
+	return currentWorkspace.state.data.openedCasesPaths.every((casePath) => {
+		// Get available layers for this case
+		const availableLayers = currentLayersByCase(casePath);
+		// If layer doesn't exist in this case, consider it as selected
+		if (!availableLayers.some((l) => l.name === layerName)) {
+			return true;
+		}
+		// Otherwise check if it's in the opened layers
+		const layers = openedLayersByCasePath(casePath) ?? [];
+		return layers.some((l) => l.name === layerName);
+	});
+});
+
+const getAvailableLayerFromName = $derived((casePath: Case['path'], layerName: Layer['name']) => {
+	return currentLayersByCase(casePath).find((l) => l.name === layerName);
+});
+
+// Context-independent queries
+const getAllSelectedLayersNoContext = $derived((casePath: Case['path']) => {
+	// Return all opened layers objects from dataset and runs
+	const selectedDatasetLayers =
+		currentWorkspace.state.datasetLayersState.openedLayersPathsByCasePath[casePath]
+			?.map((path) => loadedData.layersByCasePath[casePath].find((l) => l.path === path))
+			.filter((l): l is Layer => l !== undefined) ?? [];
+
+	const selectedRunLayers = Object.values(currentWorkspace.state.runsLayersStates)
+		.flatMap((state) => state.openedLayersPathsByCasePath[casePath] ?? [])
+		.flatMap(
+			(selectedLayerPath) =>
+				loadedData.runsByCasePath[casePath]?.flatMap((run) =>
+					run.outputLayers.filter((layer) => layer.path === selectedLayerPath)
+				) ?? []
+		);
+	return [...selectedDatasetLayers, ...selectedRunLayers];
+});
+
+const getAllSelectedLayersWithLayerStylesNoContext = $derived((casePath: Case['path']) => {
+	const selectedDatasetLayersWithStyles =
+		currentWorkspace.state.datasetLayersState.openedLayersPathsByCasePath[casePath]
+			?.map((path) => loadedData.layersByCasePath[casePath].find((l) => l.path === path))
+			.filter((l): l is Layer => l !== undefined)
+			.map((layer) => ({
+				layer,
+				style: currentWorkspace.state.datasetLayersState.stylesByLayerName[layer.name],
+			})) ?? [];
+
+	const selectedRunLayersWithStyles = Object.values(
+		currentWorkspace.state.runsLayersStates
+	).flatMap((state) => {
+		const layerPaths = state.openedLayersPathsByCasePath[casePath] ?? [];
+		return layerPaths.flatMap(
+			(selectedLayerPath) =>
+				loadedData.runsByCasePath[casePath]?.flatMap((run) =>
+					run.outputLayers
+						.filter((layer) => layer.path === selectedLayerPath)
+						.map((layer) => ({
+							layer,
+							style: state.stylesByLayerName[layer.name],
+						}))
+				) ?? []
 		);
 	});
 
-	// Layer Loading Methods
-	async loadLayersFromDataset(caseData: Case) {
-		const dataset = datasetViewModel.selectedDataset;
-		if (!dataset) return;
+	return [...selectedDatasetLayersWithStyles, ...selectedRunLayersWithStyles];
+});
 
-		this.setLoading(true);
-		this.setError(null);
+// Actions
+function selectLayer(casePath: Case['path'], layerPath: Layer['path']): void {
+	const currentLayers = currentLayerState.openedLayersPathsByCasePath[casePath];
 
-		try {
-			const layers = await apiRepository.getLayers(dataset, caseData);
-
-			// Initialize default styles for new layers
-			layers.forEach((layer) => {
-				if (!this.state.styles[layer.id]) {
-					this.state.styles[layer.id] = { ...defaultLayerStyle };
-				}
-			});
-
-			this.state.availableByCase[caseData.id] = layers;
-			this.state.selected[caseData.id] = [];
-		} catch (error) {
-			this.setError(
-				error instanceof Error ? error.message : 'Failed to load layers for case ' + caseData.id
-			);
-		} finally {
-			this.setLoading(false);
-		}
-	}
-
-	async loadLayersFromRun(caseData: Case, runOutputLayers: Layer[]) {
-		// Initialize default styles for new layers
-		runOutputLayers.forEach((layer) => {
-			this.state.styles[layer.id] = { ...defaultLayerStyle };
-		});
-		this.state.availableByCase[caseData.id] = runOutputLayers;
-		stateManager.markAsUnsaved();
-	}
-
-	// Layer Selection Methods
-	selectLayer(caseId: string, layer: Layer) {
-		this.state.selected[caseId] = [...(this.state.selected[caseId] || []), layer];
-		stateManager.markAsUnsaved();
-	}
-
-	unselectLayer(caseId: string, layer: Layer) {
-		const currentLayers = this.state.selected[caseId] || [];
-		this.state.selected[caseId] = currentLayers.filter((l) => l.id !== layer.id);
-		stateManager.markAsUnsaved();
-	}
-
-	toggleLayer(caseId: string, layer: Layer) {
-		const currentLayers = this.state.selected[caseId] || [];
-		const isSelected = currentLayers.some((l) => l.id === layer.id);
-
-		if (isSelected) {
-			this.unselectLayer(caseId, layer);
-		} else {
-			this.selectLayer(caseId, layer);
-		}
-	}
-
-	selectLayerForAllSelectedCases(layerId: string) {
-		caseViewModel.selectedCases.forEach((caseData) => {
-			const layer = this.state.availableByCase[caseData.id]?.find((l) => l.id === layerId);
-			if (layer) {
-				this.selectLayer(caseData.id, layer);
-			}
-		});
-	}
-
-	unselectLayerForAllSelectedCases(layerId: string) {
-		caseViewModel.selectedCases.forEach((caseData) => {
-			const layer = this.state.availableByCase[caseData.id]?.find((l) => l.id === layerId);
-			if (layer) {
-				this.unselectLayer(caseData.id, layer);
-			}
-		});
-	}
-
-	// Layer State Check Methods
-	isLayerSelectedForCase(caseId: string, layerId: string) {
-		return this.state.selected[caseId]?.some((l) => l.id === layerId);
-	}
-
-	// Style Management Methods
-	setLayerStyleColor(layerId: string, colorMap: ColorMap | string) {
-		this.state.styles[layerId] = {
-			...(this.state.styles[layerId] || defaultLayerStyle),
-			colorMap: colorMap,
-		};
-		stateManager.markAsUnsaved();
-	}
-
-	setLayerStyleAlpha(layerId: string, alpha: number) {
-		this.state.styles[layerId] = {
-			...(this.state.styles[layerId] || defaultLayerStyle),
-			alpha: alpha,
-		};
-		stateManager.markAsUnsaved();
-	}
-
-	// Cleanup Methods
-	removeCaseLayers(caseId: string) {
-		delete this.state.availableByCase[caseId];
-		delete this.state.selected[caseId];
-	}
-
-	reset() {
-		this.state.availableByCase = {};
-		this.state.selected = {};
-		this.state.styles = {};
-		this.setError(null);
-		this.setLoading(false);
+	if (!currentLayers) {
+		currentLayerState.openedLayersPathsByCasePath[casePath] = [layerPath];
+	} else if (!currentLayers.includes(layerPath)) {
+		currentLayerState.openedLayersPathsByCasePath[casePath].push(layerPath);
 	}
 }
 
-export const layerViewModel = new LayerViewModel();
+function deselectLayer(casePath: Case['path'], layerPath: Layer['path']): void {
+	const currentLayers = currentLayerState.openedLayersPathsByCasePath[casePath] ?? [];
+
+	currentLayerState.openedLayersPathsByCasePath[casePath] = currentLayers.filter(
+		(path) => path !== layerPath
+	);
+}
+
+function toggleLayer(casePath: Case['path'], layerPath: Layer['path']): void {
+	if (isLayerSelected(casePath, layerPath)) {
+		deselectLayer(casePath, layerPath);
+	} else {
+		selectLayer(casePath, layerPath);
+	}
+}
+
+function selectLayerForAllOpenedCases(layerName: Layer['name']): void {
+	currentWorkspace.state.data.openedCasesPaths.forEach((casePath) => {
+		selectLayer(casePath, currentLayersByCase(casePath).find((l) => l.name === layerName)!.path);
+	});
+}
+
+function deselectLayerForAllOpenedCases(layerName: Layer['name']): void {
+	currentWorkspace.state.data.openedCasesPaths.forEach((casePath) => {
+		deselectLayer(casePath, currentLayersByCase(casePath).find((l) => l.name === layerName)!.path);
+	});
+}
+
+function updateLayerStyle(layerName: Layer['name'], style: Partial<LayerStyle>): void {
+	currentLayerState.stylesByLayerName[layerName] = {
+		...currentLayerState.stylesByLayerName[layerName],
+		...style,
+	};
+}
+
+function reset(): void {
+	// Reset the state based on current context
+	if (currentWorkspace.state.ui.layers.layerContext.type === 'dataset') {
+		currentWorkspace.state.datasetLayersState = {
+			openedLayersPathsByCasePath: {},
+			stylesByLayerName: {},
+		};
+	} else {
+		currentWorkspace.state.runsLayersStates[
+			currentWorkspace.state.ui.layers.layerContext.runId ?? ''
+		] = {
+			openedLayersPathsByCasePath: {},
+			stylesByLayerName: {},
+		};
+	}
+
+	isLoading = false;
+	error = null;
+}
+
+// Public API
+export const layerViewModel = {
+	// Constants
+	DEFAULT_LAYER_STYLE,
+
+	// State (readonly)
+	get isLoading() {
+		return isLoading;
+	},
+	get error() {
+		return error;
+	},
+	get stylesByLayerName() {
+		return stylesByLayerName;
+	},
+	get datasetUniqueLayersNames() {
+		return datasetUniqueLayersNames;
+	},
+	get uniqueLayersNames() {
+		return uniqueLayersNames;
+	},
+
+	// Queries
+	currentLayersByCase,
+	getSelectedLayers,
+	isLayerSelected,
+	getAllSelectedLayersNoContext,
+	getAllSelectedLayersWithLayerStylesNoContext,
+	isLayerSelectedForAllOpenedCases,
+	getAvailableLayerFromName,
+
+	// Actions
+	selectLayer,
+	deselectLayer,
+	toggleLayer,
+	selectLayerForAllOpenedCases,
+	deselectLayerForAllOpenedCases,
+	updateLayerStyle,
+	reset,
+};

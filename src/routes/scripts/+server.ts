@@ -10,7 +10,7 @@ export const GET: RequestHandler = async () => {
 		const scripts: PresetScript[] = files
 			.filter((file) => file.endsWith('.imgql'))
 			.map((file) => ({
-				id: file,
+				name: file,
 				path: `/scripts/${file}`,
 			}));
 

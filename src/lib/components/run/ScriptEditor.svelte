@@ -7,9 +7,10 @@
 	import { EditorView, basicSetup } from '@codemirror/basic-setup';
 	import { lineNumbers } from '@codemirror/view';
 	import { imgql } from './imgql-lang';
-	import type { Case } from '$lib/models/types';
+	import type { Case, PresetScript } from '$lib/models/types';
 	import { ProgressRadial } from '@skeletonlabs/skeleton';
 	import { getToastStore } from '@skeletonlabs/skeleton';
+	import type { LayerContext } from '$lib/models/types';
 	import { uiViewModel } from '$lib/viewmodels/ui.svelte';
 	import { popup } from '@skeletonlabs/skeleton';
 	const toastStore = getToastStore();
@@ -35,10 +36,10 @@
 			backgroundColor: 'rgba(255, 255, 255, 0.05)',
 		},
 		'.cm-selectionBackground': {
-			backgroundColor: 'rgb(var(--color-primary-500) / 0.2) !important',
+			backgroundColor: 'rgb(var(--color-surface-500) / 0.2) !important',
 		},
 		'&.cm-focused .cm-selectionBackground': {
-			backgroundColor: 'rgb(var(--color-primary-500) / 0.3) !important',
+			backgroundColor: 'rgb(var(--color-surface-500) / 0.3) !important',
 		},
 		'.cm-content': {
 			caretColor: 'rgb(var(--color-surface-900-50-token))',
@@ -97,7 +98,7 @@
 
 	// Reinitialize/destroy header editor when uncollapsed/collapsed
 	$effect(() => {
-		if (!isHeaderCollapsed && !headerView && layerViewModel.uniqueLayersIds) {
+		if (!isHeaderCollapsed && !headerView && layerViewModel.uniqueLayersNames) {
 			initHeaderCodeBlock();
 		} else if (isHeaderCollapsed && headerView) {
 			headerView.destroy();
@@ -117,8 +118,8 @@
 	// Load script from dropdown
 	async function handlePresetScriptSelect(event: Event) {
 		const select = event.target as HTMLSelectElement;
-		const scriptId = select.value;
-		const script = runViewModel.availablePresets.find((p) => p.id === scriptId);
+		const scriptName = select.value;
+		const script = runViewModel.presetScripts.find((p: PresetScript) => p.name === scriptName);
 		if (script) {
 			await runViewModel.loadPresetScript(script);
 			editorView.dispatch({
@@ -160,28 +161,29 @@
 	// Run the script for all selected cases
 	async function handleRun() {
 		try {
-			await runViewModel.runAll(caseViewModel.selectedCases);
+			const runId = await runViewModel.runAll(caseViewModel.selectedCases);
 
-			if (runViewModel.currentError) {
+			if (runViewModel.error) {
 				toastStore.trigger({
-					message: runViewModel.currentError ?? 'Run failed',
+					message: runViewModel.error ?? 'Run failed, check the tab for more details',
 					background: 'variant-filled-error',
 				});
 			} else {
-				// Switch to the newly created run tab
-				const newRunIndex = runViewModel.history.length - 1;
-				const newTabId = `run-${newRunIndex}`;
-				uiViewModel.bottomPanelTab = newTabId;
-				uiViewModel.bottomPanelBlinkingTab = newTabId;
-
 				toastStore.trigger({
 					message: 'Run completed successfully!',
 					background: 'variant-filled-success',
 				});
 			}
+
+			// Switch to the newly created run tab
+			const newLayerContext: LayerContext = { type: 'run', runId: runId };
+			uiViewModel.layerContext = newLayerContext;
+
+			// And make it blink
+			uiViewModel.blinkingTabLayerContext = newLayerContext;
 		} catch (error) {
 			toastStore.trigger({
-				message: runViewModel.currentError ?? 'Run failed',
+				message: runViewModel.error ?? 'Run failed (unknown error)',
 				background: 'variant-filled-error',
 			});
 		}
@@ -192,9 +194,9 @@
 		try {
 			await runViewModel.runAll([case_]);
 
-			if (runViewModel.currentError) {
+			if (runViewModel.error) {
 				toastStore.trigger({
-					message: runViewModel.currentError ?? 'Single run failed',
+					message: runViewModel.error ?? 'Single run failed',
 					background: 'variant-filled-error',
 				});
 			} else {
@@ -205,7 +207,7 @@
 			}
 		} catch (error) {
 			toastStore.trigger({
-				message: runViewModel.currentError ?? 'Single run failed',
+				message: runViewModel.error ?? 'Single run failed',
 				background: 'variant-filled-error',
 			});
 		}
@@ -231,8 +233,8 @@
 			onchange={handlePresetScriptSelect}
 		>
 			<option value="" disabled>Load a preset script template...</option>
-			{#each runViewModel.availablePresets as script}
-				<option value={script.id}>{script.id}</option>
+			{#each runViewModel.presetScripts as script}
+				<option value={script.name}>{script.name}</option>
 			{/each}
 		</select>
 
@@ -263,12 +265,12 @@
 			<i class="fa-solid {isHeaderCollapsed ? 'fa-chevron-down' : 'fa-chevron-up'}"></i>
 		</button>
 		{#if !isHeaderCollapsed}
-			<div id="header-editor"></div>
+			<div id="header-editor" class="text-surface-900-50-token"></div>
 		{/if}
 	</div>
 
 	<!-- Main editor -->
-	<div id="editor" class="flex-1 p-4 overflow-auto"></div>
+	<div id="editor" class="flex-1 p-4 overflow-auto text-surface-900-50-token"></div>
 
 	<!-- Run buttons at bottom -->
 	<div class="p-4 border-t border-surface-500/30 flex gap-2">
@@ -307,23 +309,26 @@
 				<i class="fa-solid fa-chevron-up text-sm"></i>
 			</button>
 
-			<div class="card p-0 w-48 shadow-xl bg-surface-200-700-token" data-popup="case-dropdown">
+			<div
+				class="card p-0 w-48 bg-surface-50-900-token border border-surface-400-500-token shadow-xl"
+				data-popup="case-dropdown"
+			>
 				<div class="py-1">
 					{#each caseViewModel.selectedCases as case_, i}
 						<button
 							class="w-full text-left px-4 py-2 text-sm hover:bg-surface-500/20"
-							title={`Run script for ${case_.id}`}
-							aria-label={`Run script for ${case_.id}`}
+							title={`Run script for ${case_.name}`}
+							aria-label={`Run script for ${case_.name}`}
 							onclick={() => handleSingleRun(case_)}
 						>
-							Run Case <strong>{case_.id}</strong>
+							Run Case <strong class="text-surface-900-50-token">{case_.name}</strong>
 						</button>
 						{#if i !== caseViewModel.selectedCases.length - 1}
 							<hr class="border-surface-500/30" />
 						{/if}
 					{/each}
 				</div>
-				<div class="arrow bg-surface-200-700-token"></div>
+				<div class="arrow bg-surface-400-500-token"></div>
 			</div>
 		</div>
 	</div>

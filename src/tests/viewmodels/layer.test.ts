@@ -1,148 +1,215 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { layerViewModel } from '$lib/viewmodels/layer.svelte';
-import { apiRepository } from '$lib/models/repository';
-import type { Case, ColorMap, Dataset, Layer } from '$lib/models/types';
+import { loadedData, currentWorkspace } from '$lib/models/repository.svelte';
+import { resetTestState } from './viewmodel-test-utils';
+import type { Layer, LayerStyle } from '$lib/models/types';
 
-// Mock dependencies
-vi.mock('$lib/models/repository', () => ({
-	apiRepository: {
-		getLayers: vi.fn(),
-	},
-}));
+describe('layerViewModel', () => {
+	resetTestState();
 
-vi.mock('$lib/viewmodels/dataset.svelte', () => ({
-	datasetViewModel: {
-		selectedDataset: { id: 'dataset1', layout: 'brats' },
-	},
-}));
+	const mockCase = { id: 'case1', path: '/case1', name: 'Case 1' };
+	const mockLayer: Layer = { name: 'layer1', path: '/layer1' };
 
-vi.mock('$lib/viewmodels/case.svelte', () => ({
-	caseViewModel: {
-		selectedCases: [],
-	},
-}));
+	const mockColorMap = {
+		R: [0, 255],
+		G: [0, 0],
+		B: [0, 0],
+		A: [255, 255],
+		I: [0, 1],
+	};
 
-describe('LayerViewModel', () => {
-	const mockDataset: Dataset = { id: 'dataset1', layout: 'brats' };
-	const mockCase: Case = { id: 'case1', path: 'dataset1/case1' };
-	const mockLayers: Layer[] = [
-		{ id: 'layer1', path: 'layer1.nii.gz' },
-		{ id: 'layer2', path: 'layer2.nii.gz' },
-	];
+	describe('context management', () => {
+		it('should set dataset context correctly', () => {
+			layerViewModel.setContext({ type: 'dataset' });
 
-	beforeEach(() => {
-		layerViewModel.reset();
-		vi.clearAllMocks();
-	});
-
-	describe('loadLayersFromDataset', () => {
-		it('should load layers successfully', async () => {
-			// Arrange
-			vi.mocked(apiRepository.getLayers).mockResolvedValue(mockLayers);
-
-			// Act
-			await layerViewModel.loadLayersFromDataset(mockCase);
-
-			// Assert
-			expect(apiRepository.getLayers).toHaveBeenCalledWith(mockDataset, mockCase);
-			expect(layerViewModel.getState().availableByCase[mockCase.id]).toEqual(mockLayers);
-			expect(layerViewModel.isLoading).toBe(false);
-			expect(layerViewModel.currentError).toBeNull();
+			expect(layerViewModel.context.type).toBe('dataset');
+			expect(layerViewModel.error).toBeNull();
 		});
 
-		it('should initialize default styles for new layers', async () => {
-			// Arrange
-			vi.mocked(apiRepository.getLayers).mockResolvedValue(mockLayers);
+		it('should set run context correctly', () => {
+			currentWorkspace.state.runsLayersStates = [
+				{
+					openedLayersPathsByCasePath: {},
+					stylesByLayerName: {},
+				},
+			];
 
-			// Act
-			await layerViewModel.loadLayersFromDataset(mockCase);
+			layerViewModel.setContext({ type: 'run', runIndex: 0 });
 
-			// Assert
-			mockLayers.forEach((layer) => {
-				expect(layerViewModel.styles[layer.id]).toEqual({
-					colorMap: 'gray',
-					alpha: 1,
-				});
-			});
+			expect(layerViewModel.context.type).toBe('run');
+			expect(layerViewModel.context.runIndex).toBe(0);
+			expect(layerViewModel.error).toBeNull();
 		});
 	});
 
 	describe('layer selection', () => {
-		beforeEach(async () => {
-			vi.mocked(apiRepository.getLayers).mockResolvedValue(mockLayers);
-			await layerViewModel.loadLayersFromDataset(mockCase);
+		beforeEach(() => {
+			layerViewModel.setContext({ type: 'dataset' });
+			loadedData.layersByCaseId[mockCase.id] = [mockLayer];
 		});
 
-		it('should select a layer for a case', () => {
-			// Act
-			layerViewModel.selectLayer(mockCase.id, mockLayers[0]);
+		it('should select a layer and update workspace state', () => {
+			layerViewModel.selectLayer(mockCase.path, mockLayer);
 
-			// Assert
-			expect(layerViewModel.selectedLayersForCase(mockCase.id)).toContainEqual(mockLayers[0]);
+			expect(layerViewModel.isLayerSelected(mockCase.path, mockLayer.path)).toBe(true);
+			expect(layerViewModel.getSelectedLayers(mockCase.path)).toContain(mockLayer.path);
+
+			expect(
+				currentWorkspace.state.datasetLayersState.openedLayersPathsByCasePath[mockCase.path]
+			).toContain(mockLayer.path);
 		});
 
-		it('should unselect a layer for a case', () => {
-			// Arrange
-			layerViewModel.selectLayer(mockCase.id, mockLayers[0]);
+		it('should deselect a layer and update workspace state', () => {
+			layerViewModel.selectLayer(mockCase.path, mockLayer);
+			layerViewModel.deselectLayer(mockCase.path, mockLayer);
 
-			// Act
-			layerViewModel.unselectLayer(mockCase.id, mockLayers[0]);
+			expect(layerViewModel.isLayerSelected(mockCase.path, mockLayer.path)).toBe(false);
+			expect(layerViewModel.getSelectedLayers(mockCase.path)).not.toContain(mockLayer.path);
 
-			// Assert
-			expect(layerViewModel.selectedLayersForCase(mockCase.id)).not.toContainEqual(mockLayers[0]);
+			expect(
+				currentWorkspace.state.datasetLayersState.openedLayersPathsByCasePath[mockCase.path]
+			).not.toContain(mockLayer.path);
 		});
 
-		it('should toggle layer selection', () => {
-			// Act - select
-			layerViewModel.toggleLayer(mockCase.id, mockLayers[0]);
-			expect(layerViewModel.selectedLayersForCase(mockCase.id)).toContainEqual(mockLayers[0]);
+		it('should toggle layer selection and update workspace state', () => {
+			layerViewModel.toggleLayer(mockCase.path, mockLayer);
 
-			// Act - unselect
-			layerViewModel.toggleLayer(mockCase.id, mockLayers[0]);
-			expect(layerViewModel.selectedLayersForCase(mockCase.id)).not.toContainEqual(mockLayers[0]);
+			expect(layerViewModel.isLayerSelected(mockCase.path, mockLayer.path)).toBe(true);
+			expect(
+				currentWorkspace.state.datasetLayersState.openedLayersPathsByCasePath[mockCase.path]
+			).toContain(mockLayer.path);
+
+			layerViewModel.toggleLayer(mockCase.path, mockLayer);
+
+			expect(layerViewModel.isLayerSelected(mockCase.path, mockLayer.path)).toBe(false);
+			expect(
+				currentWorkspace.state.datasetLayersState.openedLayersPathsByCasePath[mockCase.path]
+			)?.not.toContain(mockLayer.path);
 		});
 	});
 
 	describe('layer styles', () => {
-		it('should set and get layer style color', () => {
-			// Arrange
-			const layerId = 'layer1';
-			const newColorMap: ColorMap = {
-				R: [100],
-				G: [150],
-				B: [200],
-				A: [0.5],
-				I: [1.0],
+		it('should update layer style and workspace state', () => {
+			const style: Partial<LayerStyle> = {
+				colorMap: mockColorMap,
+				alpha: 0.5,
 			};
-			layerViewModel.getState().styles[layerId] = { colorMap: 'gray', alpha: 1 };
 
-			// Act
-			layerViewModel.setLayerStyleColor(layerId, newColorMap);
+			layerViewModel.updateLayerStyle(mockLayer.name, style);
 
-			// Assert
-			expect(layerViewModel.styles[layerId]).toEqual({
-				colorMap: newColorMap,
-				alpha: 1,
-			});
+			expect(layerViewModel.getLayerStyle(mockLayer.name)).toEqual(style);
+
+			expect(currentWorkspace.state.datasetLayersState.stylesByLayerName[mockLayer.name]).toEqual(
+				style
+			);
+		});
+
+		it('should merge new style with existing style and update workspace state', () => {
+			const initialStyle: Partial<LayerStyle> = {
+				colorMap: mockColorMap,
+				alpha: 0.5,
+			};
+			layerViewModel.updateLayerStyle(mockLayer.name, initialStyle);
+
+			const updateStyle: Partial<LayerStyle> = { alpha: 0.8 };
+			layerViewModel.updateLayerStyle(mockLayer.name, updateStyle);
+
+			const expectedStyle = {
+				colorMap: mockColorMap,
+				alpha: 0.8,
+			};
+
+			expect(layerViewModel.getLayerStyle(mockLayer.name)).toEqual(expectedStyle);
+
+			expect(currentWorkspace.state.datasetLayersState.stylesByLayerName[mockLayer.name]).toEqual(
+				expectedStyle
+			);
+		});
+	});
+
+	describe('currentLayersByCase', () => {
+		it('should return dataset layers when in dataset context', () => {
+			layerViewModel.setContext({ type: 'dataset' });
+			loadedData.layersByCaseId[mockCase.id] = [mockLayer];
+
+			const layers = layerViewModel.currentLayersByCase(mockCase.id);
+			expect(layers).toEqual([mockLayer]);
+		});
+
+		it('should return run layers when in run context', () => {
+			const runLayer = { name: 'runLayer', path: '/runLayer' };
+
+			currentWorkspace.state.runsLayersStates = [
+				{
+					openedLayersPathsByCasePath: {},
+					stylesByLayerName: {},
+				},
+			];
+
+			layerViewModel.setContext({ type: 'run', runIndex: 0 });
+			loadedData.runsByCaseId[mockCase.id] = [
+				{
+					id: 'run1',
+					timestamp: new Date(),
+					scriptContent: '',
+					outputLayers: [runLayer],
+					outputPrint: [],
+				},
+			];
+
+			const layers = layerViewModel.currentLayersByCase(mockCase.id);
+			expect(layers).toEqual([runLayer]);
 		});
 	});
 
 	describe('reset', () => {
-		it('should reset all state', async () => {
-			// Arrange
-			vi.mocked(apiRepository.getLayers).mockResolvedValue(mockLayers);
-			await layerViewModel.loadLayersFromDataset(mockCase);
-			layerViewModel.selectLayer(mockCase.id, mockLayers[0]);
+		it('should reset dataset layers state in workspace', () => {
+			layerViewModel.setContext({ type: 'dataset' });
+			layerViewModel.selectLayer(mockCase.path, mockLayer);
+			layerViewModel.updateLayerStyle(mockLayer.name, {
+				colorMap: mockColorMap,
+				alpha: 0.5,
+			});
 
-			// Act
 			layerViewModel.reset();
 
-			// Assert
-			expect(layerViewModel.getState().availableByCase).toEqual({});
-			expect(layerViewModel.getState().selected).toEqual({});
-			expect(layerViewModel.getState().styles).toEqual({});
-			expect(layerViewModel.currentError).toBeNull();
 			expect(layerViewModel.isLoading).toBe(false);
+			expect(layerViewModel.error).toBeNull();
+			expect(layerViewModel.getSelectedLayers(mockCase.path)).toEqual([]);
+			expect(layerViewModel.getLayerStyle(mockLayer.name)).toBeUndefined();
+
+			expect(currentWorkspace.state.datasetLayersState).toEqual({
+				openedLayersPathsByCasePath: {},
+				stylesByLayerName: {},
+			});
+		});
+
+		it('should reset run layers state in workspace', () => {
+			currentWorkspace.state.runsLayersStates = [
+				{
+					openedLayersPathsByCasePath: {},
+					stylesByLayerName: {},
+				},
+			];
+
+			layerViewModel.setContext({ type: 'run', runIndex: 0 });
+			layerViewModel.selectLayer(mockCase.path, mockLayer);
+			layerViewModel.updateLayerStyle(mockLayer.name, {
+				colorMap: mockColorMap,
+				alpha: 0.5,
+			});
+
+			layerViewModel.reset();
+
+			expect(layerViewModel.isLoading).toBe(false);
+			expect(layerViewModel.error).toBeNull();
+			expect(layerViewModel.getSelectedLayers(mockCase.path)).toEqual([]);
+			expect(layerViewModel.getLayerStyle(mockLayer.name)).toBeUndefined();
+
+			expect(currentWorkspace.state.runsLayersStates[0]).toEqual({
+				openedLayersPathsByCasePath: {},
+				stylesByLayerName: {},
+			});
 		});
 	});
 });

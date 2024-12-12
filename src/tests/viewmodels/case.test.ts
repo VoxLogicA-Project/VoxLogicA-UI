@@ -1,142 +1,139 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { caseViewModel } from '$lib/viewmodels/case.svelte';
-import { apiRepository } from '$lib/models/repository';
-import { layerViewModel } from '$lib/viewmodels/layer.svelte';
-import type { Case } from '$lib/models/types';
+import { apiRepository, loadedData, currentWorkspace } from '$lib/models/repository.svelte';
+import { resetTestState } from './viewmodel-test-utils';
 
-// Mock dependencies
-vi.mock('$lib/models/repository', () => ({
-	apiRepository: {
-		getCases: vi.fn(),
-	},
-}));
+// Mock the repository
+vi.mock('$lib/models/repository.svelte', async () => {
+	const actual = await vi.importActual('$lib/models/repository.svelte');
+	return {
+		...actual,
+		apiRepository: {
+			fetchLayers: vi.fn(async () => {}),
+		},
+	};
+});
 
-vi.mock('$lib/viewmodels/dataset.svelte', () => ({
-	datasetViewModel: {
-		selectedDataset: { id: 'dataset1', layout: 'brats' },
-	},
-}));
+describe('caseViewModel', () => {
+	resetTestState();
 
-vi.mock('$lib/viewmodels/layer.svelte', () => ({
-	layerViewModel: {
-		loadLayersFromDataset: vi.fn(),
-		removeCaseLayers: vi.fn(),
-	},
-}));
+	const mockDataset = { name: 'dataset1', layout: 'brats' };
+	const mockCase = { name: 'case1', path: '/case1', id: 'case1' };
 
-describe('CaseViewModel', () => {
-	const mockCases: Case[] = [
-		{ id: 'case1', path: 'dataset1/case1' },
-		{ id: 'case2', path: 'dataset1/case2' },
-	];
+	describe('selectCase', () => {
+		it('should handle successful case selection', async () => {
+			const mockLayers = [
+				{ name: 'layer1', path: '/layer1' },
+				{ name: 'layer2', path: '/layer2' },
+			];
 
-	beforeEach(() => {
-		caseViewModel.reset();
-		vi.clearAllMocks();
-	});
+			vi.mocked(apiRepository.fetchLayers).mockImplementationOnce(async () => {
+				loadedData.layersByCaseId[mockCase.id] = mockLayers;
+			});
 
-	describe('loadCases', () => {
-		it('should load cases successfully', async () => {
-			// Arrange
-			vi.mocked(apiRepository.getCases).mockResolvedValue(mockCases);
+			await caseViewModel.selectCase(mockDataset, mockCase);
 
-			// Act
-			await caseViewModel.loadCases();
-
-			// Assert
-			expect(apiRepository.getCases).toHaveBeenCalledTimes(1);
-			expect(caseViewModel.cases).toEqual(mockCases);
+			expect(caseViewModel.isSelected(mockCase.path)).toBe(true);
 			expect(caseViewModel.isLoading).toBe(false);
-			expect(caseViewModel.currentError).toBeNull();
+			expect(caseViewModel.error).toBeNull();
+			expect(loadedData.layersByCaseId[mockCase.id]).toEqual(mockLayers);
+			expect(caseViewModel.getSelectionIndex(mockCase.path)).toBe(0);
 		});
 
-		it('should handle errors when loading cases', async () => {
-			// Arrange
-			const error = new Error('Failed to load cases');
-			vi.mocked(apiRepository.getCases).mockRejectedValue(error);
+		it('should handle layer loading errors', async () => {
+			vi.mocked(apiRepository.fetchLayers).mockRejectedValueOnce(
+				new Error('Failed to load layers')
+			);
 
-			// Act
-			await caseViewModel.loadCases();
+			await caseViewModel.selectCase(mockDataset, mockCase);
 
-			// Assert
-			expect(apiRepository.getCases).toHaveBeenCalledTimes(1);
-			expect(caseViewModel.cases).toEqual([]);
+			expect(caseViewModel.isSelected(mockCase.path)).toBe(false);
 			expect(caseViewModel.isLoading).toBe(false);
-			expect(caseViewModel.currentError).toBe('Failed to load cases');
-		});
-	});
-
-	describe('case selection', () => {
-		it('should select a case and load its layers', async () => {
-			// Arrange
-			const caseData = mockCases[0];
-
-			// Act
-			await caseViewModel.selectCase(caseData);
-
-			// Assert
-			expect(caseViewModel.selectedCases).toContainEqual(caseData);
-			expect(layerViewModel.loadLayersFromDataset).toHaveBeenCalledWith(caseData);
+			expect(caseViewModel.error).toBe('Failed to load layers');
+			expect(loadedData.layersByCaseId[mockCase.id]).toBeUndefined();
 		});
 
-		it('should not select the same case twice', async () => {
-			// Arrange
-			const caseData = mockCases[0];
-
-			// Act
-			await caseViewModel.selectCase(caseData);
-			await caseViewModel.selectCase(caseData);
-
-			// Assert
-			expect(caseViewModel.selectedCases).toHaveLength(1);
-			expect(layerViewModel.loadLayersFromDataset).toHaveBeenCalledTimes(1);
-		});
-
-		it('should enforce maximum case selection limit', async () => {
-			// Arrange
-			const maxCases = caseViewModel.maxCases;
-			const cases = Array.from({ length: maxCases + 1 }, (_, i) => ({
-				id: `case${i}`,
-				path: `dataset1/case${i}`,
-			}));
-
-			// Act
-			for (const c of cases) {
-				await caseViewModel.selectCase(c);
+		it('should prevent selecting more than MAX_SELECTED_CASES', async () => {
+			// Select maximum number of cases
+			for (let i = 0; i < 16; i++) {
+				const caseData = { name: `case${i}`, path: `/case${i}`, id: `case${i}` };
+				vi.mocked(apiRepository.fetchLayers).mockImplementationOnce(async () => {
+					loadedData.layersByCaseId[caseData.id] = [];
+				});
+				await caseViewModel.selectCase(mockDataset, caseData);
 			}
 
-			// Assert
-			expect(caseViewModel.selectedCases).toHaveLength(maxCases);
-			expect(caseViewModel.currentError).toBe(`Cannot select more than ${maxCases} cases`);
+			// Try to select one more
+			const extraCase = { name: 'extraCase', path: '/extraCase', id: 'extraCase' };
+			await caseViewModel.selectCase(mockDataset, extraCase);
+
+			expect(caseViewModel.error).toContain('Cannot select more than 16 cases');
+			expect(caseViewModel.isSelected(extraCase.path)).toBe(false);
+		});
+	});
+
+	describe('deselectCase', () => {
+		it('should properly deselect a case and clean up associated state', async () => {
+			// First select a case
+			vi.mocked(apiRepository.fetchLayers).mockImplementationOnce(async () => {
+				loadedData.layersByCaseId[mockCase.id] = [{ name: 'layer1', path: '/layer1' }];
+			});
+			await caseViewModel.selectCase(mockDataset, mockCase);
+
+			// Then deselect it
+			caseViewModel.deselectCase(mockCase);
+
+			expect(caseViewModel.isSelected(mockCase.path)).toBe(false);
+			expect(caseViewModel.selectedCases).toHaveLength(0);
+			expect(loadedData.layersByCaseId[mockCase.id]).toBeUndefined();
+		});
+	});
+
+	describe('toggleCase', () => {
+		it('should toggle case selection state', async () => {
+			vi.mocked(apiRepository.fetchLayers).mockImplementation(async () => {
+				loadedData.layersByCaseId[mockCase.id] = [{ name: 'layer1', path: '/layer1' }];
+			});
+
+			// Toggle on
+			await caseViewModel.toggleCase(mockDataset, mockCase);
+			expect(caseViewModel.isSelected(mockCase.path)).toBe(true);
+			expect(loadedData.layersByCaseId[mockCase.id]).toBeDefined();
+
+			// Toggle off
+			await caseViewModel.toggleCase(mockDataset, mockCase);
+			expect(caseViewModel.isSelected(mockCase.path)).toBe(false);
+			expect(loadedData.layersByCaseId[mockCase.id]).toBeUndefined();
 		});
 
-		it('should deselect a case and remove its layers', async () => {
-			// Arrange
-			const caseData = mockCases[0];
-			await caseViewModel.selectCase(caseData);
+		it('should handle errors during toggle on', async () => {
+			vi.mocked(apiRepository.fetchLayers).mockRejectedValueOnce(
+				new Error('Failed to load layers')
+			);
 
-			// Act
-			caseViewModel.deselectCase(caseData);
+			await caseViewModel.toggleCase(mockDataset, mockCase);
 
-			// Assert
-			expect(caseViewModel.selectedCases).not.toContain(caseData);
-			expect(layerViewModel.removeCaseLayers).toHaveBeenCalledWith(caseData.id);
+			expect(caseViewModel.isSelected(mockCase.path)).toBe(false);
+			expect(caseViewModel.error).toBe('Failed to load layers');
 		});
 	});
 
 	describe('reset', () => {
-		it('should reset all state', async () => {
-			// Arrange
-			await caseViewModel.selectCase(mockCases[0]);
+		it('should reset all case-related state', async () => {
+			// First set up some state
+			vi.mocked(apiRepository.fetchLayers).mockImplementationOnce(async () => {
+				loadedData.layersByCaseId[mockCase.id] = [{ name: 'layer1', path: '/layer1' }];
+			});
+			await caseViewModel.selectCase(mockDataset, mockCase);
 
-			// Act
+			// Then reset
 			caseViewModel.reset();
 
-			// Assert
-			expect(caseViewModel.cases).toEqual([]);
-			expect(caseViewModel.selectedCases).toEqual([]);
-			expect(caseViewModel.currentError).toBeNull();
+			expect(caseViewModel.selectedCases).toHaveLength(0);
+			expect(loadedData.cases).toHaveLength(0);
+			expect(loadedData.layersByCaseId).toEqual({});
 			expect(caseViewModel.isLoading).toBe(false);
+			expect(caseViewModel.error).toBeNull();
 		});
 	});
 });

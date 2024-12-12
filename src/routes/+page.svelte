@@ -1,66 +1,40 @@
 <script lang="ts">
+	// Layout Components
 	import CollapsibleSidebar from '$lib/components/common/CollapsibleSidebar.svelte';
-	import DatasetBrowser from '$lib/components/navigation/DatasetBrowser.svelte';
-	import CaseList from '$lib/components/navigation/CaseList.svelte';
-	import ViewersGrid from '$lib/components/viewers/ViewersGrid.svelte';
+
+	// Navigation Components
+	import Browser from '$lib/components/navigation/browser/Browser.svelte';
+	import Workspaces from '$lib/components/navigation/workspaces/Workspaces.svelte';
+	import WorkspacesFullScreen from '$lib/components/navigation/workspaces/WorkspacesFullScreen.svelte';
+
+	// Feature Components
 	import LayerMatrix from '$lib/components/layers/LayerMatrix.svelte';
 	import ScriptEditor from '$lib/components/run/ScriptEditor.svelte';
-	import { datasetViewModel } from '$lib/viewmodels/dataset.svelte';
+	import ViewersGrid from '$lib/components/viewers/ViewersGrid.svelte';
+
+	// ViewModels
 	import { caseViewModel } from '$lib/viewmodels/case.svelte';
+	import { datasetViewModel } from '$lib/viewmodels/dataset.svelte';
+	import { sessionViewModel } from '$lib/viewmodels/session.svelte';
 	import { uiViewModel } from '$lib/viewmodels/ui.svelte';
-	import { stateManager } from '$lib/viewmodels/statemanager.svelte';
-	import { getToastStore } from '@skeletonlabs/skeleton';
-
-	const toastStore = getToastStore();
-
-	// Add reactive class based on unsaved changes
-	const saveButtonClass = $derived(
-		stateManager.hasChanges()
-			? 'bg-error-500 hover:bg-error-600' // Changed from primary to error variant
-			: 'bg-surface-300-600-token hover:bg-surface-400-500-token' // Default state
-	);
-
-	function handleSave() {
-		try {
-			stateManager.saveToLocalStorage();
-			toastStore.trigger({
-				message: 'Application state saved successfully',
-				background: 'variant-filled-success',
-			});
-		} catch (error) {
-			toastStore.trigger({
-				message: 'Failed to save application state',
-				background: 'variant-filled-error',
-			});
-		}
-	}
-
-	function handleLoad() {
-		try {
-			stateManager.loadFromLocalStorage();
-			toastStore.trigger({
-				message: 'Application state restored successfully',
-				background: 'variant-filled-success',
-			});
-		} catch (error) {
-			toastStore.trigger({
-				message: 'Failed to load application state',
-				background: 'variant-filled-error',
-			});
-		}
-	}
 </script>
 
 <div class="h-screen w-screen flex overflow-hidden bg-surface-50-900-token">
+	<!-- Workspace Selector Overlay -->
+	{#if !sessionViewModel.selectedWorkspaceId}
+		<WorkspacesFullScreen />
+	{/if}
+
 	<!-- Left Sidebar -->
 	<CollapsibleSidebar
 		side="left"
 		defaultSize="330px"
-		bind:isCollapsed={uiViewModel.datasetSidebarCollapsed}
+		bind:isCollapsed={uiViewModel.state.sidebars.datasetCollapsed}
+		title="Browser"
 	>
 		<!-- Header -->
-		<div class="flex items-center justify-between p-4 border-b border-surface-500/30">
-			<div class="flex items-center">
+		<div class="flex items-center justify-between p-4">
+			<div class="flex items-center flex-1">
 				<a href="/" class="flex items-center" onclick={() => (window.location.href = '/')}>
 					<!-- SVG Logo -->
 					<div class="theme-container">
@@ -91,60 +65,34 @@
 				</a>
 			</div>
 
-			<div class="flex gap-2">
-				<!-- Save State Button -->
-				<button
-					class="w-8 h-8 min-w-[2rem] min-h-[2rem] flex-shrink-0 rounded-lg {saveButtonClass} flex items-center justify-center transition-colors duration-200"
-					onclick={handleSave}
-					title={stateManager.hasChanges() ? 'Save changes' : 'No unsaved changes'}
-					aria-label={stateManager.hasChanges() ? 'Save changes' : 'No unsaved changes'}
-				>
-					<i
-						class="fa-solid fa-floppy-disk text-lg {stateManager.hasChanges()
-							? 'animate-pulse'
-							: ''}"
-					></i>
-				</button>
+			<!-- Dark Mode Button -->
+			<button
+				class="w-8 h-8 min-w-[2rem] min-h-[2rem] flex items-center justify-center flex-shrink-0 rounded-lg bg-surface-500/10 hover:bg-surface-500/20 border border-surface-500/20 transition-colors duration-200"
+				onclick={uiViewModel.toggleDarkMode}
+				title="Toggle dark mode"
+				aria-label="Toggle dark mode"
+			>
+				<i class="fa-solid fa-sun text-lg hidden dark:block"></i>
+				<i class="fa-solid fa-moon text-lg block dark:hidden"></i>
+			</button>
+		</div>
 
-				<!-- Load State Button -->
-				<button
-					class="w-8 h-8 min-w-[2rem] min-h-[2rem] flex-shrink-0 rounded-lg bg-surface-300-600-token hover:bg-surface-400-500-token flex items-center justify-center"
-					onclick={handleLoad}
-					title="Load saved state"
-					aria-label="Load saved state"
-				>
-					<i class="fa-solid fa-rotate-left text-lg"></i>
-				</button>
-
-				<!-- Existing Dark Mode Button -->
-				<button
-					class="w-8 h-8 min-w-[2rem] min-h-[2rem] flex-shrink-0 rounded-lg bg-surface-300-600-token hover:bg-surface-400-500-token flex items-center justify-center"
-					onclick={() => uiViewModel.toggleDarkMode()}
-					title="Toggle dark mode"
-					aria-label="Toggle dark mode"
-				>
-					<i class="fa-solid fa-sun text-lg hidden dark:block"></i>
-					<i class="fa-solid fa-moon text-lg block dark:hidden"></i>
-				</button>
+		<!-- Workspace Selector -->
+		<div class="border-b border-surface-500/30">
+			<div class="pb-4 px-4">
+				<Workspaces />
 			</div>
 		</div>
 
 		<!-- Dataset Browser -->
-		<div class="py-6 flex-shrink-0">
-			<DatasetBrowser />
-		</div>
-
-		<!-- Case List -->
-		<div class="border-t border-surface-500/30 flex-1 overflow-hidden flex flex-col">
-			<div class="pt-6 flex-1 overflow-y-auto">
-				<CaseList />
-			</div>
+		<div class="flex-1 overflow-hidden">
+			<Browser />
 		</div>
 	</CollapsibleSidebar>
 
 	<!-- Main Content -->
 	<div class="flex-1 flex flex-col overflow-hidden">
-		{#if datasetViewModel.selectedDataset}
+		{#if datasetViewModel.selectedDatasets.length > 0 || caseViewModel.selectedCases.length > 0}
 			<div class="flex-1 flex flex-col min-h-0">
 				<!-- Viewer Grid -->
 				<div class="flex-1 overflow-auto">
@@ -155,7 +103,8 @@
 							<div class="flex items-center gap-3 text-surface-600-300-token">
 								<i class="fa-solid fa-arrow-left text-2xl animate-pulse"></i>
 								<p>
-									Select up to {caseViewModel.maxCases} cases from the list on the left to begin viewing
+									Select up to {caseViewModel.MAX_SELECTED_CASES} cases from the list on the left to
+									begin viewing
 								</p>
 							</div>
 						</div>
@@ -169,7 +118,8 @@
 						defaultSize="250px"
 						minSize={100}
 						maxSize={600}
-						bind:isCollapsed={uiViewModel.layerSidebarCollapsed}
+						bind:isCollapsed={uiViewModel.state.sidebars.layerCollapsed}
+						title="Layers"
 					>
 						<LayerMatrix />
 					</CollapsibleSidebar>
@@ -190,7 +140,8 @@
 		<CollapsibleSidebar
 			side="right"
 			defaultSize="400px"
-			bind:isCollapsed={uiViewModel.scriptSidebarCollapsed}
+			bind:isCollapsed={uiViewModel.state.sidebars.scriptCollapsed}
+			title="Script Editor"
 		>
 			<ScriptEditor />
 		</CollapsibleSidebar>

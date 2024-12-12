@@ -45,8 +45,12 @@ export const GET: RequestHandler = async ({ params, fetch }) => {
 			continue;
 		}
 
+		// Remove invalid characters from the display name
+		// TODO: Can we do better?
+		const displayNameNoInvalidChars = displayName[1].replace(/[^a-zA-Z0-9]/g, '');
+
 		layers.push({
-			id: displayName[1],
+			name: displayNameNoInvalidChars,
 			path: `/datasets/${params.dataset}/cases/${params.case}/layers/${file}`,
 		});
 	}

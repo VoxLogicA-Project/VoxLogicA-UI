@@ -2,8 +2,8 @@
 	import { onMount, onDestroy } from 'svelte';
 	import { browser } from '$app/environment';
 	import { layerViewModel } from '$lib/viewmodels/layer.svelte';
-	import { runViewModel } from '$lib/viewmodels/run.svelte';
 	import type { Case, Layer, LayerStyle } from '$lib/models/types';
+	import { debounce } from 'ts-debounce';
 
 	const { case_ } = $props<{ case_: Case }>();
 
@@ -12,18 +12,17 @@
 	let nv: any;
 	let Niivue: any;
 	let isInitialized = $state(false);
-	let loadingOperationCounter = $state(0);
 
 	function getVolumeIndex(layerPath: string) {
 		return nv.volumes.findIndex((vol: any) => vol.url === layerPath);
 	}
 
-	function setColorMap(layerId: string, colorMap: LayerStyle['colorMap']) {
+	function setColorMap(layerPath: Layer['path'], colorMap: LayerStyle['colorMap']) {
 		if (!isInitialized) return;
 
 		if (typeof colorMap === 'string') return colorMap;
-		nv.addColormap(layerId, colorMap);
-		return layerId;
+		nv.addColormap(layerPath, colorMap);
+		return layerPath;
 	}
 
 	onMount(async () => {
@@ -37,16 +36,15 @@
 					show3Dcrosshair: true,
 					dragMode: 0,
 					smoothDisplay: false,
+					logLevel: 'error',
+					dragAndDropEnabled: false,
 				});
 				await nv.attachToCanvas(canvas);
 				isInitialized = true;
 
 				// Load layers if any are selected
-				if (
-					layerViewModel.selectedLayersForCase(case_.id).length > 0 ||
-					runViewModel.selectedLayersForCase(case_.id).length > 0
-				) {
-					await loadAllLayers(++loadingOperationCounter);
+				if (layerViewModel.getAllSelectedLayersNoContext(case_.path).length > 0) {
+					await debouncedLoadAllLayers();
 				}
 			} catch (error) {
 				console.error('Failed to initialize Niivue:', error);
@@ -54,54 +52,36 @@
 		}
 	});
 
+	// Reload layers when selected layers change
 	$effect(() => {
 		if (isInitialized) {
-			const datasetLayers = layerViewModel.selectedLayersForCase(case_.id);
-			const runLayers = runViewModel.selectedLayersForCase(case_.id);
-			if (datasetLayers.length > 0 || runLayers.length > 0) {
-				// Debounce loading layers to avoid multiple re-renders
-				const timeoutId = setTimeout(() => {
-					loadAllLayers(++loadingOperationCounter);
-				}, 1000);
-
-				return () => {
-					clearTimeout(timeoutId);
-				};
+			if (layerViewModel.getAllSelectedLayersNoContext(case_.path).length > 0) {
+				debouncedLoadAllLayers();
 			}
 		}
 	});
 
+	// Update layer styles when selected layers change
 	$effect(() => {
-		// TODO: Update only layers that have changed
 		if (isInitialized) {
-			// Check each dataset layer for changes (take a snapshot for deep reactivity)
-			const datasetLayers = $state.snapshot(
-				layerViewModel.selectedLayersWithLayerStylesForCase(case_.id)
+			const desiredLayers = $state.snapshot(
+				layerViewModel.getAllSelectedLayersWithLayerStylesNoContext(case_.path)
 			);
-			datasetLayers.forEach(({ layer, style }) => {
-				updateLayerStyle(layer, style);
-			});
-
-			// Check each run layer for changes (take a snapshot for deep reactivity)
-			const runLayers = $state.snapshot(
-				runViewModel.selectedLayersWithLayerStylesForCase(case_.id)
-			);
-			runLayers.forEach(({ layer, style }) => {
+			desiredLayers.forEach(({ layer, style }) => {
 				updateLayerStyle(layer, style);
 			});
 		}
 	});
 
-	async function loadAllLayers(operationId: number) {
+	const debouncedLoadAllLayers = debounce(loadAllLayers, 1000);
+
+	async function loadAllLayers() {
 		if (!nv) return;
-		if (operationId !== loadingOperationCounter) return;
 
 		try {
 			// Get current and desired layers
 			const currentVolumes = nv.volumes.map((vol: any) => vol.url);
-			const datasetLayers = layerViewModel.selectedLayersWithLayerStylesForCase(case_.id);
-			const runLayers = runViewModel.selectedLayersWithLayerStylesForCase(case_.id);
-			const desiredLayers = [...datasetLayers, ...runLayers];
+			const desiredLayers = layerViewModel.getAllSelectedLayersWithLayerStylesNoContext(case_.path);
 
 			// Remove layers that are no longer needed
 			const layersToRemove = currentVolumes.filter(
@@ -128,10 +108,10 @@
 	}
 
 	async function loadLayer(layer: Layer, style: LayerStyle) {
-		const options: any = { url: layer.path, id: layer.id };
+		const options: any = { url: layer.path };
 
 		if (style.colorMap) {
-			options.colormap = setColorMap(layer.id, style.colorMap);
+			options.colormap = setColorMap(layer.path, style.colorMap);
 		}
 		if (style.alpha !== undefined) {
 			options.opacity = style.alpha;
@@ -140,17 +120,31 @@
 		await nv.addVolumeFromUrl(options);
 	}
 
-	function updateLayerStyle(layer: Layer, style: LayerStyle) {
+	function updateLayerStyle(layer: Layer, newStyle: LayerStyle) {
 		if (!nv) return;
 
 		const volumeIndex = getVolumeIndex(layer.path);
-		if (volumeIndex !== -1) {
-			const colorMapId = setColorMap(layer.id, style.colorMap);
-			nv.setColormap(nv.volumes[volumeIndex].id, colorMapId);
+		if (volumeIndex === -1) return;
 
-			if (style.alpha !== undefined) {
-				nv.setOpacity(volumeIndex, style.alpha);
+		const volume = nv.volumes[volumeIndex];
+		const currentStyle = {
+			colorMap: volume.colormap,
+			alpha: volume.opacity,
+		};
+
+		// Only update if styles are different
+		// TODO: This does not work when custom colormaps are used
+		// (colorMapId will be the same since we are using layer.path)
+		// So in that case it will always be updated
+		if (currentStyle.colorMap !== newStyle.colorMap || currentStyle.alpha !== newStyle.alpha) {
+			const colorMapId = setColorMap(layer.path, newStyle.colorMap);
+			nv.setColormap(volume.id, colorMapId);
+
+			if (newStyle.alpha !== undefined) {
+				nv.setOpacity(volumeIndex, newStyle.alpha);
 			}
+
+			nv.updateGLVolume();
 		}
 	}
 

@@ -1,26 +1,79 @@
 <script lang="ts">
 	import { TabGroup, Tab } from '@skeletonlabs/skeleton';
-	import { runViewModel } from '$lib/viewmodels/run.svelte';
 	import { uiViewModel } from '$lib/viewmodels/ui.svelte';
+	import { runViewModel } from '$lib/viewmodels/run.svelte';
+	import type { LayerContext } from '$lib/models/types';
 
-	// Watch for changes to bottomPanelBlinkingTab
-	$effect(() => {
-		if (uiViewModel.bottomPanelBlinkingTab) {
-			// Reset after 3 blinks (1s each) plus a small buffer
-			setTimeout(() => {
-				uiViewModel.bottomPanelBlinkingTab = null;
-			}, 3100);
+	// Initialize currentTabId
+	let currentTabId = $state('dataset');
+
+	// Compute tabs based on opened runs
+	const tabs: { id: string; layerContext: LayerContext; label: string }[] = $derived.by(() => {
+		var res: { id: string; layerContext: LayerContext; label: string }[] = [
+			{
+				id: 'dataset',
+				layerContext: { type: 'dataset' },
+				label: 'Dataset Layers',
+			},
+		];
+		for (const [index, runId] of runViewModel.openedRunsIds.entries()) {
+			res.push({
+				id: `run-${runId}`,
+				layerContext: { type: 'run', runId },
+				label: `Run ${index + 1}`,
+			});
+		}
+		return res;
+	});
+
+	// Initialize currentTabId based on the layerContext when component mounts
+	$effect.pre(() => {
+		const context = uiViewModel.layerContext;
+		if (context.type === 'run') {
+			currentTabId = `run-${context.runId}`;
+		} else {
+			currentTabId = 'dataset';
 		}
 	});
 
-	// Compute tabs based on run history
-	const tabs = $derived([
-		{ id: 'layers', label: 'Dataset Layers' },
-		...runViewModel.history.map((_, index) => ({
-			id: `run-${index}`,
-			label: `Run ${index + 1}`,
-		})),
-	]);
+	// Whenever id changes, we need to update the layerContext
+	$effect(() => {
+		const tab = tabs.find((tab) => tab.id === currentTabId);
+		if (tab) {
+			uiViewModel.layerContext = tab.layerContext;
+		}
+	});
+	// And viceversa, whenever layerContext changes, we need to update the currentTabId
+	$effect(() => {
+		const tab = tabs.find(
+			(tab) =>
+				tab.layerContext.type === uiViewModel.layerContext.type &&
+				tab.layerContext.runId === uiViewModel.layerContext.runId
+		);
+		if (tab) {
+			currentTabId = tab.id;
+		}
+	});
+
+	// If current tab no longer exists (so, if openedRunsIds changes), switch to the first available tab
+	$effect(() => {
+		if (
+			uiViewModel.layerContext.runId &&
+			!runViewModel.openedRunsIds.some((id) => id === uiViewModel.layerContext.runId)
+		) {
+			uiViewModel.layerContext = { type: 'dataset' };
+		}
+	});
+
+	// Countdown for blinking tab
+	$effect(() => {
+		if (uiViewModel.blinkingTabLayerContext) {
+			// Remove after 3 blinks (1s each) plus a small buffer
+			setTimeout(() => {
+				uiViewModel.blinkingTabLayerContext = null;
+			}, 3100);
+		}
+	});
 </script>
 
 <div class="tabs-container overflow-x-auto">
@@ -32,15 +85,27 @@
 	>
 		{#each tabs as tab}
 			<Tab
-				bind:group={uiViewModel.bottomPanelTab}
+				bind:group={currentTabId}
 				name="layers-tab"
 				value={tab.id}
-				class="px-3 py-1.5 whitespace-nowrap text-sm tab-custom {uiViewModel.bottomPanelBlinkingTab ===
-				tab.id
+				class="px-3 py-1.5 whitespace-nowrap text-sm tab-custom
+				{uiViewModel.blinkingTabLayerContext?.type === tab.layerContext.type &&
+				uiViewModel.blinkingTabLayerContext?.runId === tab.layerContext.runId
 					? 'blink-tab'
 					: ''}"
 			>
-				{tab.label}
+				{#if tab.layerContext.type === 'run' && tab.layerContext.runId}
+					<div class="flex items-center gap-2">
+						Run
+						<div
+							class="badge badge-sm bg-primary-900 text-primary-200 rounded-full w-5 h-5 flex items-center justify-center"
+						>
+							{runViewModel.getSelectionIndex(tab.layerContext.runId)}
+						</div>
+					</div>
+				{:else}
+					{tab.label}
+				{/if}
 			</Tab>
 		{/each}
 	</TabGroup>

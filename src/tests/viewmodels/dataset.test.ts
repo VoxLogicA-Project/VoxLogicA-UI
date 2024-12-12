@@ -1,83 +1,92 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { datasetViewModel } from '../../lib/viewmodels/dataset.svelte';
-import { apiRepository } from '$lib/models/repository';
-import type { Dataset } from '$lib/models/types';
+import { describe, it, expect, vi } from 'vitest';
+import { datasetViewModel } from '$lib/viewmodels/dataset.svelte';
+import { apiRepository, loadedData } from '$lib/models/repository.svelte';
+import { resetTestState } from './viewmodel-test-utils';
 
-// Mock the repository
-vi.mock('$lib/models/repository', () => ({
-	apiRepository: {
-		getDatasets: vi.fn(),
-	},
-}));
+vi.mock('$lib/models/repository.svelte', async () => {
+	const actual = await vi.importActual('$lib/models/repository.svelte');
+	return {
+		...actual,
+		apiRepository: {
+			fetchDatasets: vi.fn(async () => {
+				// This function will update loadedData.datasets directly
+				// as it would in the real implementation
+			}),
+			fetchCases: vi.fn(async () => {
+				// This function will update loadedData.cases directly
+			}),
+		},
+	};
+});
 
-describe('DatasetViewModel', () => {
-	const mockDatasets: Dataset[] = [
-		{ id: 'dataset1', layout: 'brats' },
-		{ id: 'dataset2', layout: 'brats' },
-	];
-
-	beforeEach(() => {
-		// Reset the view model state
-		datasetViewModel.reset();
-		// Clear mock calls
-		vi.clearAllMocks();
-	});
+describe('datasetViewModel', () => {
+	resetTestState();
 
 	describe('loadDatasets', () => {
-		it('should load datasets successfully', async () => {
-			// Arrange
-			vi.mocked(apiRepository.getDatasets).mockResolvedValue(mockDatasets);
+		it('should handle successful dataset loading', async () => {
+			const mockDatasets = [
+				{ name: 'dataset1', layout: 'brats' },
+				{ name: 'dataset2', layout: 'custom' },
+			];
 
-			// Act
+			vi.mocked(apiRepository.fetchDatasets).mockImplementationOnce(async () => {
+				loadedData.datasets = mockDatasets;
+			});
+
 			await datasetViewModel.loadDatasets();
 
-			// Assert
-			expect(apiRepository.getDatasets).toHaveBeenCalledTimes(1);
-			expect(datasetViewModel.datasets).toEqual(mockDatasets);
 			expect(datasetViewModel.isLoading).toBe(false);
-			expect(datasetViewModel.currentError).toBeNull();
+			expect(datasetViewModel.error).toBeNull();
+			expect(datasetViewModel.hasDatasets).toBe(true);
+			expect(loadedData.datasets).toEqual(mockDatasets);
 		});
 
-		it('should handle errors when loading datasets', async () => {
-			// Arrange
-			const error = new Error('Failed to fetch');
-			vi.mocked(apiRepository.getDatasets).mockRejectedValue(error);
+		it('should handle loading errors', async () => {
+			vi.mocked(apiRepository.fetchDatasets).mockRejectedValueOnce(new Error('Network error'));
 
-			// Act
 			await datasetViewModel.loadDatasets();
 
-			// Assert
-			expect(apiRepository.getDatasets).toHaveBeenCalledTimes(1);
-			expect(datasetViewModel.datasets).toEqual([]);
 			expect(datasetViewModel.isLoading).toBe(false);
-			expect(datasetViewModel.currentError).toBe('Failed to fetch');
+			expect(datasetViewModel.error).toBe('Network error');
+			expect(datasetViewModel.hasDatasets).toBe(false);
+			expect(loadedData.datasets).toEqual([]);
 		});
 	});
 
 	describe('selectDataset', () => {
-		it('should select a dataset', () => {
-			// Arrange
-			const dataset = mockDatasets[0];
+		it('should handle successful dataset selection', async () => {
+			const dataset = { name: 'dataset1', layout: 'brats' };
+			const mockCases = [{ name: 'case1', path: '/case1', id: 'dataset1-case1' }];
 
-			// Act
-			datasetViewModel.selectDataset(dataset);
+			// First, ensure the dataset is in the available datasets
+			loadedData.datasets = [dataset];
 
-			// Assert
+			vi.mocked(apiRepository.fetchCases).mockImplementationOnce(async () => {
+				loadedData.cases = mockCases;
+			});
+
+			await datasetViewModel.selectDataset(dataset);
+
 			expect(datasetViewModel.selectedDataset).toEqual(dataset);
+			expect(datasetViewModel.isLoading).toBe(false);
+			expect(datasetViewModel.error).toBeNull();
+			expect(loadedData.cases).toEqual(mockCases);
 		});
-	});
 
-	describe('reset', () => {
-		it('should reset the view model', () => {
-			// Arrange
-			datasetViewModel.selectDataset(mockDatasets[0]);
+		it('should handle selection errors', async () => {
+			const dataset = { name: 'dataset1', layout: 'brats' };
 
-			// Act
-			datasetViewModel.reset();
+			// First, ensure the dataset is in the available datasets
+			loadedData.datasets = [dataset];
 
-			// Assert
+			vi.mocked(apiRepository.fetchCases).mockRejectedValueOnce(new Error('Failed to load'));
+
+			await datasetViewModel.selectDataset(dataset);
+
 			expect(datasetViewModel.selectedDataset).toBeNull();
-			expect(datasetViewModel.datasets).toEqual([]);
+			expect(datasetViewModel.isLoading).toBe(false);
+			expect(datasetViewModel.error).toBe('Failed to load');
+			expect(loadedData.cases).toEqual([]);
 		});
 	});
 });
