@@ -68,12 +68,23 @@
 							</a>
 						</div>
 					</div>
-					<div class="order-first md:order-last">
+					<div class="order-first md:order-last space-y-4">
 						<img
-							src="screenshots/example.png"
+							id="screenshot"
+							src="screenshots/example_light.png"
 							alt="VoxLogicA UI Screenshot"
 							class="w-full rounded-xl shadow-lg"
 						/>
+						<div class="flex justify-center">
+							<button
+								id="themeToggle"
+								class="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 shadow-sm transition-colors"
+								aria-label="Toggle theme"
+							>
+								<i id="themeIcon" class="fas fa-moon"></i>
+								<span id="themeText">Switch to Dark Mode</span>
+							</button>
+						</div>
 					</div>
 				</div>
 			</div>
@@ -118,5 +129,24 @@
 				</p>
 			</div>
 		</footer>
+
+		<script>
+			const screenshot = document.getElementById('screenshot');
+			const themeToggle = document.getElementById('themeToggle');
+			const themeIcon = document.getElementById('themeIcon');
+			const themeText = document.getElementById('themeText');
+			let isDark = false;
+
+			themeToggle.addEventListener('click', () => {
+				isDark = !isDark;
+
+				// Update screenshot
+				screenshot.src = isDark ? 'screenshots/example_dark.png' : 'screenshots/example_light.png';
+
+				// Update icon and text
+				themeIcon.className = isDark ? 'fas fa-sun' : 'fas fa-moon';
+				themeText.textContent = isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode';
+			});
+		</script>
 	</body>
 </html>
