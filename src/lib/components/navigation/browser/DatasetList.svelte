@@ -64,7 +64,7 @@
 			>
 				<div class="w-6 flex justify-center mr-2 flex-shrink-0">
 					{#if !datasetViewModel.isSelected(dataset) && caseViewModel.getSelectedCasesForDataset(dataset.name).length > 0}
-						<div class="badge badge-sm bg-surface-400-500-token text-surface-900-50-token">
+						<div class="badge badge-sm bg-surface-400 text-surface-50">
 							{caseViewModel.getSelectedCasesForDataset(dataset.name).length}
 						</div>
 					{:else}
