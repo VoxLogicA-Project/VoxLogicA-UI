@@ -48,6 +48,7 @@
 		</button>
 		{#if run.outputPrint?.length > 0}
 			<button
+				id="clicckino"
 				type="button"
 				title="Show run prints"
 				aria-label="Show run prints"

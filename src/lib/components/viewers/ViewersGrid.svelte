@@ -7,11 +7,19 @@
 	let lastNumberOfOpenedCases = 0;
 	$effect(() => {
 		const selectedCount = caseViewModel.selectedCases.length;
+		const fullscreenPath = uiViewModel.state.viewers.fullscreenCasePath;
 
 		if (selectedCount === 1) {
 			uiViewModel.state.viewers.fullscreenCasePath = caseViewModel.selectedCases[0].path;
 		} else if (selectedCount === 2 && lastNumberOfOpenedCases === 1) {
 			uiViewModel.state.viewers.fullscreenCasePath = null;
+		} else if (selectedCount > 0 && fullscreenPath) {
+			// Check if the current fullscreen case still exists
+			const stillExists = caseViewModel.selectedCases.some((c) => c.path === fullscreenPath);
+			if (!stillExists) {
+				// Switch to the first available case
+				uiViewModel.state.viewers.fullscreenCasePath = caseViewModel.selectedCases[0].path;
+			}
 		}
 
 		lastNumberOfOpenedCases = selectedCount;
