@@ -309,7 +309,10 @@
 				<i class="fa-solid fa-chevron-up text-sm"></i>
 			</button>
 
-			<div class="card p-0 w-48 shadow-xl bg-surface-200-700-token" data-popup="case-dropdown">
+			<div
+				class="card p-0 w-48 bg-surface-50-900-token border border-surface-400-500-token shadow-xl"
+				data-popup="case-dropdown"
+			>
 				<div class="py-1">
 					{#each caseViewModel.selectedCases as case_, i}
 						<button
@@ -318,14 +321,14 @@
 							aria-label={`Run script for ${case_.name}`}
 							onclick={() => handleSingleRun(case_)}
 						>
-							Run Case <strong>{case_.name}</strong>
+							Run Case <strong class="text-surface-900-50-token">{case_.name}</strong>
 						</button>
 						{#if i !== caseViewModel.selectedCases.length - 1}
 							<hr class="border-surface-500/30" />
 						{/if}
 					{/each}
 				</div>
-				<div class="arrow bg-surface-200-700-token"></div>
+				<div class="arrow bg-surface-400-500-token"></div>
 			</div>
 		</div>
 	</div>

@@ -23,12 +23,6 @@
 		sessionViewModel.loadWorkspaces();
 	});
 
-	const saveButtonClass = $derived(
-		sessionViewModel.hasUnsavedChanges
-			? 'bg-error-500/20 hover:bg-error-500/30 shadow-lg shadow-error-500/20 ring-1 ring-error-500/50'
-			: 'bg-surface-500/10 hover:bg-surface-500/20'
-	);
-
 	// Auto-save workspace when there are unsaved changes
 	const debouncedSaveWorkspace = debounce(async () => {
 		if (!sessionViewModel.hasUnsavedChanges) return;
