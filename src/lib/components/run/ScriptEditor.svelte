@@ -201,7 +201,7 @@
 				});
 			} else {
 				toastStore.trigger({
-					message: `Single run completed successfully for ${case_.id}!`,
+					message: `Single run completed successfully for ${case_.name}!`,
 					background: 'variant-filled-success',
 				});
 			}

@@ -116,7 +116,11 @@ async function processCase(
 	scriptContent: string,
 	fetch: Function
 ): Promise<Run> {
-	const runOutputPath = RUN_OUTPUT_PATH(workspaceId, case_.id, runId);
+	// We could use case.path as a unique identifier for the case, but we can save some space this way
+	const caseDataset = case_.path.split('/')[2];
+	const caseId = caseDataset + '_' + case_.name;
+
+	const runOutputPath = RUN_OUTPUT_PATH(workspaceId, caseId, runId);
 	await fs.mkdir(runOutputPath, { recursive: true });
 
 	const scriptPath = path.join(runOutputPath, 'script.imgql');
@@ -132,7 +136,7 @@ async function processCase(
 			scriptContent,
 			outputLayers: voxlogicaResult.layers.map((layer) => ({
 				name: layer.name,
-				path: `/workspaces/${workspaceId}/${case_.id}/${runId}/layers/${layer.name}.nii.gz`,
+				path: `/workspaces/${workspaceId}/${caseId}/${runId}/layers/${layer.name}.nii.gz`,
 			})),
 			outputPrint: voxlogicaResult.print,
 			outputLog: voxlogicaResult.log,

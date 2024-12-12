@@ -113,8 +113,8 @@ export const apiRepository = {
 		);
 	},
 
-	async fetchLayers(caseData: Case) {
-		loadedData.layersByCasePath[caseData.path] = await api.fetch<Layer[]>(caseData.path);
+	async fetchLayers(case_: Case) {
+		loadedData.layersByCasePath[case_.path] = await api.fetch<Layer[]>(case_.path);
 	},
 
 	async fetchPresetsScripts() {
@@ -257,9 +257,9 @@ async function loadWorkspaceData(workspace: Workspace) {
 	// Load layers for opened cases
 	for (const casePath of workspace.state.data.openedCasesPaths) {
 		const datasetName = casePath.split('/')[2];
-		const caseData = loadedData.casesByDataset[datasetName]?.find((c) => c.path === casePath);
-		if (caseData) {
-			await apiRepository.fetchLayers(caseData);
+		const case_ = loadedData.casesByDataset[datasetName]?.find((c) => c.path === casePath);
+		if (case_) {
+			await apiRepository.fetchLayers(case_);
 		}
 	}
 }

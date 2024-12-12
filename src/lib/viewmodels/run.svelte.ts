@@ -132,8 +132,8 @@ function saveEditorContent(content: string): void {
 	currentWorkspace.state.ui.scriptEditor.content = content;
 }
 
-async function singleRun(caseData: Case): Promise<void> {
-	await runAll([caseData]);
+async function singleRun(case_: Case): Promise<void> {
+	await runAll([case_]);
 }
 
 async function runAll(cases: Case[]): Promise<Run['id']> {

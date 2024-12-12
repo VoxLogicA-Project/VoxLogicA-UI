@@ -15,8 +15,8 @@
 	const filteredCases = $derived.by(() => {
 		// First filter by search query
 		const searchFiltered = searchQuery
-			? caseViewModel.cases.filter((caseData) =>
-					caseData.id.toLowerCase().includes(searchQuery.toLowerCase())
+			? caseViewModel.cases.filter((case_) =>
+					case_.name.toLowerCase().includes(searchQuery.toLowerCase())
 				)
 			: caseViewModel.cases;
 

@@ -37,8 +37,8 @@ const isSelected = $derived((casePath: Case['path']) => {
 });
 
 // Actions
-async function selectCase(caseData: Case): Promise<void> {
-	if (isSelected(caseData.path)) return;
+async function selectCase(case_: Case): Promise<void> {
+	if (isSelected(case_.path)) return;
 	if (!canSelectMore) {
 		error = `Cannot select more than ${MAX_SELECTED_CASES} cases`;
 		return;
@@ -47,10 +47,10 @@ async function selectCase(caseData: Case): Promise<void> {
 	error = null;
 
 	try {
-		await apiRepository.fetchLayers(caseData);
+		await apiRepository.fetchLayers(case_);
 		currentWorkspace.state.data.openedCasesPaths = [
 			...currentWorkspace.state.data.openedCasesPaths,
-			caseData.path,
+			case_.path,
 		];
 		// Initialize default styles for each layer
 		layerViewModel.uniqueLayersNames.forEach((layerName) => {
@@ -60,23 +60,23 @@ async function selectCase(caseData: Case): Promise<void> {
 			}
 		});
 	} catch (e) {
-		error = e instanceof Error ? e.message : `Failed to load layers for case: ${caseData.name}`;
+		error = e instanceof Error ? e.message : `Failed to load layers for case: ${case_.name}`;
 	}
 }
 
-function deselectCase(caseData: Case): void {
+function deselectCase(case_: Case): void {
 	currentWorkspace.state.data.openedCasesPaths =
-		currentWorkspace.state.data.openedCasesPaths.filter((path) => path !== caseData.path);
+		currentWorkspace.state.data.openedCasesPaths.filter((path) => path !== case_.path);
 	// Clean up any associated layers state
-	delete loadedData.layersByCasePath[caseData.path];
-	delete currentWorkspace.state.datasetLayersState.openedLayersPathsByCasePath[caseData.path];
+	delete loadedData.layersByCasePath[case_.path];
+	delete currentWorkspace.state.datasetLayersState.openedLayersPathsByCasePath[case_.path];
 }
 
-async function toggleCase(caseData: Case): Promise<void> {
-	if (isSelected(caseData.path)) {
-		deselectCase(caseData);
+async function toggleCase(case_: Case): Promise<void> {
+	if (isSelected(case_.path)) {
+		deselectCase(case_);
 	} else {
-		await selectCase(caseData);
+		await selectCase(case_);
 	}
 }
 

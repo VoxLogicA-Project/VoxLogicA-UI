@@ -5,7 +5,7 @@
 	import type { Case, Layer, LayerStyle } from '$lib/models/types';
 	import { debounce } from 'ts-debounce';
 
-	const { case_ } = $props<{ case_: Case }>();
+	const { case_ }: { case_: Case } = $props();
 
 	let container: HTMLDivElement;
 	let canvas: HTMLCanvasElement;
@@ -152,7 +152,7 @@
 		if (!nv || !isInitialized) return;
 
 		const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-		const filename = `${case_.id}_${timestamp}.png`;
+		const filename = `${case_.name}_${timestamp}.png`;
 
 		try {
 			await nv.saveScene(filename);

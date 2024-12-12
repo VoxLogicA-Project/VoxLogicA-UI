@@ -56,11 +56,11 @@ describe('caseViewModel', () => {
 		it('should prevent selecting more than MAX_SELECTED_CASES', async () => {
 			// Select maximum number of cases
 			for (let i = 0; i < 16; i++) {
-				const caseData = { name: `case${i}`, path: `/case${i}`, id: `case${i}` };
+				const case_ = { name: `case${i}`, path: `/case${i}`, id: `case${i}` };
 				vi.mocked(apiRepository.fetchLayers).mockImplementationOnce(async () => {
-					loadedData.layersByCaseId[caseData.id] = [];
+					loadedData.layersByCaseId[case_.id] = [];
 				});
-				await caseViewModel.selectCase(mockDataset, caseData);
+				await caseViewModel.selectCase(mockDataset, case_);
 			}
 
 			// Try to select one more

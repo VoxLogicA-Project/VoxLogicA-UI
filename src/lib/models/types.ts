@@ -6,7 +6,6 @@ export interface Dataset {
 export interface Case {
 	name: string;
 	path: string;
-	id: string;
 }
 
 export interface Layer {
