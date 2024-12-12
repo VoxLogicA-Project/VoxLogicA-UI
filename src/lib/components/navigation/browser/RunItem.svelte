@@ -6,6 +6,10 @@
 
 	let { run }: { run: Run } = $props();
 
+	const hasActivePrintFilters = $derived(
+		runViewModel.printFilters.some((f) => f.label.trim() && f.value.trim())
+	);
+
 	function toggleRunDetails(runId: string, event: MouseEvent) {
 		event.stopPropagation();
 		uiViewModel.toggleRunExpansion(runId);
@@ -46,7 +50,7 @@
 				<span class="opacity-50 truncate">({run.id})</span>
 			</span>
 		</button>
-		{#if run.outputPrint?.length > 0}
+		{#if run.outputPrint?.length > 0 && !hasActivePrintFilters}
 			<button
 				id="clicckino"
 				type="button"
