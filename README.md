@@ -43,12 +43,12 @@ cd voxlogica-ui
 touch .env
 ```
 
-Then set the paths to your datasets, scripts and temporary outputs in the `.env` file:
+Then set the following paths in the `.env` file:
 
 ```bash
-DATASET_PATH=/path/to/your/datasets
-SCRIPTS_PATH=/path/to/your/scripts
-RUN_OUTPUT_PATH=/path/to/temporary/outputs
+DATASET_PATH=/path/to/your/datasets     # Default: static/datasets
+SCRIPTS_PATH=/path/to/your/scripts      # Default: static/scripts
+WORKSPACES_PATH=/path/to/workspaces     # Default: {temp_dir}/voxlogica-ui/workspaces
 ```
 
 3. Download and install dependencies:
@@ -102,4 +102,10 @@ If you encounter permission issues with VoxLogicA binary:
 
 ## License
 
-This project is licensed under the same terms as VoxLogicA. See the [VoxLogicA repository](https://github.com/vincenzoml/VoxLogicA) for more information.
+VoxLogica UI is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License along with this program. If not, see <https://www.gnu.org/licenses/>.
+
+For more information about VoxLogicA itself, please visit the [main project repository](https://github.com/vincenzoml/VoxLogicA).

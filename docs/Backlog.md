@@ -1,18 +1,5 @@
 # Remaining tasks
 
-## UI
-
-- Rework the left sidebar
-
-  - Able to select multiple datasets
-
-- Stretch goal:
-  - Add view-only mode:
-    - View cases one at a time
-    - No script editing
-    - Preselected per-case layers to show
-    - Possibility to score the runs
-
 ## Security
 
 - Path Traversal Vulnerabilities:
