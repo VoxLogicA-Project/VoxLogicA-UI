@@ -45,16 +45,7 @@
 	{#if uiViewModel.expandedCasePaths.has(case_.path) || caseViewModel.isSelected(case_.path)}
 		<div transition:slide|local={{ duration: TRANSITION_DURATION, easing: quintOut }}>
 			<ul class="pl-6 space-y-0.5 mt-0.5">
-				{#if runViewModel.getRunsForCase(case_.path).length === 0}
-					<li>
-						<div
-							class="px-3 py-1.5 text-sm opacity-50 flex items-center min-w-0 text-surface-900-50-token"
-						>
-							<i class="fa-solid fa-circle-info mr-2 flex-shrink-0"></i>
-							<span class="truncate">No runs available</span>
-						</div>
-					</li>
-				{:else}
+				{#if runViewModel.getRunsForCase(case_.path).length > 0}
 					{#each runViewModel.getRunsForCase(case_.path) as run}
 						<li>
 							<RunItem {run} />
