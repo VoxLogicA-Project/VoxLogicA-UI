@@ -18,7 +18,7 @@ function reset(): void {
 			fullscreenCasePath: null,
 		},
 		layers: {
-			bottomPanelTab: 'layers',
+			layerContext: { type: 'dataset' },
 		},
 		scriptEditor: {
 			content: '',
@@ -26,6 +26,7 @@ function reset(): void {
 	});
 	expandedCasePaths = new Set();
 	expandedRunIds = new Set();
+	blinkingTabLayerContext = null;
 }
 
 function toggleDarkMode(): void {

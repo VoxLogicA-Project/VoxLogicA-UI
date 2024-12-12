@@ -1,23 +1,19 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { apiRepository, loadedData } from '$lib/models/repository.svelte';
 import type { Dataset, Case, Layer, PresetScript } from '$lib/models/types';
+import { initialWorkspaceState, resetTestState } from '../viewmodels/viewmodel-test-utils';
 
 // Mock fetch globally
 const mockFetch = vi.fn();
 global.fetch = mockFetch;
 
 describe('ApiRepository', () => {
+	// Use the shared test state reset utility
+	resetTestState();
+
+	// Clear mock between tests
 	beforeEach(() => {
-		vi.clearAllMocks();
-		// Reset loadedData state before each test
-		Object.assign(loadedData, {
-			availableWorkspacesIds: [],
-			datasets: [],
-			cases: [],
-			layersByCaseId: {},
-			runsByCaseId: {},
-			presetScripts: [],
-		});
+		mockFetch.mockClear();
 	});
 
 	describe('getDatasets', () => {
@@ -37,7 +33,7 @@ describe('ApiRepository', () => {
 			await apiRepository.fetchDatasets();
 
 			// Assert
-			expect(mockFetch).toHaveBeenCalledWith('/datasets');
+			expect(mockFetch).toHaveBeenCalledWith('/datasets', undefined);
 			expect(loadedData.datasets).toEqual(mockDatasets);
 		});
 
@@ -46,7 +42,7 @@ describe('ApiRepository', () => {
 			mockFetch.mockRejectedValueOnce(new Error('Network error'));
 
 			// Act & Assert
-			await expect(apiRepository.fetchDatasets()).rejects.toThrow('Failed to fetch datasets');
+			await expect(apiRepository.fetchDatasets()).rejects.toThrow('Failed to fetch data');
 		});
 	});
 
@@ -55,8 +51,8 @@ describe('ApiRepository', () => {
 			// Arrange
 			const mockDataset: Dataset = { name: 'dataset1', layout: 'brats' };
 			const mockCases: Case[] = [
-				{ name: 'case1', path: 'dataset1/case1', id: 'dataset1-case1' },
-				{ name: 'case2', path: 'dataset1/case2', id: 'dataset1-case2' },
+				{ name: 'case1', path: 'dataset1/case1' },
+				{ name: 'case2', path: 'dataset1/case2' },
 			];
 
 			mockFetch.mockResolvedValueOnce({
@@ -68,16 +64,15 @@ describe('ApiRepository', () => {
 			await apiRepository.fetchCases(mockDataset);
 
 			// Assert
-			expect(mockFetch).toHaveBeenCalledWith(`/datasets/${mockDataset.name}/cases`);
-			expect(loadedData.cases).toEqual(mockCases);
+			expect(mockFetch).toHaveBeenCalledWith(`/datasets/${mockDataset.name}/cases`, undefined);
+			expect(loadedData.casesByDataset[mockDataset.name]).toEqual(mockCases);
 		});
 	});
 
 	describe('getLayers', () => {
 		it('should fetch and update layers state', async () => {
 			// Arrange
-			const mockDataset: Dataset = { name: 'dataset1', layout: 'brats' };
-			const mockCase: Case = { name: 'case1', path: 'dataset1/case1', id: 'dataset1-case1' };
+			const mockCase: Case = { name: 'case1', path: 'dataset1/case1' };
 			const mockLayers: Layer[] = [
 				{ name: 'layer1', path: 'layer1.nii.gz' },
 				{ name: 'layer2', path: 'layer2.nii.gz' },
@@ -89,13 +84,11 @@ describe('ApiRepository', () => {
 			});
 
 			// Act
-			await apiRepository.fetchLayers(mockDataset, mockCase);
+			await apiRepository.fetchLayers(mockCase);
 
 			// Assert
-			expect(mockFetch).toHaveBeenCalledWith(
-				`/datasets/${mockDataset.name}/cases/${mockCase.name}/layers`
-			);
-			expect(loadedData.layersByCaseId[mockCase.id]).toEqual(mockLayers);
+			expect(mockFetch).toHaveBeenCalledWith(mockCase.path, undefined);
+			expect(loadedData.layersByCasePath[mockCase.path]).toEqual(mockLayers);
 		});
 	});
 
@@ -116,7 +109,7 @@ describe('ApiRepository', () => {
 			await apiRepository.fetchPresetsScripts();
 
 			// Assert
-			expect(mockFetch).toHaveBeenCalledWith('/scripts');
+			expect(mockFetch).toHaveBeenCalledWith('/scripts', undefined);
 			expect(loadedData.presetScripts).toEqual(mockPresets);
 		});
 	});
@@ -138,6 +131,108 @@ describe('ApiRepository', () => {
 			// Assert
 			expect(mockFetch).toHaveBeenCalledWith(mockPreset.path);
 			expect(content).toBe(mockContent);
+		});
+	});
+
+	// Add new tests for workspace-related functionality
+	describe('workspace operations', () => {
+		it('should fetch and load workspace data', async () => {
+			// Arrange
+			const mockWorkspace = {
+				id: 'workspace1',
+				name: 'Test Workspace',
+				createdAt: new Date(),
+				updatedAt: new Date(),
+				state: {
+					data: {
+						openedDatasetsNames: ['dataset1'],
+						openedCasesPaths: ['dataset1/case1'],
+						openedRunsIds: [],
+					},
+					datasetLayersState: {
+						openedLayersPathsByCasePath: {},
+						stylesByLayerName: {},
+					},
+					runsLayersStates: {},
+					ui: {
+						isDarkMode: false,
+						sidebars: {
+							datasetCollapsed: false,
+							layerCollapsed: false,
+							scriptCollapsed: false,
+						},
+						viewers: {
+							fullscreenCasePath: null,
+						},
+						layers: {
+							layerContext: { type: 'dataset' },
+						},
+						scriptEditor: {
+							content: '',
+						},
+					},
+				},
+			};
+
+			mockFetch.mockResolvedValueOnce({
+				ok: true,
+				json: () => Promise.resolve(mockWorkspace),
+			});
+
+			// Mock subsequent data fetches
+			mockFetch.mockResolvedValueOnce({
+				ok: true,
+				json: () => Promise.resolve([]), // datasets
+			});
+			mockFetch.mockResolvedValueOnce({
+				ok: true,
+				json: () => Promise.resolve([]), // preset scripts
+			});
+			mockFetch.mockResolvedValueOnce({
+				ok: true,
+				json: () => Promise.resolve([]), // runs
+			});
+
+			// Act
+			await apiRepository.fetchAndLoadWorkspace('workspace1');
+
+			// Assert
+			expect(mockFetch).toHaveBeenNthCalledWith(1, '/workspaces/workspace1', undefined);
+
+			// Add more specific assertions for subsequent calls
+			expect(mockFetch).toHaveBeenNthCalledWith(2, '/datasets', undefined);
+			expect(mockFetch).toHaveBeenNthCalledWith(3, '/scripts', undefined);
+			expect(mockFetch).toHaveBeenNthCalledWith(4, '/workspaces/workspace1/runs', undefined);
+		});
+
+		it('should handle workspace creation', async () => {
+			// Arrange
+			const mockWorkspace = {
+				id: 'new-workspace',
+				name: 'New Workspace',
+				createdAt: new Date(),
+				updatedAt: new Date(),
+				state: initialWorkspaceState,
+			};
+
+			mockFetch.mockResolvedValueOnce({
+				ok: true,
+				json: () => Promise.resolve(mockWorkspace),
+			});
+
+			// Act
+			const result = await apiRepository.createWorkspace('New Workspace');
+
+			// Assert
+			expect(mockFetch).toHaveBeenCalledWith('/workspaces', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({
+					sourceId: undefined,
+					workspace: { name: 'New Workspace', state: initialWorkspaceState },
+				}),
+			});
+			expect(result).toEqual(mockWorkspace);
 		});
 	});
 });

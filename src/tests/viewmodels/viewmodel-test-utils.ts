@@ -5,7 +5,7 @@ import type { SerializedWorkspaceState } from '$lib/models/types';
 // Initial workspace state matching the reset state in session viewmodel
 export const initialWorkspaceState: SerializedWorkspaceState = {
 	data: {
-		openedDatasetName: null,
+		openedDatasetsNames: [],
 		openedCasesPaths: [],
 		openedRunsIds: [],
 	},
@@ -13,7 +13,7 @@ export const initialWorkspaceState: SerializedWorkspaceState = {
 		openedLayersPathsByCasePath: {},
 		stylesByLayerName: {},
 	},
-	runsLayersStates: [],
+	runsLayersStates: {},
 	ui: {
 		isDarkMode: false,
 		sidebars: {
@@ -25,7 +25,9 @@ export const initialWorkspaceState: SerializedWorkspaceState = {
 			fullscreenCasePath: null,
 		},
 		layers: {
-			bottomPanelTab: 'layers',
+			layerContext: {
+				type: 'dataset',
+			},
 		},
 		scriptEditor: {
 			content: '',
@@ -38,6 +40,7 @@ export function resetTestState() {
 	beforeEach(() => {
 		// Reset loadedData
 		Object.assign(loadedData, {
+			casesByDataset: {},
 			availableWorkspacesIds: [],
 			datasets: [],
 			cases: [],

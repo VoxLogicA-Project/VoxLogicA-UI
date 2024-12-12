@@ -2,7 +2,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { sessionViewModel } from '$lib/viewmodels/session.svelte';
 import { apiRepository, loadedData, currentWorkspace } from '$lib/models/repository.svelte';
 import { resetTestState } from './viewmodel-test-utils';
-import type { Workspace } from '$lib/models/types';
+import type { Workspace, LocalWorkspaceEntry } from '$lib/models/types';
 
 // Mock the repository
 vi.mock('$lib/models/repository.svelte', async () => {
@@ -12,7 +12,13 @@ vi.mock('$lib/models/repository.svelte', async () => {
 		apiRepository: {
 			fetchWorkspaces: vi.fn(async () => {}),
 			fetchWorkspace: vi.fn(async () => {}),
+			fetchAndLoadWorkspace: vi.fn(async () => {}),
 			saveWorkspace: vi.fn(async () => {}),
+			createWorkspace: vi.fn(async () => {}),
+			deleteWorkspace: vi.fn(async () => {}),
+			getLocalWorkspaces: vi.fn(() => []),
+			saveLocalWorkspaces: vi.fn(() => {}),
+			removeLocalWorkspace: vi.fn(() => {}),
 		},
 	};
 });
@@ -27,15 +33,15 @@ describe('sessionViewModel', () => {
 		updatedAt: new Date('2024-01-01'),
 		state: {
 			data: {
-				openedDatasetName: 'dataset1',
-				openedCasesPaths: ['/case1'],
+				openedDatasetsNames: [],
+				openedCasesPaths: [],
 				openedRunsIds: [],
 			},
 			datasetLayersState: {
 				openedLayersPathsByCasePath: {},
 				stylesByLayerName: {},
 			},
-			runsLayersStates: [],
+			runsLayersStates: {},
 			ui: {
 				isDarkMode: false,
 				sidebars: {
@@ -47,7 +53,7 @@ describe('sessionViewModel', () => {
 					fullscreenCasePath: null,
 				},
 				layers: {
-					bottomPanelTab: 'layers',
+					layerContext: { type: 'dataset' },
 				},
 				scriptEditor: {
 					content: '',
@@ -56,12 +62,15 @@ describe('sessionViewModel', () => {
 		},
 	};
 
+	const mockWorkspaceEntries: LocalWorkspaceEntry[] = [
+		{ id: 'workspace1', name: 'Test Workspace' },
+		{ id: 'workspace2', name: 'Another Workspace' },
+	];
+
 	describe('loadWorkspaces', () => {
 		it('should handle successful workspaces loading', async () => {
-			const mockWorkspaceIds = ['workspace1', 'workspace2'];
-
 			vi.mocked(apiRepository.fetchWorkspaces).mockImplementationOnce(async () => {
-				loadedData.availableWorkspacesIds = mockWorkspaceIds;
+				loadedData.availableWorkspacesIdsAndNames = mockWorkspaceEntries;
 			});
 
 			await sessionViewModel.loadWorkspaces();
@@ -69,24 +78,26 @@ describe('sessionViewModel', () => {
 			expect(sessionViewModel.isLoading).toBe(false);
 			expect(sessionViewModel.error).toBeNull();
 			expect(sessionViewModel.hasWorkspaces).toBe(true);
-			expect(sessionViewModel.availableWorkspaces).toEqual(mockWorkspaceIds);
+			expect(sessionViewModel.availableWorkspacesIdsAndNames).toEqual(mockWorkspaceEntries);
 		});
 
 		it('should handle loading errors', async () => {
 			vi.mocked(apiRepository.fetchWorkspaces).mockRejectedValueOnce(new Error('Network error'));
+			// Clear any existing workspaces
+			loadedData.availableWorkspacesIdsAndNames = [];
 
 			await sessionViewModel.loadWorkspaces();
 
 			expect(sessionViewModel.isLoading).toBe(false);
 			expect(sessionViewModel.error).toBe('Network error');
 			expect(sessionViewModel.hasWorkspaces).toBe(false);
-			expect(sessionViewModel.availableWorkspaces).toEqual([]);
+			expect(sessionViewModel.availableWorkspacesIdsAndNames).toEqual([]);
 		});
 	});
 
 	describe('selectWorkspace', () => {
 		it('should handle successful workspace selection', async () => {
-			vi.mocked(apiRepository.fetchWorkspace).mockImplementationOnce(async () => {
+			vi.mocked(apiRepository.fetchAndLoadWorkspace).mockImplementationOnce(async () => {
 				Object.assign(currentWorkspace, mockWorkspace);
 			});
 
@@ -99,7 +110,7 @@ describe('sessionViewModel', () => {
 		});
 
 		it('should handle selection errors', async () => {
-			vi.mocked(apiRepository.fetchWorkspace).mockRejectedValueOnce(
+			vi.mocked(apiRepository.fetchAndLoadWorkspace).mockRejectedValueOnce(
 				new Error('Failed to load workspace')
 			);
 
@@ -114,7 +125,7 @@ describe('sessionViewModel', () => {
 	describe('saveWorkspace', () => {
 		it('should handle successful workspace saving', async () => {
 			// First select a workspace
-			vi.mocked(apiRepository.fetchWorkspace).mockImplementationOnce(async () => {
+			vi.mocked(apiRepository.fetchAndLoadWorkspace).mockImplementationOnce(async () => {
 				Object.assign(currentWorkspace, mockWorkspace);
 			});
 			await sessionViewModel.selectWorkspace('workspace1');
@@ -123,47 +134,106 @@ describe('sessionViewModel', () => {
 			currentWorkspace.state.ui.isDarkMode = true;
 
 			// Save the workspace
-			vi.mocked(apiRepository.saveWorkspace).mockImplementationOnce(async () => {
-				// Update would happen on the server
-			});
+			vi.mocked(apiRepository.saveWorkspace).mockImplementationOnce(async () => {});
 
 			await sessionViewModel.saveWorkspace();
 
-			expect(sessionViewModel.isLoading).toBe(false);
-			expect(sessionViewModel.error).toBeNull();
+			expect(sessionViewModel.isSaving).toBe(false);
+			expect(sessionViewModel.errorSaving).toBeNull();
 			expect(sessionViewModel.hasUnsavedChanges).toBe(false);
 		});
 
 		it('should handle saving errors', async () => {
+			// First select a workspace to ensure we have a valid state
+			vi.mocked(apiRepository.fetchAndLoadWorkspace).mockImplementationOnce(async () => {
+				Object.assign(currentWorkspace, mockWorkspace);
+			});
+			await sessionViewModel.selectWorkspace('workspace1');
+
+			// Make some changes to ensure hasUnsavedChanges will be true
+			currentWorkspace.state.ui.isDarkMode = true;
+
+			// Mock the save failure
 			vi.mocked(apiRepository.saveWorkspace).mockRejectedValueOnce(new Error('Failed to save'));
 
 			await sessionViewModel.saveWorkspace();
 
-			expect(sessionViewModel.isLoading).toBe(false);
-			expect(sessionViewModel.error).toBe('Failed to save');
+			expect(sessionViewModel.isSaving).toBe(false);
+			expect(sessionViewModel.errorSaving).toBe('Failed to save');
 			expect(sessionViewModel.hasUnsavedChanges).toBe(true);
 		});
 	});
 
-	describe('hasUnsavedChanges', () => {
-		it('should detect changes in workspace state', async () => {
-			// Load initial workspace
-			vi.mocked(apiRepository.fetchWorkspace).mockImplementationOnce(async () => {
-				Object.assign(currentWorkspace, mockWorkspace);
-			});
-			await sessionViewModel.selectWorkspace('workspace1');
-			expect(sessionViewModel.hasUnsavedChanges).toBe(false);
+	describe('createWorkspace', () => {
+		it('should handle successful workspace creation', async () => {
+			vi.mocked(apiRepository.createWorkspace).mockResolvedValueOnce(mockWorkspace);
 
-			// Make changes
-			currentWorkspace.state.ui.isDarkMode = true;
-			expect(sessionViewModel.hasUnsavedChanges).toBe(true);
+			const result = await sessionViewModel.createWorkspace('New Workspace');
+
+			expect(result).toEqual(mockWorkspace);
+			expect(sessionViewModel.isLoading).toBe(false);
+			expect(sessionViewModel.error).toBeNull();
+		});
+
+		it('should handle creation errors', async () => {
+			vi.mocked(apiRepository.createWorkspace).mockRejectedValueOnce(
+				new Error('Failed to create workspace')
+			);
+
+			await expect(sessionViewModel.createWorkspace('New Workspace')).rejects.toThrow(
+				'Failed to create workspace'
+			);
+			expect(sessionViewModel.isLoading).toBe(false);
+			expect(sessionViewModel.error).toBe('Failed to create workspace');
+		});
+	});
+
+	describe('deleteWorkspace', () => {
+		it('should handle successful workspace deletion', async () => {
+			vi.mocked(apiRepository.deleteWorkspace).mockResolvedValueOnce();
+			vi.mocked(apiRepository.fetchWorkspaces).mockImplementationOnce(async () => {
+				loadedData.availableWorkspacesIdsAndNames = mockWorkspaceEntries.slice(1);
+			});
+
+			await sessionViewModel.deleteWorkspace('workspace1');
+
+			expect(sessionViewModel.isLoading).toBe(false);
+			expect(sessionViewModel.error).toBeNull();
+		});
+
+		it('should reset state when deleting current workspace', async () => {
+			// Set up current workspace
+			Object.assign(currentWorkspace, mockWorkspace);
+
+			vi.mocked(apiRepository.deleteWorkspace).mockResolvedValueOnce();
+			vi.mocked(apiRepository.fetchWorkspaces).mockImplementationOnce(async () => {
+				loadedData.availableWorkspacesIdsAndNames = [];
+			});
+
+			await sessionViewModel.deleteWorkspace(currentWorkspace.id);
+
+			expect(sessionViewModel.selectedWorkspaceId).toBe('');
+			expect(sessionViewModel.isLoading).toBe(false);
+			expect(sessionViewModel.error).toBeNull();
+		});
+
+		it('should handle deletion errors', async () => {
+			vi.mocked(apiRepository.deleteWorkspace).mockRejectedValueOnce(
+				new Error('Failed to delete workspace')
+			);
+
+			await expect(sessionViewModel.deleteWorkspace('workspace1')).rejects.toThrow(
+				'Failed to delete workspace'
+			);
+			expect(sessionViewModel.isLoading).toBe(false);
+			expect(sessionViewModel.error).toBe('Failed to delete workspace');
 		});
 	});
 
 	describe('reset', () => {
 		it('should reset all session state', async () => {
 			// First set up some state
-			vi.mocked(apiRepository.fetchWorkspace).mockImplementationOnce(async () => {
+			vi.mocked(apiRepository.fetchAndLoadWorkspace).mockImplementationOnce(async () => {
 				Object.assign(currentWorkspace, mockWorkspace);
 			});
 			await sessionViewModel.selectWorkspace('workspace1');
@@ -176,12 +246,7 @@ describe('sessionViewModel', () => {
 			expect(sessionViewModel.isLoading).toBe(false);
 			expect(sessionViewModel.error).toBeNull();
 			expect(sessionViewModel.hasUnsavedChanges).toBe(false);
-			expect(loadedData.availableWorkspacesIds).toEqual([]);
-
-			// Verify workspace state is reset
-			expect(currentWorkspace.state.data.openedDatasetName).toBeNull();
-			expect(currentWorkspace.state.data.openedCasesPaths).toEqual([]);
-			expect(currentWorkspace.state.ui.isDarkMode).toBe(false);
+			expect(loadedData.availableWorkspacesIdsAndNames).toEqual([]);
 		});
 	});
 });

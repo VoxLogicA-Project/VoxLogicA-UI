@@ -1,6 +1,6 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { datasetViewModel } from '$lib/viewmodels/dataset.svelte';
-import { apiRepository, loadedData } from '$lib/models/repository.svelte';
+import { apiRepository, loadedData, currentWorkspace } from '$lib/models/repository.svelte';
 import { resetTestState } from './viewmodel-test-utils';
 
 vi.mock('$lib/models/repository.svelte', async () => {
@@ -8,13 +8,8 @@ vi.mock('$lib/models/repository.svelte', async () => {
 	return {
 		...actual,
 		apiRepository: {
-			fetchDatasets: vi.fn(async () => {
-				// This function will update loadedData.datasets directly
-				// as it would in the real implementation
-			}),
-			fetchCases: vi.fn(async () => {
-				// This function will update loadedData.cases directly
-			}),
+			fetchDatasets: vi.fn(),
+			fetchCases: vi.fn(),
 		},
 	};
 });
@@ -38,7 +33,7 @@ describe('datasetViewModel', () => {
 			expect(datasetViewModel.isLoading).toBe(false);
 			expect(datasetViewModel.error).toBeNull();
 			expect(datasetViewModel.hasDatasets).toBe(true);
-			expect(loadedData.datasets).toEqual(mockDatasets);
+			expect(datasetViewModel.datasets).toEqual(mockDatasets);
 		});
 
 		it('should handle loading errors', async () => {
@@ -49,44 +44,85 @@ describe('datasetViewModel', () => {
 			expect(datasetViewModel.isLoading).toBe(false);
 			expect(datasetViewModel.error).toBe('Network error');
 			expect(datasetViewModel.hasDatasets).toBe(false);
-			expect(loadedData.datasets).toEqual([]);
+			expect(datasetViewModel.datasets).toEqual([]);
 		});
 	});
 
-	describe('selectDataset', () => {
-		it('should handle successful dataset selection', async () => {
-			const dataset = { name: 'dataset1', layout: 'brats' };
-			const mockCases = [{ name: 'case1', path: '/case1', id: 'dataset1-case1' }];
+	describe('dataset selection', () => {
+		const dataset = { name: 'dataset1', layout: 'brats' };
+		const mockCases = [{ name: 'case1', path: '/case1' }];
 
-			// First, ensure the dataset is in the available datasets
+		beforeEach(() => {
 			loadedData.datasets = [dataset];
+			loadedData.casesByDataset = {};
+		});
 
+		it('should handle successful dataset selection', async () => {
 			vi.mocked(apiRepository.fetchCases).mockImplementationOnce(async () => {
-				loadedData.cases = mockCases;
+				loadedData.casesByDataset[dataset.name] = mockCases;
 			});
 
 			await datasetViewModel.selectDataset(dataset);
 
-			expect(datasetViewModel.selectedDataset).toEqual(dataset);
-			expect(datasetViewModel.isLoading).toBe(false);
+			expect(datasetViewModel.isSelected(dataset)).toBe(true);
+			expect(currentWorkspace.state.data.openedDatasetsNames).toContain(dataset.name);
 			expect(datasetViewModel.error).toBeNull();
-			expect(loadedData.cases).toEqual(mockCases);
+			expect(loadedData.casesByDataset[dataset.name]).toEqual(mockCases);
 		});
 
 		it('should handle selection errors', async () => {
-			const dataset = { name: 'dataset1', layout: 'brats' };
-
-			// First, ensure the dataset is in the available datasets
-			loadedData.datasets = [dataset];
-
 			vi.mocked(apiRepository.fetchCases).mockRejectedValueOnce(new Error('Failed to load'));
 
 			await datasetViewModel.selectDataset(dataset);
 
-			expect(datasetViewModel.selectedDataset).toBeNull();
-			expect(datasetViewModel.isLoading).toBe(false);
+			expect(datasetViewModel.isSelected(dataset)).toBe(false);
+			expect(currentWorkspace.state.data.openedDatasetsNames).not.toContain(dataset.name);
 			expect(datasetViewModel.error).toBe('Failed to load');
-			expect(loadedData.cases).toEqual([]);
+			expect(loadedData.casesByDataset[dataset.name]).toBeUndefined();
+		});
+
+		it('should deselect dataset', () => {
+			// First select the dataset
+			currentWorkspace.state.data.openedDatasetsNames = [dataset.name];
+			expect(datasetViewModel.isSelected(dataset)).toBe(true);
+
+			// Then deselect it
+			datasetViewModel.deselectDataset(dataset);
+
+			expect(datasetViewModel.isSelected(dataset)).toBe(false);
+			expect(currentWorkspace.state.data.openedDatasetsNames).not.toContain(dataset.name);
+		});
+
+		it('should toggle dataset selection', async () => {
+			vi.mocked(apiRepository.fetchCases).mockImplementationOnce(async () => {
+				loadedData.casesByDataset[dataset.name] = mockCases;
+			});
+
+			// Toggle on
+			await datasetViewModel.toggleDataset(dataset);
+			expect(datasetViewModel.isSelected(dataset)).toBe(true);
+
+			// Toggle off
+			datasetViewModel.toggleDataset(dataset);
+			expect(datasetViewModel.isSelected(dataset)).toBe(false);
+		});
+	});
+
+	describe('reset', () => {
+		it('should reset all state', () => {
+			// Set some initial state
+			loadedData.datasets = [{ name: 'dataset1', layout: 'brats' }];
+			currentWorkspace.state.data.openedDatasetsNames = ['dataset1'];
+			loadedData.casesByDataset = { dataset1: [{ name: 'case1', path: '/case1' }] };
+
+			datasetViewModel.reset();
+
+			expect(datasetViewModel.datasets).toEqual([]);
+			expect(datasetViewModel.selectedDatasets).toEqual([]);
+			expect(datasetViewModel.isLoading).toBe(false);
+			expect(datasetViewModel.error).toBeNull();
+			expect(currentWorkspace.state.data.openedDatasetsNames).toEqual([]);
+			expect(loadedData.casesByDataset).toEqual({});
 		});
 	});
 });
