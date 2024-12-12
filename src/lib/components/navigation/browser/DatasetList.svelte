@@ -1,18 +1,58 @@
 <script lang="ts">
 	import { slide } from 'svelte/transition';
 	import { quintOut } from 'svelte/easing';
-	import type { Case } from '$lib/models/types';
+	import type { Dataset, Case } from '$lib/models/types';
 	import { datasetViewModel } from '$lib/viewmodels/dataset.svelte';
 	import { caseViewModel } from '$lib/viewmodels/case.svelte';
 	import CaseItem from './CaseItem.svelte';
+	import { runViewModel } from '$lib/viewmodels/run.svelte';
 
 	let { searchQuery, filteredCases }: { searchQuery: string; filteredCases: Case[] } = $props();
 
 	const TRANSITION_DURATION = 200;
+
+	const hasResults = (datasetName: string) =>
+		filteredCases.some((c) => caseViewModel.casesOfDataset(datasetName).includes(c));
+
+	// Filter datasets based on search results
+	const visibleDatasets = $derived.by(() => {
+		const hasActiveSearch = searchQuery.trim() !== '';
+		const hasActiveFilters = runViewModel.printFilters.some(
+			(f) => f.label.trim() && f.value.trim()
+		);
+
+		// Only filter datasets if there's an active search or filter
+		if ((hasActiveSearch || hasActiveFilters) && filteredCases.length > 0) {
+			return datasetViewModel.datasets.filter((d) => hasResults(d.name));
+		}
+		return datasetViewModel.datasets;
+	});
+
+	function handleDatasetClick(dataset: Dataset) {
+		const hasActiveSearch = searchQuery.trim() !== '';
+		const hasActiveFilters = runViewModel.printFilters.some(
+			(f) => f.label.trim() && f.value.trim()
+		);
+
+		// Only prevent unselecting if there's an active search/filter and dataset has results
+		if (
+			(hasActiveSearch || hasActiveFilters) &&
+			hasResults(dataset.name) &&
+			datasetViewModel.isSelected(dataset)
+		) {
+			return;
+		}
+		datasetViewModel.toggleDataset(dataset);
+	}
+
+	const hasActiveSearch = $derived(searchQuery.trim() !== '');
+	const hasActiveFilters = $derived(
+		runViewModel.printFilters.some((f) => f.label.trim() && f.value.trim())
+	);
 </script>
 
 <ul class="p-2 space-y-1">
-	{#each datasetViewModel.datasets as dataset}
+	{#each visibleDatasets as dataset}
 		<li>
 			<button
 				class="w-full text-left px-3 py-2 rounded-token transition-all duration-200 flex items-center min-w-0
@@ -20,7 +60,7 @@
                     {datasetViewModel.isSelected(dataset)
 					? 'bg-primary-500/10 text-primary-700 dark:text-primary-400'
 					: 'text-surface-900-50-token'}"
-				onclick={() => datasetViewModel.toggleDataset(dataset)}
+				onclick={() => handleDatasetClick(dataset)}
 			>
 				<div class="w-6 flex justify-center mr-2 flex-shrink-0">
 					{#if !datasetViewModel.isSelected(dataset) && caseViewModel.getSelectedCasesForDataset(dataset.name).length > 0}
@@ -42,7 +82,7 @@
 				{/if}
 			</button>
 
-			{#if datasetViewModel.isSelected(dataset)}
+			{#if datasetViewModel.isSelected(dataset) || ((hasActiveSearch || hasActiveFilters) && hasResults(dataset.name))}
 				{#if caseViewModel.isLoading}
 					<div class="pl-6 py-2">
 						<i class="fa-solid fa-spinner fa-spin opacity-50"></i>

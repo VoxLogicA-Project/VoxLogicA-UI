@@ -33,6 +33,47 @@
 		});
 	});
 
+	// Track which datasets should be expanded based on search/filter results
+	const datasetsWithResults = $derived.by(() => {
+		if (!filteredCases.length) return new Set();
+
+		return new Set(
+			filteredCases
+				.map(
+					(case_) =>
+						datasetViewModel.datasets.find((d) =>
+							caseViewModel.casesOfDataset(d.name).includes(case_)
+						)?.name
+				)
+				.filter(Boolean)
+		);
+	});
+
+	// Update dataset expansion when search results change
+	$effect(() => {
+		const hasActiveSearch = searchQuery.trim() !== '';
+		const hasActiveFilters = runViewModel.printFilters.some(
+			(f) => f.label.trim() && f.value.trim()
+		);
+
+		// Only force-select datasets when there's an active search or filter
+		if (datasetsWithResults.size > 0 && (hasActiveSearch || hasActiveFilters)) {
+			// Get currently selected datasets that have results
+			const selectedWithResults = new Set(
+				datasetViewModel.datasets
+					.filter((d) => datasetViewModel.isSelected(d) && datasetsWithResults.has(d.name))
+					.map((d) => d.name)
+			);
+
+			// Only select datasets that aren't already selected
+			datasetViewModel.datasets
+				.filter((d) => datasetsWithResults.has(d.name) && !selectedWithResults.has(d.name))
+				.forEach((d) => {
+					datasetViewModel.selectDataset(d);
+				});
+		}
+	});
+
 	// Load datasets when component mounts
 	$effect(() => {
 		if (sessionViewModel.isWorkspaceSelected && !datasetViewModel.hasDatasets) {
