@@ -13,21 +13,21 @@
 </script>
 
 <div class="pl-4 py-2 border-b border-surface-500/10">
-	<div class="flex gap-1 pr-4">
-		<div class="input-group grid-cols-[auto_1fr] flex-1">
-			<div class="input-group-shim">
+	<div class="flex gap-1 {runViewModel.printFilters.length > 0 ? 'pr-4' : ''}">
+		<div class="input-group grid-cols-[auto_1fr] flex-1 h-8">
+			<div class="input-group-shim flex items-center">
 				<i class="fa-solid fa-search"></i>
 			</div>
 			<input
 				name="search_cases"
-				class="p-1"
+				class="h-full"
 				type="search"
 				placeholder="Search cases..."
 				bind:value={searchQuery}
 			/>
 		</div>
 		{#if runViewModel.printFilters.length === 0}
-			<div class="flex flex-shrink-0 h-[2.25rem]">
+			<div class="flex flex-shrink-0">
 				<button
 					title="Filter cases by run print"
 					aria-label="Filter cases by run print"
