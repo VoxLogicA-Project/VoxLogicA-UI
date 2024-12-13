@@ -27,15 +27,6 @@
 			uiViewModel.state.isDarkMode = true;
 		}
 
-		// Listen for system theme changes
-		window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
-			if (e.matches) {
-				uiViewModel.state.isDarkMode = true;
-			} else {
-				uiViewModel.state.isDarkMode = false;
-			}
-		});
-
 		// Add beforeunload event listener
 		window.addEventListener('beforeunload', (event) => {
 			// Check if there are unsaved changes
