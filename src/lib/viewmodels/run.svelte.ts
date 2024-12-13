@@ -114,6 +114,24 @@ const isRunSelected = $derived((runId: Run['id']) => {
 const getSelectionIndex = $derived((runId: Run['id']) => {
 	return (currentWorkspace.state.data.openedRunsIds.indexOf(runId) + 1).toString();
 });
+const getSuccessfulCasesForRun = $derived((runId: Run['id']) => {
+	const successfulCases: Case[] = [];
+
+	for (const casePath in loadedData.runsByCasePath) {
+		const runs = loadedData.runsByCasePath[casePath];
+		const run = runs.find((r) => r.id === runId);
+		if (run && !run.outputError && run.outputLayers.length > 0) {
+			// Find the case object from all datasets
+			const datasetName = casePath.split('/')[2];
+			const case_ = loadedData.casesByDataset[datasetName]?.find((c) => c.path === casePath);
+			if (case_) {
+				successfulCases.push(case_);
+			}
+		}
+	}
+
+	return successfulCases;
+});
 
 // Actions
 async function loadPresets(): Promise<void> {
@@ -323,6 +341,7 @@ export const runViewModel = {
 	getRunsForCase,
 	isRunSelected,
 	getSelectionIndex,
+	getSuccessfulCasesForRun,
 
 	// Actions
 	loadPresets,

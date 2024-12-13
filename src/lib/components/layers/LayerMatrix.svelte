@@ -20,6 +20,14 @@
 		return runViewModel.getRunsWithErrors(runId);
 	});
 
+	// Get successful cases for the current run
+	const availableCases = $derived.by(() => {
+		if (uiViewModel.state.layers.layerContext.type !== 'run') return [];
+		const runId = uiViewModel.state.layers.layerContext.runId;
+		if (!runId) return [];
+		return runViewModel.getSuccessfulCasesForRun(runId);
+	});
+
 	let errorsPanelExpanded = $state(true);
 
 	// Watch for errors and show toast
@@ -78,13 +86,40 @@
 				<div
 					class="p-8 flex justify-center items-center text-center text-surface-600 dark:text-surface-400"
 				>
-					<div class="flex flex-col gap-2">
-						<i class="fa-solid fa-layer-group text-3xl"></i>
-						<p>
-							{uiViewModel.state.layers.layerContext.type === 'dataset'
-								? 'No layers available. Try loading different cases to view their layers.'
-								: 'No layers available for this run. Check if the run was successful and try loading different cases.'}
-						</p>
+					<div class="flex flex-col gap-4">
+						<div class="flex flex-col gap-2">
+							<i class="fa-solid fa-layer-group text-3xl"></i>
+							<p>
+								{#if uiViewModel.state.layers.layerContext.type === 'dataset'}
+									No layers available. Try loading different cases to view their layers.
+								{:else if availableCases.length > 0}
+									No layers visible for the currently selected cases. <br />
+									However, this run was successful for
+									<span class="font-bold text-primary-500">{availableCases.length}</span>
+									{availableCases.length === 1 ? 'case' : 'cases'}:
+								{:else}
+									No layers available for this run. Check if the run was successful and try loading
+									different cases.
+								{/if}
+							</p>
+						</div>
+
+						{#if availableCases.length > 0}
+							<div class="grid grid-cols-2 gap-2">
+								{#each availableCases as case_}
+									<button
+										class="btn btn-sm variant-soft-primary truncate"
+										title={case_.name}
+										onclick={() => caseViewModel.selectCase(case_)}
+									>
+										<div class="w-full flex items-center">
+											<i class="fa-solid fa-folder-open w-4 flex-none"></i>
+											<span class="truncate ml-1">{case_.name}</span>
+										</div>
+									</button>
+								{/each}
+							</div>
+						{/if}
 					</div>
 				</div>
 			{:else}
