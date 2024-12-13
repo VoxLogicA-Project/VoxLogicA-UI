@@ -4,16 +4,69 @@ A modern web interface for [VoxLogicA](https://github.com/vincenzoml/VoxLogicA),
 
 This UI provides an intuitive way to work with neuroimaging data, currently supporting the BraTS (Brain Tumor Segmentation) dataset format. For more information about VoxLogicA itself, please visit the [main project repository](https://github.com/vincenzoml/VoxLogicA).
 
-## Getting Started
+## Requirements
 
-### Prerequisites
+### Using Docker (Recommended)
+
+- Docker
+
+### Manual Installation
 
 - Node.js (v20 or later)
 - Yarn package manager (v1.22.22 or later)
 - curl (for downloading VoxLogicA binaries)
 - unzip or tar (depending on your OS)
 
-### Development Environment
+## Production Deployment
+
+### Using Docker
+
+The easiest way to deploy VoxLogicA UI in production is using Docker:
+
+1. Build the Docker image:
+
+```bash
+docker build -t voxlogica-ui .
+```
+
+2. Run the container:
+
+```bash
+docker run -d \
+  --name voxlogica-ui \
+  -p 3000:3000 \
+  -v "$(pwd)/static/datasets:/data/datasets" \
+  -v "$(pwd)/static/scripts:/data/scripts" \
+  voxlogica-ui
+```
+
+This will:
+
+- Start the container in detached mode (`-d`)
+- Map port 3000 to your host machine
+- Mount your local datasets and scripts directories into the container (please change the paths in the command above to fit your needs)
+
+### Managing the Docker Container
+
+Monitor the application logs:
+
+```bash
+docker logs -f voxlogica-ui
+```
+
+Stop the container:
+
+```bash
+docker stop voxlogica-ui
+```
+
+Remove the container:
+
+```bash
+docker rm voxlogica-ui
+```
+
+## Development Environment
 
 If you have Docker installed, the easiest way to get started is using the provided Dev Container configuration:
 
@@ -88,17 +141,6 @@ yarn dev
 - `yarn format` - Format code with Prettier
 - `yarn test` - Run tests
 - `yarn test:coverage` - Run tests with coverage report
-
-### Troubleshooting
-
-If you encounter permission issues with VoxLogicA binary:
-
-- **Linux/macOS**: Ensure the binary has execution permissions:
-  ```bash
-  chmod +x static/bin/linux/voxlogica  # For Linux
-  chmod +x static/bin/macos/voxlogica  # For macOS
-  ```
-- **Windows**: Make sure Windows Defender or your antivirus isn't blocking the executable.
 
 ## License
 
