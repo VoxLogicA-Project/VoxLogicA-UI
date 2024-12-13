@@ -42,7 +42,7 @@
 				: 'text-surface-900-50-token'}"
 			onclick={() => runViewModel.toggleRun(run.id)}
 		>
-			<div class="flex justify-center mr-2 flex-shrink-0 w-8">
+			<div class="flex justify-center mr-2 flex-shrink-0 w-7">
 				<div
 					class="badge badge-sm rounded-full h-5 px-2 inline-flex items-center justify-center {runViewModel.isRunSelected(
 						run.id
