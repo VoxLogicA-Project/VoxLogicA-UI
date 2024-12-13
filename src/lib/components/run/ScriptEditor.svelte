@@ -7,7 +7,7 @@
 	import { EditorView, basicSetup } from '@codemirror/basic-setup';
 	import { lineNumbers } from '@codemirror/view';
 	import { imgql } from './imgql-lang';
-	import type { Case, PresetScript } from '$lib/models/types';
+	import type { Case, ExampleScript } from '$lib/models/types';
 	import { ProgressRadial } from '@skeletonlabs/skeleton';
 	import { getToastStore } from '@skeletonlabs/skeleton';
 	import type { LayerContext } from '$lib/models/types';
@@ -93,7 +93,7 @@
 	}
 
 	onMount(async () => {
-		await runViewModel.loadPresets();
+		await runViewModel.loadExampleScripts();
 		initEditor();
 	});
 
@@ -117,12 +117,12 @@
 	});
 
 	// Load script from dropdown
-	async function handlePresetScriptSelect(event: Event) {
+	async function handleExampleScriptSelect(event: Event) {
 		const select = event.target as HTMLSelectElement;
 		const scriptName = select.value;
-		const script = runViewModel.presetScripts.find((p: PresetScript) => p.name === scriptName);
+		const script = runViewModel.exampleScripts.find((p: ExampleScript) => p.name === scriptName);
 		if (script) {
-			await runViewModel.loadPresetScript(script);
+			await runViewModel.loadExampleScript(script);
 			editorView.dispatch({
 				changes: { from: 0, to: editorView.state.doc.length, insert: runViewModel.editorContent },
 			});
@@ -227,16 +227,16 @@
 		</div>
 	{/if}
 
-	<!-- Load a preset script -->
+	<!-- Load an example script -->
 	<div class="p-4 border-b border-surface-500/30 flex gap-2">
 		<select
-			name="script_preset"
+			name="script_example"
 			class="select flex-1"
-			value="Load a preset script template..."
-			onchange={handlePresetScriptSelect}
+			value="Load an example script..."
+			onchange={handleExampleScriptSelect}
 		>
-			<option value="" disabled>Load a preset script template...</option>
-			{#each runViewModel.presetScripts as script}
+			<option value="" disabled>Load an example script...</option>
+			{#each runViewModel.exampleScripts as script}
 				<option value={script.name}>{script.name}</option>
 			{/each}
 		</select>

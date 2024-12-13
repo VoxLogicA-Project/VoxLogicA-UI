@@ -1,4 +1,4 @@
-import type { Case, Layer, LayerStyle, PresetScript, Run } from '$lib/models/types';
+import type { Case, Layer, LayerStyle, ExampleScript, Run } from '$lib/models/types';
 import {
 	loadedData,
 	currentWorkspace,
@@ -131,28 +131,28 @@ const getSuccessfulCasesForRun = $derived((runId: Run['id']) => {
 });
 
 // Actions
-async function loadPresets(): Promise<void> {
+async function loadExampleScripts(): Promise<void> {
 	isLoading = true;
 	error = null;
 
 	try {
-		await apiRepository.fetchPresetsScripts();
+		await apiRepository.fetchExampleScripts();
 	} catch (err) {
-		error = err instanceof RepositoryError ? err.message : 'Failed to load presets';
+		error = err instanceof RepositoryError ? err.message : 'Failed to load example scripts';
 	} finally {
 		isLoading = false;
 	}
 }
 
-async function loadPresetScript(preset: PresetScript): Promise<void> {
+async function loadExampleScript(example: ExampleScript): Promise<void> {
 	isLoading = true;
 	error = null;
 
 	try {
-		const code = await apiRepository.fetchPresetScriptCode(preset);
+		const code = await apiRepository.fetchExampleScriptCode(example);
 		currentWorkspace.state.ui.scriptEditor.content = code;
 	} catch (err) {
-		error = err instanceof RepositoryError ? err.message : 'Failed to load preset script';
+		error = err instanceof RepositoryError ? err.message : 'Failed to load example script';
 	} finally {
 		isLoading = false;
 	}
@@ -310,8 +310,8 @@ export const runViewModel = {
 	get error() {
 		return error;
 	},
-	get presetScripts() {
-		return loadedData.presetScripts;
+	get exampleScripts() {
+		return loadedData.exampleScripts;
 	},
 	get headerContent() {
 		return headerContent;
@@ -340,8 +340,8 @@ export const runViewModel = {
 	getSuccessfulCasesForRun,
 
 	// Actions
-	loadPresets,
-	loadPresetScript,
+	loadExampleScripts,
+	loadExampleScript,
 	saveEditorContent,
 	singleRun,
 	runAll,

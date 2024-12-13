@@ -2,7 +2,7 @@ import type {
 	Dataset,
 	Case,
 	Layer,
-	PresetScript,
+	ExampleScript,
 	Run,
 	LoadedData,
 	Workspace,
@@ -16,7 +16,7 @@ export const loadedData = $state<LoadedData>({
 	casesByDataset: {},
 	layersByCasePath: {},
 	runsByCasePath: {},
-	presetScripts: [],
+	exampleScripts: [],
 });
 
 export const DEFAULT_WORKSPACE_STATE: Workspace['state'] = {
@@ -117,11 +117,11 @@ export const apiRepository = {
 		loadedData.layersByCasePath[case_.path] = await api.fetch<Layer[]>(case_.path);
 	},
 
-	async fetchPresetsScripts() {
-		loadedData.presetScripts = await api.fetch<PresetScript[]>('/scripts');
+	async fetchExampleScripts() {
+		loadedData.exampleScripts = await api.fetch<ExampleScript[]>('/scripts');
 	},
 
-	async fetchPresetScriptCode(script: PresetScript) {
+	async fetchExampleScriptCode(script: ExampleScript) {
 		return api.fetchText(script.path);
 	},
 
@@ -142,7 +142,7 @@ export const apiRepository = {
 			loadedData.casesByDataset = {};
 			loadedData.layersByCasePath = {};
 			loadedData.runsByCasePath = {};
-			loadedData.presetScripts = [];
+			loadedData.exampleScripts = [];
 
 			// Load all required data based on workspace state
 			await loadWorkspaceData(workspace);
@@ -227,7 +227,7 @@ export const apiRepository = {
 async function loadWorkspaceData(workspace: Workspace) {
 	// Load datasets, preset scripts and runs
 	await apiRepository.fetchDatasets();
-	await apiRepository.fetchPresetsScripts();
+	await apiRepository.fetchExampleScripts();
 
 	// TODO: this could be optimized by fetching only the runs that are needed
 	await apiRepository.fetchWorkspaceRuns(workspace.id);

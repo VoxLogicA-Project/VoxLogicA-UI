@@ -26,7 +26,7 @@ export interface LayerStyle {
 	alpha: number;
 }
 
-export interface PresetScript {
+export interface ExampleScript {
 	name: string;
 	path: string;
 }
@@ -54,7 +54,7 @@ export interface LoadedData {
 	casesByDataset: Record<Dataset['name'], Case[]>;
 	layersByCasePath: Record<Case['path'], Layer[]>;
 	runsByCasePath: Record<Case['path'], Run[]>;
-	presetScripts: PresetScript[];
+	exampleScripts: ExampleScript[];
 }
 
 export interface LayersState {
