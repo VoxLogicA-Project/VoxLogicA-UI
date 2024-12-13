@@ -139,6 +139,7 @@
 	{#if caseViewModel.selectedCases.length > 0}
 		<CollapsibleSidebar
 			side="right"
+			minSize={165}
 			startSize={400}
 			bind:currentSize={uiViewModel.rightSidebarSize}
 			bind:isCollapsed={uiViewModel.state.sidebars.scriptCollapsed}
