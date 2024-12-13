@@ -77,6 +77,7 @@
 						</select>
 						<input
 							type="number"
+							step="0.01"
 							name={`filter-value-${i}`}
 							class="input p-1"
 							placeholder={`Value`}
