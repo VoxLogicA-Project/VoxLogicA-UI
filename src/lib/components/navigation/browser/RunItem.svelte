@@ -3,7 +3,9 @@
 	import { runViewModel } from '$lib/viewmodels/run.svelte';
 	import { uiViewModel } from '$lib/viewmodels/ui.svelte';
 	import type { Run } from '$lib/models/types';
+	import { getModalStore } from '@skeletonlabs/skeleton';
 
+	const modalStore = getModalStore();
 	let { run }: { run: Run } = $props();
 
 	const hasActivePrintFilters = $derived(
@@ -13,6 +15,19 @@
 	function toggleRunDetails(runId: string, event: MouseEvent) {
 		event.stopPropagation();
 		uiViewModel.toggleRunExpansion(runId);
+	}
+
+	function handleLoadScript() {
+		modalStore.trigger({
+			type: 'confirm',
+			title: 'Load Run Script',
+			body: 'This will overwrite the current script in the editor. Are you sure?',
+			response: (confirmed: boolean) => {
+				if (confirmed) {
+					uiViewModel.loadScript(run.scriptContent);
+				}
+			},
+		});
 	}
 </script>
 
@@ -50,22 +65,33 @@
 				{/if}
 			</span>
 		</button>
-		{#if run.outputPrint?.length > 0 && !hasActivePrintFilters}
+		<div class="flex gap-1">
 			<button
-				id="clicckino"
 				type="button"
-				title="Show run prints"
-				aria-label="Show run prints"
+				title="Load run script"
+				aria-label="Load run script"
 				class="btn-icon btn-sm variant-soft hover:variant-soft-primary rounded-token h-8 w-8"
-				onclick={(e) => toggleRunDetails(run.id, e)}
+				onclick={handleLoadScript}
 			>
-				<i
-					class="fa-solid fa-chevron-{uiViewModel.expandedRunIds.has(run.id)
-						? 'up'
-						: 'down'} text-sm"
-				></i>
+				<i class="fa-solid fa-code text-sm"></i>
 			</button>
-		{/if}
+			{#if !hasActivePrintFilters}
+				<button
+					type="button"
+					title={!run.outputPrint?.length ? 'No prints available' : 'Show run prints'}
+					aria-label={!run.outputPrint?.length ? 'No prints available' : 'Show run prints'}
+					class="btn-icon btn-sm variant-soft hover:variant-soft-primary rounded-token h-8 w-8"
+					onclick={(e) => toggleRunDetails(run.id, e)}
+					disabled={!run.outputPrint?.length}
+				>
+					<i
+						class="fa-solid fa-chevron-{uiViewModel.expandedRunIds.has(run.id)
+							? 'up'
+							: 'down'} text-sm"
+					></i>
+				</button>
+			{/if}
+		</div>
 	</div>
 
 	{#if uiViewModel.expandedRunIds.has(run.id) && run.outputPrint?.length > 0}

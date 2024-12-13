@@ -1,11 +1,7 @@
-import type { Case, Layer, LayerStyle, ExampleScript, Run } from '$lib/models/types';
-import {
-	loadedData,
-	currentWorkspace,
-	apiRepository,
-	RepositoryError,
-} from '$lib/models/repository.svelte';
+import type { Case, Layer, LayerStyle, Run } from '$lib/models/types';
+import { loadedData, currentWorkspace } from '$lib/models/repository.svelte';
 import { layerViewModel } from './layer.svelte';
+import { uiViewModel } from './ui.svelte';
 
 // UI state
 let isLoading = $state(false);
@@ -20,18 +16,6 @@ interface PrintFilter {
 let printFilters = $state<PrintFilter[]>([]);
 
 // Derived states
-const headerContent = $derived.by(() => {
-	const layersIds = layerViewModel.datasetUniqueLayersNames;
-	return [
-		'import "stdlib.imgql"',
-		'',
-		'// Load layers',
-		...layersIds.map((layerId) => `load ${layerId} = "\$\{LAYER_PATH:${layerId}\}"`),
-	].join('\n');
-});
-const fullScriptContent = $derived(
-	`${headerContent}\n\n${currentWorkspace.state.ui.scriptEditor.content}`
-);
 const openedRunsIds = $derived(currentWorkspace.state.data.openedRunsIds);
 const uniquePrintLabels = $derived.by(() => {
 	const labels = new Set<string>();
@@ -131,36 +115,6 @@ const getSuccessfulCasesForRun = $derived((runId: Run['id']) => {
 });
 
 // Actions
-async function loadExampleScripts(): Promise<void> {
-	isLoading = true;
-	error = null;
-
-	try {
-		await apiRepository.fetchExampleScripts();
-	} catch (err) {
-		error = err instanceof RepositoryError ? err.message : 'Failed to load example scripts';
-	} finally {
-		isLoading = false;
-	}
-}
-
-async function loadExampleScript(example: ExampleScript): Promise<void> {
-	isLoading = true;
-	error = null;
-
-	try {
-		const code = await apiRepository.fetchExampleScriptCode(example);
-		currentWorkspace.state.ui.scriptEditor.content = code;
-	} catch (err) {
-		error = err instanceof RepositoryError ? err.message : 'Failed to load example script';
-	} finally {
-		isLoading = false;
-	}
-}
-
-function saveEditorContent(content: string): void {
-	currentWorkspace.state.ui.scriptEditor.content = content;
-}
 
 async function singleRun(case_: Case): Promise<void> {
 	await runAll([case_]);
@@ -176,7 +130,7 @@ async function runAll(cases: Case[]): Promise<Run['id']> {
 			headers: { 'Content-Type': 'application/json' },
 			body: JSON.stringify({
 				workspaceId: currentWorkspace.id,
-				scriptContent: fullScriptContent,
+				scriptContent: uiViewModel.fullScriptContent,
 				cases: cases,
 			}),
 		});
@@ -313,15 +267,6 @@ export const runViewModel = {
 	get exampleScripts() {
 		return loadedData.exampleScripts;
 	},
-	get headerContent() {
-		return headerContent;
-	},
-	get editorContent() {
-		return currentWorkspace.state.ui.scriptEditor.content;
-	},
-	get fullScriptContent() {
-		return fullScriptContent;
-	},
 	get openedRunsIds() {
 		return openedRunsIds;
 	},
@@ -340,9 +285,6 @@ export const runViewModel = {
 	getSuccessfulCasesForRun,
 
 	// Actions
-	loadExampleScripts,
-	loadExampleScript,
-	saveEditorContent,
 	singleRun,
 	runAll,
 	selectRun,

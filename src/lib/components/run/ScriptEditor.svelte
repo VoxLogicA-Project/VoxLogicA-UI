@@ -57,7 +57,7 @@
 	function initHeaderCodeBlock() {
 		headerView = new EditorView({
 			state: EditorState.create({
-				doc: runViewModel.headerContent,
+				doc: uiViewModel.headerContent,
 				extensions: [
 					basicSetup,
 					lineNumbers(),
@@ -74,7 +74,7 @@
 	function initEditor() {
 		editorView = new EditorView({
 			state: EditorState.create({
-				doc: runViewModel.editorContent,
+				doc: uiViewModel.editorContent,
 				extensions: [
 					basicSetup,
 					lineNumbers(),
@@ -83,7 +83,7 @@
 					imgql(),
 					EditorView.updateListener.of((update) => {
 						if (update.docChanged) {
-							runViewModel.saveEditorContent(editorView.state.doc.toString());
+							uiViewModel.editorContent = editorView.state.doc.toString();
 						}
 					}),
 				],
@@ -93,7 +93,7 @@
 	}
 
 	onMount(async () => {
-		await runViewModel.loadExampleScripts();
+		await uiViewModel.loadExampleScripts();
 		initEditor();
 	});
 
@@ -111,7 +111,27 @@
 	$effect(() => {
 		if (headerView) {
 			headerView.dispatch({
-				changes: { from: 0, to: headerView.state.doc.length, insert: runViewModel.headerContent },
+				changes: {
+					from: 0,
+					to: headerView.state.doc.length,
+					insert: uiViewModel.headerContent,
+				},
+			});
+		}
+	});
+
+	// Update editor content when it changes
+	$effect(() => {
+		const content = uiViewModel.editorContent;
+		const currentContent = editorView?.state.doc.toString();
+
+		if (editorView && content !== currentContent) {
+			editorView.dispatch({
+				changes: {
+					from: 0,
+					to: editorView.state.doc.length,
+					insert: content,
+				},
 			});
 		}
 	});
@@ -122,10 +142,7 @@
 		const scriptName = select.value;
 		const script = runViewModel.exampleScripts.find((p: ExampleScript) => p.name === scriptName);
 		if (script) {
-			await runViewModel.loadExampleScript(script);
-			editorView.dispatch({
-				changes: { from: 0, to: editorView.state.doc.length, insert: runViewModel.editorContent },
-			});
+			await uiViewModel.loadExampleScript(script);
 			select.value = '';
 		}
 	}
@@ -138,9 +155,7 @@
 			const reader = new FileReader();
 			reader.onload = (e) => {
 				const content = e.target?.result as string;
-				editorView.dispatch({
-					changes: { from: 0, to: editorView.state.doc.length, insert: content },
-				});
+				uiViewModel.loadScript(content);
 			};
 			reader.readAsText(file);
 		}
@@ -148,7 +163,7 @@
 
 	// Download the current script content
 	function handleScriptDownload() {
-		const blob = new Blob([runViewModel.fullScriptContent], { type: 'text/plain' });
+		const blob = new Blob([uiViewModel.fullScriptContent], { type: 'text/plain' });
 		const url = URL.createObjectURL(blob);
 		const a = document.createElement('a');
 		a.href = url;
@@ -279,7 +294,7 @@
 	<div class="p-4 border-t border-surface-500/30 flex gap-2">
 		<button
 			class="btn variant-filled-surface flex-1"
-			disabled={!runViewModel.editorContent.trim()}
+			disabled={!uiViewModel.editorContent.trim()}
 			title="Download the current script content"
 			aria-label="Download the current script content"
 			onclick={handleScriptDownload}
@@ -292,7 +307,7 @@
 		<div class="flex gap-1 flex-1">
 			<button
 				class="btn variant-filled-primary flex-1"
-				disabled={!runViewModel.editorContent.trim()}
+				disabled={!uiViewModel.editorContent.trim()}
 				title="Run the script for all opened cases"
 				aria-label="Run the script for all opened cases"
 				onclick={handleRun}
@@ -304,7 +319,7 @@
 			</button>
 			<button
 				class="btn variant-filled-primary p-1"
-				disabled={!runViewModel.editorContent.trim()}
+				disabled={!uiViewModel.editorContent.trim()}
 				use:popup={{
 					event: 'click',
 					target: 'case-dropdown',

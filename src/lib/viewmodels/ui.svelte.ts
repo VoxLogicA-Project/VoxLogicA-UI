@@ -1,11 +1,28 @@
-import { currentWorkspace } from '$lib/models/repository.svelte';
-import type { LayerContext, Case } from '$lib/models/types';
+import { apiRepository, currentWorkspace, RepositoryError } from '$lib/models/repository.svelte';
+import type { LayerContext, Case, ExampleScript } from '$lib/models/types';
+import { layerViewModel } from './layer.svelte';
 
 // UI State
+let isEditorLoading = $state(false);
+let editorError = $state<string | null>(null);
 let rightSidebarSize = $state(300);
 let blinkingTabLayerContext: LayerContext | null = $state(null);
 let expandedCasePaths = $state(new Set<string>());
 let expandedRunIds = $state(new Set<string>());
+
+const headerContent = $derived.by(() => {
+	const layersIds = layerViewModel.datasetUniqueLayersNames;
+	return [
+		'import "stdlib.imgql"',
+		'',
+		'// Load layers',
+		...layersIds.map((layerId) => `load ${layerId} = "\$\{LAYER_PATH:${layerId}\}"`),
+		'// END load layers',
+	].join('\n');
+});
+const fullScriptContent = $derived(
+	`${headerContent}\n\n${currentWorkspace.state.ui.scriptEditor.content}`
+);
 
 function reset(): void {
 	Object.assign(currentWorkspace.state.ui, {
@@ -66,7 +83,43 @@ function toggleRunExpansion(runId: string): void {
 	expandedRunIds = newSet;
 }
 
-// Public API
+function loadScript(script: string): void {
+	const endLoadLayersIndex = script.indexOf('// END load layers');
+	if (endLoadLayersIndex !== -1) {
+		const scriptContent = script.substring(endLoadLayersIndex + '// END load layers'.length).trim();
+		currentWorkspace.state.ui.scriptEditor.content = scriptContent;
+	} else {
+		currentWorkspace.state.ui.scriptEditor.content = script;
+	}
+}
+
+async function loadExampleScripts(): Promise<void> {
+	isEditorLoading = true;
+	editorError = null;
+
+	try {
+		await apiRepository.fetchExampleScripts();
+	} catch (err) {
+		editorError = err instanceof RepositoryError ? err.message : 'Failed to load example scripts';
+	} finally {
+		isEditorLoading = false;
+	}
+}
+
+async function loadExampleScript(example: ExampleScript): Promise<void> {
+	isEditorLoading = true;
+	editorError = null;
+
+	try {
+		const code = await apiRepository.fetchExampleScriptCode(example);
+		loadScript(code);
+	} catch (err) {
+		editorError = err instanceof RepositoryError ? err.message : 'Failed to load example script';
+	} finally {
+		isEditorLoading = false;
+	}
+}
+
 export const uiViewModel = {
 	// Bindable state
 	get state() {
@@ -102,6 +155,24 @@ export const uiViewModel = {
 	set expandedRunIds(value: Set<string>) {
 		expandedRunIds = value;
 	},
+	get isEditorLoading() {
+		return isEditorLoading;
+	},
+	get editorError() {
+		return editorError;
+	},
+	get headerContent() {
+		return headerContent;
+	},
+	get editorContent() {
+		return currentWorkspace.state.ui.scriptEditor.content;
+	},
+	set editorContent(content: string) {
+		currentWorkspace.state.ui.scriptEditor.content = content;
+	},
+	get fullScriptContent() {
+		return fullScriptContent;
+	},
 
 	// Actions
 	toggleDarkMode,
@@ -110,5 +181,8 @@ export const uiViewModel = {
 	hideRunsForCase,
 	toggleRunsVisibility,
 	toggleRunExpansion,
+	loadScript,
+	loadExampleScripts,
+	loadExampleScript,
 	reset,
 };
