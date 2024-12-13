@@ -39,6 +39,37 @@
 					logLevel: 'error',
 					dragAndDropEnabled: false,
 				});
+
+				// Define predefined colormaps
+				const colormaps = {
+					cyan: {
+						R: [0, 1, 0],
+						G: [0, 1, 255],
+						B: [0, 1, 255],
+						A: [0, 255, 255],
+						I: [0, 1, 255],
+					},
+					magenta: {
+						R: [0, 1, 255],
+						G: [0, 1, 0],
+						B: [0, 1, 255],
+						A: [0, 255, 255],
+						I: [0, 1, 255],
+					},
+					yellow: {
+						R: [0, 1, 255],
+						G: [0, 1, 255],
+						B: [0, 1, 0],
+						A: [0, 255, 255],
+						I: [0, 1, 255],
+					},
+				};
+
+				// Register all colormaps
+				Object.entries(colormaps).forEach(([name, colormap]) => {
+					nv.addColormap(name, colormap);
+				});
+
 				await nv.attachToCanvas(canvas);
 				isInitialized = true;
 

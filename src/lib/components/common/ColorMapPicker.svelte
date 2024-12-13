@@ -1,5 +1,7 @@
 <script lang="ts">
 	import { popup } from '@skeletonlabs/skeleton';
+	import { debounce } from 'ts-debounce';
+	import { onMount } from 'svelte';
 
 	let { id, colormapValue = $bindable(), alphaValue = $bindable(1) } = $props();
 
@@ -15,6 +17,7 @@
 		'green2orange',
 		'cool',
 		'hot',
+		'random',
 		// Functional data
 		'viridis',
 		'plasma',
@@ -25,9 +28,12 @@
 		'red',
 		'green',
 		'blue',
+		'cyan',
+		'magenta',
+		'yellow',
 	];
 
-	// Add mapping for preset colors with gradients
+	// Define colors to show in the color map picker
 	const presetColorMapping: Record<string, string> = {
 		gray: 'linear-gradient(to right, #666666B3, #ffffffB3)',
 		bone: 'linear-gradient(to right, #5b7ba5B3, #e8f0ffB3)',
@@ -35,6 +41,8 @@
 		green2orange: 'linear-gradient(to right, #00ff00B3, #ffa500B3)',
 		cool: 'linear-gradient(to right, #00ffffB3, #ff00ffB3)',
 		hot: 'linear-gradient(to right, #000000B3, #ff0000B3, #ffff00B3, #ffffffB3)',
+		random:
+			'linear-gradient(to right, #ff0000B3, #ff8000B3, #ffff00B3, #00ff00B3, #00ffffB3, #0000ffB3, #ff00ffB3)',
 		viridis:
 			'linear-gradient(to right, #440154B3, #414487B3, #2a788eB3, #22a884B3, #7ad151B3, #fde725B3)',
 		plasma:
@@ -48,7 +56,23 @@
 		red: 'linear-gradient(to right, #000000B3, #ff0000B3)',
 		green: 'linear-gradient(to right, #000000B3, #00ff00B3)',
 		blue: 'linear-gradient(to right, #000000B3, #0000ffB3)',
+		cyan: 'linear-gradient(to right, #000000B3, #00ffffB3)',
+		magenta: 'linear-gradient(to right, #000000B3, #ff00ffB3)',
+		yellow: 'linear-gradient(to right, #000000B3, #ffff00B3)',
 	};
+
+	const DEFAULT_CUSTOM_COLOR = {
+		hex: '#ff0000',
+		rgb: { r: 255, g: 0, b: 0 },
+	};
+
+	let isColorDark = $derived(
+		(0.299 * colormapValue?.R?.[2] +
+			0.587 * colormapValue?.G?.[2] +
+			0.114 * colormapValue?.B?.[2]) /
+			255 <
+			0.5
+	);
 
 	function createCustomColorMap(r: number, g: number, b: number) {
 		const colorMap = {
@@ -61,24 +85,38 @@
 		colormapValue = colorMap;
 	}
 
+	// Debounce the createCustomColorMap function to prevent excessive updates
+	const debouncedCreateCustomColorMap = debounce(createCustomColorMap, 10);
+
 	let activeTab: 'preset' | 'custom' = $state('preset');
+
+	// Set the initial tab
+	onMount(() => {
+		if (typeof colormapValue === 'string') {
+			// If colormapValue is a string, it's a preset
+			activeTab = 'preset';
+		} else if (colormapValue?.R !== undefined) {
+			// If colormapValue has RGB values, it's a custom color
+			activeTab = 'custom';
+		}
+	});
 
 	function setActiveTab(tab: 'preset' | 'custom') {
 		activeTab = tab;
 		if (tab === 'preset' && presetColorMaps.length > 0) {
-			colormapValue = presetColorMaps[0];
+			if (presetColorMaps.includes('gray')) {
+				colormapValue = 'gray';
+			} else {
+				colormapValue = presetColorMaps[0];
+			}
+		} else if (tab === 'custom') {
+			createCustomColorMap(
+				DEFAULT_CUSTOM_COLOR.rgb.r,
+				DEFAULT_CUSTOM_COLOR.rgb.g,
+				DEFAULT_CUSTOM_COLOR.rgb.b
+			);
 		}
 	}
-
-	function debounce(func: Function, wait: number) {
-		let timeout: ReturnType<typeof setTimeout>;
-		return (...args: any[]) => {
-			clearTimeout(timeout);
-			timeout = setTimeout(() => func(...args), wait);
-		};
-	}
-
-	const debouncedCreateCustomColorMap = debounce(createCustomColorMap, 0);
 </script>
 
 <div class="relative">
@@ -148,18 +186,21 @@
 							onchange={(e) => (colormapValue = e.currentTarget.value)}
 						>
 							<option value="" disabled>Choose a colormap...</option>
-							{#each presetColorMaps as name}
+							{#each presetColorMaps.sort() as name}
 								<option value={name}>{name}</option>
 							{/each}
 						</select>
 					</div>
 				{:else}
-					<div class="w-full">
+					<div class="w-full relative group">
 						<input
 							name="colormap_custom"
 							type="color"
-							class="w-full h-12 cursor-pointer hover:scale-[1.02] transition-transform"
-							style="background-color: transparent;"
+							class="absolute inset-0 opacity-0 w-full h-full cursor-pointer"
+							value={typeof colormapValue === 'string'
+								? DEFAULT_CUSTOM_COLOR.hex
+								: `#${(colormapValue?.R?.[2] ?? 255).toString(16).padStart(2, '0')}${(colormapValue?.G?.[2] ?? 255).toString(16).padStart(2, '0')}${(colormapValue?.B?.[2] ?? 255).toString(16).padStart(2, '0')}`}
+							id="color-picker-{id}"
 							oninput={(e) => {
 								const hex = e.currentTarget.value;
 								const r = parseInt(hex.slice(1, 3), 16);
@@ -168,6 +209,30 @@
 								debouncedCreateCustomColorMap(r, g, b);
 							}}
 						/>
+						<button
+							class="w-full h-10 rounded-[4px] border-2 border-surface-700/30 group-hover:border-primary-500/50 transition-all flex items-center justify-center gap-2 pointer-events-none transform group-active:scale-[0.98]"
+							style="background: {typeof colormapValue === 'string'
+								? '#ff0000'
+								: `rgb(${colormapValue?.R?.[2] ?? 255}, ${colormapValue?.G?.[2] ?? 255}, ${colormapValue?.B?.[2] ?? 255})`}"
+						>
+							<i
+								class="fa-solid fa-droplet"
+								style="color: {typeof colormapValue === 'string'
+									? 'white'
+									: isColorDark
+										? 'white'
+										: 'black'}"
+							></i>
+							<span
+								style="color: {typeof colormapValue === 'string'
+									? 'white'
+									: isColorDark
+										? 'white'
+										: 'black'}"
+							>
+								Choose Color
+							</span>
+						</button>
 					</div>
 				{/if}
 			</div>
