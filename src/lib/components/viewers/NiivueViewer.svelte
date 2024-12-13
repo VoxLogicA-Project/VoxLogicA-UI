@@ -98,13 +98,16 @@
 			const desiredLayers = $state.snapshot(
 				layerViewModel.getAllSelectedLayersWithLayerStylesNoContext(case_.path)
 			);
-			desiredLayers.forEach(({ layer, style }) => {
-				updateLayerStyle(layer, style);
+			Promise.all(
+				desiredLayers.map(({ layer, style }) => debouncedUpdateLayerStyle(layer, style))
+			).catch((error) => {
+				console.error('Failed to update layer styles:', error);
 			});
 		}
 	});
 
 	const debouncedLoadAllLayers = debounce(loadAllLayers, 1000);
+	const debouncedUpdateLayerStyle = debounce(updateLayerStyle, 1);
 
 	async function loadAllLayers() {
 		if (!nv) return;

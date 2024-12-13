@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { popup } from '@skeletonlabs/skeleton';
-	import { debounce } from 'ts-debounce';
 	import { onMount } from 'svelte';
 
 	let { id, colormapValue = $bindable(), alphaValue = $bindable(1) } = $props();
@@ -84,9 +83,6 @@
 		};
 		colormapValue = colorMap;
 	}
-
-	// Debounce the createCustomColorMap function to prevent excessive updates
-	const debouncedCreateCustomColorMap = debounce(createCustomColorMap, 10);
 
 	let activeTab: 'preset' | 'custom' = $state('preset');
 
@@ -206,7 +202,7 @@
 								const r = parseInt(hex.slice(1, 3), 16);
 								const g = parseInt(hex.slice(3, 5), 16);
 								const b = parseInt(hex.slice(5, 7), 16);
-								debouncedCreateCustomColorMap(r, g, b);
+								createCustomColorMap(r, g, b);
 							}}
 						/>
 						<button
