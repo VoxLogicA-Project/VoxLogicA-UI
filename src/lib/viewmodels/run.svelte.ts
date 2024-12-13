@@ -111,9 +111,6 @@ const getRunsForCase = $derived((casePath: Case['path']) => {
 const isRunSelected = $derived((runId: Run['id']) => {
 	return currentWorkspace.state.data.openedRunsIds.some((id) => id === runId);
 });
-const getSelectionIndex = $derived((runId: Run['id']) => {
-	return (currentWorkspace.state.data.openedRunsIds.indexOf(runId) + 1).toString();
-});
 const getSuccessfulCasesForRun = $derived((runId: Run['id']) => {
 	const successfulCases: Case[] = [];
 
@@ -340,7 +337,6 @@ export const runViewModel = {
 	getRunPrints,
 	getRunsForCase,
 	isRunSelected,
-	getSelectionIndex,
 	getSuccessfulCasesForRun,
 
 	// Actions

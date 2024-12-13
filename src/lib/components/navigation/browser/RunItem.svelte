@@ -27,27 +27,27 @@
 				: 'text-surface-900-50-token'}"
 			onclick={() => runViewModel.toggleRun(run.id)}
 		>
-			<div class="w-6 flex justify-center mr-2 flex-shrink-0">
-				{#if runViewModel.isRunSelected(run.id)}
-					<div class="badge badge-sm rounded-full bg-primary-900 text-primary-200">
-						{runViewModel.getSelectionIndex(run.id)}
-					</div>
-				{:else}
-					<i
-						class="fa-solid opacity-70 {run.outputError ? 'text-red-500' : ''}"
-						class:fa-circle-play={!run.outputError}
-						class:fa-triangle-exclamation={run.outputError}
-					></i>
-				{/if}
+			<div class="flex justify-center mr-2 flex-shrink-0 w-8">
+				<div
+					class="badge badge-sm rounded-full h-5 px-2 inline-flex items-center justify-center {runViewModel.isRunSelected(
+						run.id
+					)
+						? 'bg-primary-900 text-primary-200'
+						: 'bg-surface-300 dark:bg-surface-500 text-surface-900-50-token'}"
+				>
+					{run.id}
+				</div>
 			</div>
-			<span class="truncate flex-1 text-sm flex items-center gap-2">
+			<span class="truncate flex-1 text-sm">
 				{new Date(run.timestamp).toLocaleString(undefined, {
 					month: 'short',
 					day: 'numeric',
 					hour: '2-digit',
 					minute: '2-digit',
 				})}
-				<span class="opacity-50 truncate">({run.id})</span>
+				{#if run.outputError}
+					<i class="fa-solid fa-triangle-exclamation text-red-500 pl-2"></i>
+				{/if}
 			</span>
 		</button>
 		{#if run.outputPrint?.length > 0 && !hasActivePrintFilters}

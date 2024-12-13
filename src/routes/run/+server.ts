@@ -3,8 +3,7 @@ import type { RequestHandler } from './$types';
 import fs from 'fs/promises';
 import path from 'path';
 import { spawn } from 'child_process';
-import { DATASET_PATH, RUN_OUTPUT_PATH, VOXLOGICA_BINARY_PATH } from '../config';
-import { randomUUID } from 'crypto';
+import { DATASET_PATH, RUN_OUTPUT_PATH, VOXLOGICA_BINARY_PATH, WORKSPACE_PATH } from '../config';
 import type { Case, Layer, Run } from '$lib/models/types';
 
 interface VoxLogicaResult {
@@ -168,6 +167,27 @@ async function processCase(
 	}
 }
 
+async function getNextRunId(workspaceId: string): Promise<number> {
+	const counterPath = path.join(WORKSPACE_PATH(workspaceId), 'run_counter.txt');
+
+	try {
+		// Use a try-catch block for atomic file operations
+		const currentId = await fs
+			.readFile(counterPath, 'utf-8')
+			.then(Number)
+			.catch(() => 0);
+		const nextId = currentId + 1;
+
+		// Write the new counter atomically
+		await fs.writeFile(counterPath, nextId.toString(), { flag: 'w' });
+
+		return nextId;
+	} catch (err) {
+		console.error('Failed to generate run ID:', err);
+		error(500, 'Failed to generate run ID');
+	}
+}
+
 export const POST: RequestHandler = async ({ request, fetch }) => {
 	const { workspaceId, scriptContent, cases } = await request.json();
 
@@ -185,9 +205,9 @@ export const POST: RequestHandler = async ({ request, fetch }) => {
 		error(400, 'VoxLogicA binary not found. Please check your installation.');
 	}
 
-	const runId = randomUUID();
+	const runId = await getNextRunId(workspaceId);
 	const results = await Promise.all(
-		cases.map((case_) => processCase(case_, runId, workspaceId, scriptContent, fetch))
+		cases.map((case_) => processCase(case_, runId.toString(), workspaceId, scriptContent, fetch))
 	);
 
 	return json(results);

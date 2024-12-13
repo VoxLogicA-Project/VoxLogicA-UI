@@ -98,9 +98,9 @@
 					<div class="flex items-center gap-2">
 						Run
 						<div
-							class="badge badge-sm bg-primary-900 text-primary-200 rounded-full w-5 h-5 flex items-center justify-center"
+							class="badge badge-sm bg-primary-900 text-primary-200 rounded-full h-5 min-w-[1.25rem] px-1.5 flex items-center justify-center"
 						>
-							{runViewModel.getSelectionIndex(tab.layerContext.runId)}
+							{tab.layerContext.runId}
 						</div>
 					</div>
 				{:else}
