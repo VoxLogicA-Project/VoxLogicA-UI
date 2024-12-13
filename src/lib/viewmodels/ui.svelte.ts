@@ -2,6 +2,7 @@ import { currentWorkspace } from '$lib/models/repository.svelte';
 import type { LayerContext, Case } from '$lib/models/types';
 
 // UI State
+let rightSidebarSize = $state(300);
 let blinkingTabLayerContext: LayerContext | null = $state(null);
 let expandedCasePaths = $state(new Set<string>());
 let expandedRunIds = $state(new Set<string>());
@@ -70,6 +71,12 @@ export const uiViewModel = {
 	// Bindable state
 	get state() {
 		return currentWorkspace.state.ui;
+	},
+	get rightSidebarSize() {
+		return rightSidebarSize;
+	},
+	set rightSidebarSize(size: number) {
+		rightSidebarSize = size;
 	},
 	get blinkingTabLayerContext() {
 		return blinkingTabLayerContext;

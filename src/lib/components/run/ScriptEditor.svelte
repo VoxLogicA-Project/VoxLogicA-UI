@@ -19,6 +19,7 @@
 	let editorView: EditorView;
 	let headerView: EditorView | undefined;
 	let isHeaderCollapsed = $state(false);
+	let showButtonsLabels = $derived(uiViewModel.rightSidebarSize > 300);
 
 	// Custom theme for the editor to blend better with Skeleton
 	const customTheme = EditorView.theme({
@@ -225,6 +226,8 @@
 			</div>
 		</div>
 	{/if}
+
+	<!-- Load a preset script -->
 	<div class="p-4 border-b border-surface-500/30 flex gap-2">
 		<select
 			name="script_preset"
@@ -281,8 +284,10 @@
 			aria-label="Download the current script content"
 			onclick={handleScriptDownload}
 		>
-			<i class="fa-solid fa-download mr-2"></i>
-			Download
+			<i class="fa-solid fa-download"></i>
+			{#if showButtonsLabels}
+				<span class="ml-2">Download</span>
+			{/if}
 		</button>
 		<div class="flex gap-1 flex-1">
 			<button
@@ -292,8 +297,10 @@
 				aria-label="Run the script for all opened cases"
 				onclick={handleRun}
 			>
-				<i class="fa-solid fa-play mr-2"></i>
-				Run All
+				<i class="fa-solid fa-play"></i>
+				{#if showButtonsLabels}
+					<span class="ml-2 truncate">Run All</span>
+				{/if}
 			</button>
 			<button
 				class="btn variant-filled-primary p-1"

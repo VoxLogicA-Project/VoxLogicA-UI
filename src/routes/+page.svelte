@@ -28,7 +28,7 @@
 	<!-- Left Sidebar -->
 	<CollapsibleSidebar
 		side="left"
-		defaultSize="330px"
+		startSize={330}
 		bind:isCollapsed={uiViewModel.state.sidebars.datasetCollapsed}
 		title="Browser"
 	>
@@ -115,7 +115,7 @@
 				{#if caseViewModel.selectedCases.length > 0}
 					<CollapsibleSidebar
 						side="bottom"
-						defaultSize="250px"
+						startSize={250}
 						minSize={100}
 						maxSize={600}
 						bind:isCollapsed={uiViewModel.state.sidebars.layerCollapsed}
@@ -139,7 +139,8 @@
 	{#if caseViewModel.selectedCases.length > 0}
 		<CollapsibleSidebar
 			side="right"
-			defaultSize="400px"
+			startSize={400}
+			bind:currentSize={uiViewModel.rightSidebarSize}
 			bind:isCollapsed={uiViewModel.state.sidebars.scriptCollapsed}
 			title="Script Editor"
 		>

@@ -1,18 +1,17 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
-
 	let {
 		side = 'left',
-		defaultSize = '300px',
 		minSize = 150,
 		maxSize = 800,
+		startSize = 300,
+		currentSize = $bindable(startSize),
 		isCollapsed = $bindable(false),
+		collapsedSize = 40,
 		title = '',
 		children,
 	} = $props();
 
 	let sidebarElement: HTMLElement;
-
 	const isVertical = side === 'left' || side === 'right';
 
 	function initResize(event: MouseEvent) {
@@ -31,10 +30,9 @@
 					: startSize - (currentPos - startPos);
 
 			if (size > minSize && size < maxSize) {
-				sidebarElement.style[isVertical ? 'width' : 'height'] = `${size}px`;
-			} else if (size <= minSize && !isCollapsed) {
-				// Auto-collapse when dragged below minSize
-				isCollapsed = !isCollapsed;
+				currentSize = size;
+			} else if (size <= minSize) {
+				isCollapsed = true;
 			}
 		}
 
@@ -50,11 +48,19 @@
 	}
 
 	$effect(() => {
-		if (isCollapsed) {
-			sidebarElement.style[isVertical ? 'width' : 'height'] = '40px';
-		} else {
-			sidebarElement.style[isVertical ? 'width' : 'height'] = defaultSize;
+		if (currentSize <= minSize && !isCollapsed) {
+			isCollapsed = true;
 		}
+	});
+
+	$effect(() => {
+		if (isCollapsed && currentSize !== collapsedSize) {
+			currentSize = collapsedSize;
+		}
+	});
+
+	$effect(() => {
+		sidebarElement.style[isVertical ? 'width' : 'height'] = currentSize + 'px';
 	});
 </script>
 
@@ -78,7 +84,10 @@
 				class="w-full h-full btn variant-soft rounded-none flex {isVertical
 					? 'flex-col'
 					: ''} items-center justify-center"
-				onclick={() => (isCollapsed = !isCollapsed)}
+				onclick={() => {
+					currentSize = startSize;
+					isCollapsed = false;
+				}}
 				aria-label={`${isCollapsed ? 'Expand' : 'Collapse'} sidebar`}
 			>
 				{#if title && isVertical}
