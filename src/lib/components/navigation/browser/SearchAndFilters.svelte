@@ -4,7 +4,11 @@
 	let { searchQuery = $bindable('') } = $props();
 
 	function addFilter() {
-		runViewModel.addPrintFilter({ label: '', operation: '>', value: '' });
+		runViewModel.addPrintFilter({
+			label: runViewModel.uniquePrintLabels[0] || '',
+			operation: '>',
+			value: '',
+		});
 	}
 
 	function removeFilter(index: number) {
@@ -33,6 +37,7 @@
 					aria-label="Filter cases by run print"
 					class="btn-icon hover:variant-soft-primary rounded-full h-8 w-8 flex items-center justify-center"
 					onclick={addFilter}
+					disabled={runViewModel.uniquePrintLabels.length === 0}
 				>
 					<i class="fa-solid fa-filter"></i>
 				</button>
@@ -45,32 +50,37 @@
 			{#each runViewModel.printFilters as filter, i}
 				<div class="mt-2">
 					<div class="grid grid-cols-[1fr_auto_1fr_auto] gap-1 items-center">
-						<input
-							type="text"
+						<select
 							name={`filter-label-${i}`}
-							class="input p-1"
-							placeholder="Run print label"
+							class="select p-1"
 							value={filter.label}
-							oninput={(e) => runViewModel.updatePrintFilter(i, { label: e.currentTarget.value })}
-						/>
+							onchange={(e) => runViewModel.updatePrintFilter(i, { label: e.currentTarget.value })}
+							title="Select the print metric to filter by"
+						>
+							{#each runViewModel.uniquePrintLabels as label}
+								<option value={label}>{label}</option>
+							{/each}
+						</select>
 						<select
 							name={`filter-operation-${i}`}
-							class="input p-1 w-20"
+							class="select p-1 w-20"
 							value={filter.operation}
 							onchange={(e) =>
 								runViewModel.updatePrintFilter(i, { operation: e.currentTarget.value })}
+							title="Choose how to compare the values"
 						>
-							<option value=">">&gt;</option>
-							<option value="<">&lt;</option>
-							<option value=">=">&ge;</option>
-							<option value="<=">&le;</option>
-							<option value="=">=</option>
+							<option value=">" title="Greater than">&gt;</option>
+							<option value="<" title="Less than">&lt;</option>
+							<option value=">=" title="Greater than or equal to">&ge;</option>
+							<option value="<=" title="Less than or equal to">&le;</option>
+							<option value="=" title="Equal to">=</option>
 						</select>
 						<input
 							type="number"
 							name={`filter-value-${i}`}
 							class="input p-1"
-							placeholder="Run print value"
+							placeholder={`Value`}
+							title={`Enter a numeric value to compare ${filter.label} against`}
 							value={filter.value}
 							oninput={(e) => runViewModel.updatePrintFilter(i, { value: e.currentTarget.value })}
 						/>

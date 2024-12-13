@@ -33,6 +33,21 @@ const fullScriptContent = $derived(
 	`${headerContent}\n\n${currentWorkspace.state.ui.scriptEditor.content}`
 );
 const openedRunsIds = $derived(currentWorkspace.state.data.openedRunsIds);
+const uniquePrintLabels = $derived.by(() => {
+	const labels = new Set<string>();
+
+	// Iterate through all runs in all cases
+	for (const casePath in loadedData.runsByCasePath) {
+		const runs = loadedData.runsByCasePath[casePath];
+		for (const run of runs) {
+			run.outputPrint.forEach((print) => labels.add(print.name));
+		}
+	}
+
+	return Array.from(labels).sort();
+});
+
+// Queries
 const getRunsWithErrors = $derived((runId: Run['id']) => {
 	const runsErrors: Record<Case['path'], Run> = {};
 	for (const casePath in loadedData.runsByCasePath) {
@@ -297,6 +312,9 @@ export const runViewModel = {
 	},
 	get printFilters() {
 		return printFilters;
+	},
+	get uniquePrintLabels() {
+		return uniquePrintLabels;
 	},
 
 	// Queries
