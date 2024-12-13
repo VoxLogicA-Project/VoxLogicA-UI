@@ -41,6 +41,7 @@
 	"dependencies": {
 		"@codemirror/basic-setup": "^0.20.0",
 		"@floating-ui/dom": "^1.6.12",
+		"@lezer/common": "^1.0.0",
 		"@lezer/highlight": "^1.2.1",
 		"@niivue/niivue": "^0.46.0",
 		"@thisux/sveltednd": "^0.0.16",
