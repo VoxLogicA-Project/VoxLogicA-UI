@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { getToastStore, getModalStore } from '@skeletonlabs/skeleton';
+	import { getToastStore, getModalStore, popup } from '@skeletonlabs/skeleton';
 	import { sessionViewModel } from '$lib/viewmodels/session.svelte';
 	import { createWorkspaceService } from './workspaceService';
 
@@ -14,13 +14,67 @@
 </script>
 
 <div class="fixed inset-0 z-50 bg-black/20 backdrop-blur-sm flex items-center justify-center">
-	<div class="bg-surface-100-800-token rounded-xl shadow-xl max-w-lg w-full">
+	<div class="bg-surface-100-800-token rounded-xl shadow-xl max-w-xl w-full">
 		<!-- Fixed Header -->
 		<div class="p-8 pb-4 text-center space-y-4">
 			<h2 class="h2">Welcome to VoxLogicA UI</h2>
-			<p class="text-surface-600-300-token">
-				Please select a workspace or create a new one to continue.
+			<p class="text-surface-600-300-token flex items-center justify-center gap-2">
+				Please select a workspace or create a new one to continue
+				<button
+					title="What is a workspace?"
+					aria-label="What is a workspace?"
+					class="btn-icon variant-soft-surface"
+					use:popup={{
+						event: 'hover',
+						target: 'workspace-info',
+						placement: 'bottom',
+					}}
+				>
+					<i class="fa-solid fa-circle-question"></i>
+				</button>
 			</p>
+			<!-- Popup Content -->
+			<div
+				class="card p-4 w-80 bg-surface-50-900-token border border-surface-400-500-token shadow-xl text-left"
+				data-popup="workspace-info"
+				style="z-index: 1000;"
+			>
+				<div class="space-y-4">
+					<div class="flex items-start gap-3">
+						<i class="fa-solid fa-book-open text-primary-500 text-lg mt-0.5"></i>
+						<div>
+							<h3 class="font-semibold">What is a workspace?</h3>
+							<p class="text-surface-600-300-token">
+								A saved state of your work in VoxLogica UI - like a notebook where you write
+								everything you do.
+							</p>
+						</div>
+					</div>
+
+					<div class="flex items-start gap-3">
+						<i class="fa-solid fa-arrows-rotate text-primary-500 text-lg mt-0.5"></i>
+						<div>
+							<h3 class="font-semibold">Easy load and switching</h3>
+							<p class="text-surface-600-300-token">
+								You can always load back a workspace to continue your work exactly where you
+								stopped, and switch between them easily.
+							</p>
+						</div>
+					</div>
+
+					<div class="flex items-start gap-3">
+						<i class="fa-solid fa-clone text-primary-500 text-lg mt-0.5"></i>
+						<div>
+							<h3 class="font-semibold">Independent copies</h3>
+							<p class="text-surface-600-300-token">
+								You can create your own workspace from scratch or from someone else's ID - you'll
+								get a copy to work on without affecting their original.
+							</p>
+						</div>
+					</div>
+				</div>
+				<div class="arrow bg-surface-400-500-token"></div>
+			</div>
 		</div>
 
 		<!-- Scrollable Content -->
