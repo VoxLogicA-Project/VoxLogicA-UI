@@ -32,7 +32,7 @@ export const DEFAULT_WORKSPACE_STATE: Workspace['state'] = {
 	},
 	runsLayersStates: {},
 	ui: {
-		isDarkMode: false,
+		isDarkMode: true,
 		sidebars: {
 			datasetCollapsed: false,
 			layerCollapsed: false,

@@ -22,11 +22,6 @@
 	});
 
 	onMount(() => {
-		// Check system preference and set initial theme
-		if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
-			uiViewModel.state.isDarkMode = true;
-		}
-
 		// Add beforeunload event listener
 		window.addEventListener('beforeunload', (event) => {
 			// Check if there are unsaved changes
