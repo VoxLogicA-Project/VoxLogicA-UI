@@ -40,7 +40,12 @@
                 {runViewModel.isRunSelected(run.id)
 				? 'bg-primary-500/10 text-primary-700 dark:text-primary-400'
 				: 'text-surface-900-50-token'}"
-			onclick={() => runViewModel.toggleRun(run.id)}
+			onclick={() => {
+				runViewModel.toggleRun(run.id);
+				if (runViewModel.isRunSelected(run.id)) {
+					uiViewModel.layerContext = { type: 'run', runId: run.id };
+				}
+			}}
 		>
 			<div class="flex justify-center mr-2 flex-shrink-0 w-7">
 				<div
