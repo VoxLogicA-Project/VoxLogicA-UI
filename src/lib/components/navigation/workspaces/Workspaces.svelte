@@ -44,7 +44,7 @@
 	<button
 		title="Select Workspace"
 		aria-label="Select Workspace"
-		class="flex-1 h-8 px-2 rounded-lg bg-surface-500/10 hover:bg-surface-500/20 border border-surface-500/30 flex items-center gap-2 transition-colors duration-200"
+		class="flex-1 h-8 px-2 rounded-lg bg-surface-500/10 hover:bg-surface-500/20 border border-surface-500/30 flex items-center gap-2 transition-all duration-200"
 		use:popup={popupSettings}
 	>
 		<i class="fa-solid fa-window-restore text-sm opacity-50"></i>
@@ -101,7 +101,7 @@
 					<div
 						class="option !px-2 !py-1.5 rounded-lg {id === sessionViewModel.selectedWorkspaceId
 							? '!bg-primary-500/40 hover:!bg-primary-500/60'
-							: 'hover:!bg-surface-400/10'} flex items-center"
+							: 'hover:!bg-surface-400/10'} flex items-center transition-all duration-200"
 					>
 						<div
 							class="flex-1 cursor-pointer max-w-full"
@@ -114,7 +114,7 @@
 								<div class="flex items-center justify-between">
 									<span class="font-medium text-sm">{name}</span>
 									<div
-										class="inline-flex items-center justify-center p-0.5 hover:bg-error-500/20 rounded-full opacity-50 hover:opacity-100 transition-all cursor-pointer group"
+										class="inline-flex items-center justify-center p-0.5 hover:bg-error-500/20 rounded-full opacity-50 hover:opacity-100 transition-all duration-200 cursor-pointer group"
 										role="button"
 										tabindex="0"
 										title="Delete Workspace"
@@ -136,7 +136,7 @@
 								<div class="flex items-start justify-between gap-1 max-w-full">
 									<span class="text-xs opacity-50 font-mono truncate mt-0.5">{id}</span>
 									<div
-										class="inline-flex items-center justify-center p-0.5 hover:bg-surface-500/20 rounded-full opacity-50 hover:opacity-100 transition-all cursor-pointer group"
+										class="inline-flex items-center justify-center p-0.5 hover:bg-surface-500/20 rounded-full opacity-50 hover:opacity-100 transition-all duration-200 cursor-pointer group"
 										role="button"
 										tabindex="0"
 										title="Copy Workspace ID"
@@ -190,7 +190,7 @@
 		{/if}
 
 		<button
-			class="option !px-2 !py-1.5 rounded-lg hover:!bg-surface-500/20 w-full text-left"
+			class="option !px-2 !py-1.5 rounded-lg hover:!bg-surface-500/20 w-full text-left transition-all duration-200"
 			onclick={() => workspaceService.showCreateWorkspaceModal()}
 		>
 			<div class="flex items-center gap-2">
@@ -200,7 +200,7 @@
 		</button>
 
 		<button
-			class="option !px-2 !py-1.5 rounded-lg hover:!bg-surface-500/20 w-full text-left"
+			class="option !px-2 !py-1.5 rounded-lg hover:!bg-surface-500/20 w-full text-left transition-all duration-200"
 			onclick={() => workspaceService.showCreateFromIdModal()}
 		>
 			<div class="flex items-center gap-2">

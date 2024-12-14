@@ -33,7 +33,7 @@
 				<div class="space-y-2 py-4">
 					{#each sessionViewModel.availableWorkspacesIdsAndNames as { id, name }}
 						<button
-							class="w-full p-4 rounded-lg bg-surface-100-800-token hover:bg-primary-500/20 transition-colors"
+							class="w-full p-4 rounded-lg bg-surface-100-800-token hover:bg-primary-500/20 transition-all duration-200"
 							onclick={async () => await workspaceService.handleSelect(id, name)}
 						>
 							<div class="flex flex-col">
@@ -41,7 +41,7 @@
 									<span class="font-medium">{name}</span>
 									<div class="flex items-center gap-1">
 										<div
-											class="inline-flex items-center justify-center p-1.5 hover:bg-error-500/20 rounded-full opacity-50 hover:opacity-100 transition-all cursor-pointer group"
+											class="inline-flex items-center justify-center p-1.5 hover:bg-error-500/20 rounded-full opacity-50 hover:opacity-100 transition-all duration-200 cursor-pointer group"
 											role="button"
 											tabindex="0"
 											title="Delete Workspace"
@@ -64,7 +64,7 @@
 								<div class="flex items-center justify-between">
 									<span class="text-xs opacity-50 font-mono">{id}</span>
 									<div
-										class="inline-flex items-center justify-center p-1.5 hover:bg-surface-500/20 rounded-full opacity-50 hover:opacity-100 transition-all cursor-pointer group"
+										class="inline-flex items-center justify-center p-1.5 hover:bg-surface-500/20 rounded-full opacity-50 hover:opacity-100 transition-all duration-200 cursor-pointer group"
 										role="button"
 										tabindex="0"
 										title="Copy Workspace ID"
@@ -119,7 +119,7 @@
 		<!-- Fixed Footer -->
 		<div class="p-8 pt-4 space-y-2">
 			<button
-				class="w-full p-4 rounded-lg bg-primary-500 hover:bg-primary-600 text-white transition-colors flex items-center justify-center gap-2"
+				class="w-full p-4 rounded-lg bg-primary-500 hover:bg-primary-600 text-white transition-all duration-200 flex items-center justify-center gap-2"
 				onclick={() => workspaceService.showCreateWorkspaceModal()}
 			>
 				<i class="fa-solid fa-plus"></i>
@@ -127,7 +127,7 @@
 			</button>
 
 			<button
-				class="w-full p-4 rounded-lg bg-surface-500/10 hover:bg-surface-500/20 border border-surface-500/30 transition-colors flex items-center justify-center gap-2"
+				class="w-full p-4 rounded-lg bg-surface-500/10 hover:bg-surface-500/20 border border-surface-500/30 transition-all duration-200 flex items-center justify-center gap-2"
 				onclick={() => workspaceService.showCreateFromIdModal()}
 			>
 				<i class="fa-solid fa-copy"></i>
