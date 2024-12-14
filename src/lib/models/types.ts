@@ -1,6 +1,5 @@
 export interface Dataset {
 	name: string;
-	layout: string;
 }
 
 export interface Case {

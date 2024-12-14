@@ -3,22 +3,13 @@ import type { RequestHandler } from './$types';
 import fs from 'fs/promises';
 import path from 'path';
 import { DATASET_PATH } from '../../../../../config';
-import type { Dataset, Layer } from '$lib/models/types';
+import type { Layer } from '$lib/models/types';
 
 export const GET: RequestHandler = async ({ params, fetch }) => {
 	// Check if the dataset exists
 	const datasetResponse = await fetch(`/datasets/${params.dataset}`);
 	if (!datasetResponse.ok) {
 		throw error(404, `Dataset ${params.dataset} not found`);
-	}
-
-	// Check if the dataset layout is supported
-	const dataset: Dataset = await datasetResponse.json();
-	if (dataset.layout !== 'brats') {
-		throw error(
-			400,
-			`Dataset layout '${dataset.layout}' is not supported. Only 'brats' is currently supported.`
-		);
 	}
 
 	// Read the case directory
