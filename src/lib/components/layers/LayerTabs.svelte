@@ -88,7 +88,7 @@
 				bind:group={currentTabId}
 				name="layers-tab"
 				value={tab.id}
-				class="px-3 py-1.5 whitespace-nowrap text-sm tab-custom
+				class="px-3 py-1.5 whitespace-nowrap text-sm tab-custom transition-all
 				{uiViewModel.blinkingTabLayerContext?.type === tab.layerContext.type &&
 				uiViewModel.blinkingTabLayerContext?.runId === tab.layerContext.runId
 					? 'blink-tab'
@@ -141,6 +141,19 @@
 
 	:global(.tab-custom:not(.variant-filled-primary)) {
 		background-color: rgb(var(--color-surface-400) / 0.2);
+		transition: background-color 0.2s ease;
+	}
+
+	:global(.tab-custom:not(.variant-filled-primary):hover) {
+		background-color: rgb(var(--color-surface-400) / 0.4);
+	}
+
+	:global(.tab-custom.variant-filled-primary) {
+		transition: filter 0.2s ease;
+	}
+
+	:global(.tab-custom.variant-filled-primary:hover) {
+		filter: brightness(1.1);
 	}
 
 	:global(.blink-tab) {
