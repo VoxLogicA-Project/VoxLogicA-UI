@@ -72,6 +72,7 @@ export interface SerializedWorkspaceState {
 		openedCasesPaths: Case['path'][];
 		openedRunsIds: Run['id'][];
 	};
+	lastGlobalStylesByLayerName: Record<Layer['name'], LayerStyle>;
 	datasetLayersState: LayersState;
 	runsLayersStates: Record<Run['id'], LayersState>;
 	ui: {

@@ -55,8 +55,14 @@ async function selectCase(case_: Case): Promise<void> {
 		// Initialize default styles for each layer
 		layerViewModel.uniqueLayersNames.forEach((layerName) => {
 			if (!currentWorkspace.state.datasetLayersState.stylesByLayerName[layerName]) {
-				currentWorkspace.state.datasetLayersState.stylesByLayerName[layerName] =
-					layerViewModel.DEFAULT_LAYER_STYLE;
+				if (layerName in currentWorkspace.state.lastGlobalStylesByLayerName) {
+					currentWorkspace.state.datasetLayersState.stylesByLayerName[layerName] = {
+						...currentWorkspace.state.lastGlobalStylesByLayerName[layerName],
+					};
+				} else {
+					currentWorkspace.state.datasetLayersState.stylesByLayerName[layerName] =
+						layerViewModel.DEFAULT_LAYER_STYLE;
+				}
 			}
 		});
 	} catch (e) {

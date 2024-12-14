@@ -3,6 +3,16 @@
 	import { uiViewModel } from '$lib/viewmodels/ui.svelte';
 	import ColorMapPicker from '$lib/components/common/ColorMapPicker.svelte';
 	import { layerViewModel } from '$lib/viewmodels/layer.svelte';
+
+	// Remember user's styles for each layer
+	$effect(() => {
+		// Only update global styles when in dataset context
+		for (const [layerName, style] of Object.entries(layerViewModel.stylesByLayerName)) {
+			if (style) {
+				layerViewModel.lastGlobalStylesByLayerName[layerName] = style;
+			}
+		}
+	});
 </script>
 
 <thead>

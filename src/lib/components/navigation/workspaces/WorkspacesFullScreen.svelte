@@ -36,7 +36,7 @@
 							class="w-full p-4 rounded-lg bg-surface-100-800-token hover:bg-primary-500/20 transition-colors"
 							onclick={async () => await workspaceService.handleSelect(id, name)}
 						>
-							<div class="flex flex-col gap-1">
+							<div class="flex flex-col">
 								<div class="flex items-center justify-between">
 									<span class="font-medium">{name}</span>
 									<div class="flex items-center gap-1">

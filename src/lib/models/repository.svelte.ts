@@ -25,6 +25,7 @@ export const DEFAULT_WORKSPACE_STATE: Workspace['state'] = {
 		openedCasesPaths: [],
 		openedRunsIds: [],
 	},
+	lastGlobalStylesByLayerName: {},
 	datasetLayersState: {
 		openedLayersPathsByCasePath: {},
 		stylesByLayerName: {},

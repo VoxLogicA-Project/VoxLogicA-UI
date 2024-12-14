@@ -196,16 +196,24 @@ function selectRun(runId: Run['id']): void {
 		}
 
 		// Initialize the run's layer state
-		currentWorkspace.state.runsLayersStates[runId] = {
-			openedLayersPathsByCasePath: {},
-			stylesByLayerName: Array.from(runLayers).reduce(
-				(acc, layerName) => {
-					acc[layerName] = layerViewModel.DEFAULT_LAYER_STYLE;
-					return acc;
-				},
-				{} as Record<Layer['name'], LayerStyle>
-			),
-		};
+		if (!currentWorkspace.state.runsLayersStates[runId]) {
+			currentWorkspace.state.runsLayersStates[runId] = {
+				openedLayersPathsByCasePath: {},
+				stylesByLayerName: Array.from(runLayers).reduce(
+					(acc, layerName) => {
+						if (layerName in currentWorkspace.state.lastGlobalStylesByLayerName) {
+							acc[layerName] = {
+								...currentWorkspace.state.lastGlobalStylesByLayerName[layerName],
+							};
+						} else {
+							acc[layerName] = layerViewModel.DEFAULT_LAYER_STYLE;
+						}
+						return acc;
+					},
+					{} as Record<Layer['name'], LayerStyle>
+				),
+			};
+		}
 	}
 
 	currentWorkspace.state.data.openedRunsIds.push(runId);
@@ -219,7 +227,8 @@ function deselectRun(runId: Run['id']): void {
 		currentWorkspace.state.data.openedRunsIds.splice(index, 1);
 	}
 
-	delete currentWorkspace.state.runsLayersStates[runId];
+	// Persist layer styles to remember user's choices next time they open the run
+	currentWorkspace.state.runsLayersStates[runId].openedLayersPathsByCasePath = {};
 }
 
 function toggleRun(runId: Run['id']): void {

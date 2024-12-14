@@ -191,13 +191,6 @@ function deselectLayerForAllOpenedCases(layerName: Layer['name']): void {
 	});
 }
 
-function updateLayerStyle(layerName: Layer['name'], style: Partial<LayerStyle>): void {
-	currentLayerState.stylesByLayerName[layerName] = {
-		...currentLayerState.stylesByLayerName[layerName],
-		...style,
-	};
-}
-
 function reset(): void {
 	// Reset the state based on current context
 	if (currentWorkspace.state.ui.layers.layerContext.type === 'dataset') {
@@ -239,6 +232,12 @@ export const layerViewModel = {
 	get uniqueLayersNames() {
 		return uniqueLayersNames;
 	},
+	get lastGlobalStylesByLayerName() {
+		return currentWorkspace.state.lastGlobalStylesByLayerName;
+	},
+	set lastGlobalStylesByLayerName(value: Record<Layer['name'], LayerStyle>) {
+		currentWorkspace.state.lastGlobalStylesByLayerName = value;
+	},
 
 	// Queries
 	currentLayersByCase,
@@ -255,6 +254,5 @@ export const layerViewModel = {
 	toggleLayer,
 	selectLayerForAllOpenedCases,
 	deselectLayerForAllOpenedCases,
-	updateLayerStyle,
 	reset,
 };
