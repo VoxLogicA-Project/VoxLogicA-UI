@@ -3,149 +3,875 @@
 	<head>
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<title>VoxLogicA UI</title>
-		<link rel="icon" href="favicon.svg" />
+		<title>VoxLogicA UI - Advanced Medical Imaging Analysis Made Intuitive</title>
 		<script src="https://cdn.tailwindcss.com"></script>
-		<link
-			rel="stylesheet"
-			href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
-		/>
-		<link
-			href="https://fonts.googleapis.com/css2?family=Urbanist:ital,wght@0,700;1,700&display=swap"
-			rel="stylesheet"
-		/>
-		<link
-			href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap"
-			rel="stylesheet"
-		/>
-
 		<script>
 			tailwind.config = {
 				theme: {
 					extend: {
 						colors: {
-							primary: '#734213',
-						},
-						fontFamily: {
-							urbanist: ['Urbanist', 'sans-serif'],
-							inter: ['Inter', 'sans-serif'],
+							'vox-dark': '#1E1E1E',
+							'vox-accent': '#FF6B00',
+							'vox-gray': '#2D2D2D',
+							'vox-text': '#E0E0E0',
 						},
 					},
 				},
+				darkMode: 'class',
 			};
 		</script>
+		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+		<link
+			href="https://fonts.googleapis.com/css2?family=Urbanist:ital,wght@0,100..900;1,100..900&display=swap"
+			rel="stylesheet"
+		/>
+		<link
+			rel="stylesheet"
+			href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+		/>
 	</head>
-	<body class="font-inter text-gray-800 min-h-screen flex flex-col">
-		<div class="bg-gray-50 border-b border-gray-200">
-			<div class="container mx-auto px-4 py-10">
-				<div class="grid md:grid-cols-2 gap-8 items-center">
-					<div class="space-y-6">
-						<div class="flex items-center gap-2">
-							<svg
-								class="w-10 h-10 text-primary"
-								viewBox="0 0 100 100"
-								xmlns="http://www.w3.org/2000/svg"
+	<body class="bg-white dark:bg-vox-dark text-gray-900 dark:text-vox-text">
+		<!-- Navigation -->
+		<nav class="fixed w-full z-50 bg-white/80 dark:bg-vox-dark/80 backdrop-blur-sm">
+			<div class="container mx-auto px-4 py-3 flex items-center justify-between">
+				<div class="flex items-center space-x-2">
+					<!-- SVG Logo -->
+					<div class="theme-container">
+						<svg
+							class="w-12 h-12 text-[rgb(115,66,13)] dark:text-white"
+							viewBox="0 0 100 100"
+							xmlns="http://www.w3.org/2000/svg"
+							fill="currentColor"
+							stroke="currentColor"
+						>
+							<path
+								d="M50 90 L15 10 L50 40 L85 10 Z
+							   M15 10 L85 10 
+							   M50 40 L50 10 
+							   M35 25 L65 25"
 								fill="currentColor"
-								stroke="currentColor"
-							>
-								<path
-									d="M50 90 L15 10 L50 40 L85 10 Z M15 10 L85 10 M50 40 L50 10 M35 25 L65 25"
-									fill-rule="evenodd"
-								/>
-							</svg>
-							<h1 class="font-urbanist text-4xl md:text-5xl font-bold m-0">VoxLogicA UI</h1>
-						</div>
-						<p class="text-lg font-medium text-gray-600">
-							A modern web interface for VoxLogicA, the Voxel-based Logical Analyser
+								fill-rule="evenodd"
+							/>
+						</svg>
+					</div>
+					<h3
+						class="text-4xl px-2 text-[rgb(115,66,13)] dark:text-white"
+						style="font-family: 'Urbanist', sans-serif; font-weight: 700; letter-spacing: 0.05em"
+					>
+						V<span style="opacity: 0.7">ox</span>Log<span style="opacity: 0.7">ic</span>A
+						<span class="font-black">UI</span>
+					</h3>
+				</div>
+
+				<!-- Theme Toggle -->
+				<button
+					id="themeToggle"
+					class="w-8 h-8 min-w-[2rem] min-h-[2rem] flex items-center justify-center flex-shrink-0 rounded-lg bg-gray-100 dark:bg-vox-gray/30 hover:bg-gray-200 dark:hover:bg-vox-gray/50 border border-gray-200 dark:border-vox-gray/20 transition-colors duration-200"
+				>
+					<i class="fa-solid fa-sun dark:hidden"></i>
+					<i class="fa-solid fa-moon hidden dark:block"></i>
+				</button>
+			</div>
+		</nav>
+
+		<!-- Hero Section -->
+		<section class="pt-24 pb-16 px-4">
+			<div class="container mx-auto max-w-6xl">
+				<div class="grid lg:grid-cols-2 gap-12 items-center">
+					<div>
+						<h1 class="text-4xl lg:text-5xl font-bold mb-6">
+							Advanced Medical<br />
+							Imaging Analysis <br />
+							Made Intuitive
+						</h1>
+						<p class="text-lg mb-8 text-gray-600 dark:text-gray-300">
+							Powerful spatial logic tools for medical professionals and researchers. Analyze
+							medical imaging data with precision and ease.
 						</p>
-						<div class="pt-4">
+						<div class="flex flex-wrap gap-4">
 							<a
 								href="https://github.com/CoffeeStraw/VoxLogica-UI"
-								class="inline-flex items-center gap-2 px-6 py-3 bg-primary hover:bg-primary/80 text-white rounded-lg transition-colors"
+								class="inline-flex items-center gap-2 bg-vox-accent text-white px-8 py-3 rounded-lg hover:bg-opacity-90 transition-all"
 							>
-								<i class="fab fa-github"></i>
-								<span>View on GitHub</span>
+								<svg class="w-6 h-6" viewBox="0 0 24 24" fill="currentColor">
+									<path
+										fill-rule="evenodd"
+										clip-rule="evenodd"
+										d="M12 2C6.477 2 2 6.477 2 12c0 4.42 2.87 8.17 6.84 9.5.5.08.66-.23.66-.5v-1.69c-2.77.6-3.36-1.34-3.36-1.34-.46-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.6.07-.6 1 .07 1.53 1.03 1.53 1.03.87 1.52 2.34 1.07 2.91.83.09-.65.35-1.09.63-1.34-2.22-.25-4.55-1.11-4.55-4.92 0-1.11.38-2 1.03-2.71-.1-.25-.45-1.29.1-2.64 0 0 .84-.27 2.75 1.02.79-.22 1.65-.33 2.5-.33.85 0 1.71.11 2.5.33 1.91-1.29 2.75-1.02 2.75-1.02.55 1.35.2 2.39.1 2.64.65.71 1.03 1.6 1.03 2.71 0 3.82-2.34 4.66-4.57 4.91.36.31.69.92.69 1.85V21c0 .27.16.59.67.5C19.14 20.16 22 16.42 22 12A10 10 0 0012 2z"
+									/>
+								</svg>
+								View on GitHub
 							</a>
 						</div>
 					</div>
-					<div class="order-first md:order-last space-y-4">
-						<img
-							id="screenshot"
-							src="screenshots/example_light.png"
-							alt="VoxLogicA UI Screenshot"
-							class="w-full rounded-xl shadow-lg"
-						/>
-						<div class="flex justify-center">
-							<button
-								id="themeToggle"
-								class="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 shadow-sm transition-colors"
-								aria-label="Toggle theme"
-							>
-								<i id="themeIcon" class="fas fa-moon"></i>
-								<span id="themeText">Switch to Dark Mode</span>
-							</button>
+
+					<!-- Interactive Interface Preview -->
+					<div class="relative rounded-xl overflow-hidden shadow-2xl">
+						<div class="aspect-video bg-vox-gray rounded-lg overflow-hidden">
+							<!-- Light theme image -->
+							<img
+								src="./screenshots/hero/light.png"
+								alt="VoxLogicA UI Interface Preview - Light Theme"
+								class="w-full h-full object-cover dark:hidden"
+							/>
+							<!-- Dark theme image -->
+							<img
+								src="./screenshots/hero/dark.png"
+								alt="VoxLogicA UI Interface Preview - Dark Theme"
+								class="w-full h-full object-cover hidden dark:block"
+							/>
 						</div>
 					</div>
 				</div>
 			</div>
-		</div>
+		</section>
 
-		<div class="container mx-auto px-4 py-16">
-			<div class="grid md:grid-cols-3 gap-8">
-				<div class="text-center space-y-4">
-					<i class="fas fa-brain text-4xl text-primary"></i>
-					<h2 class="text-xl font-bold">Neuroimaging Support</h2>
-					<p class="text-gray-600">
-						Built-in support for BraTS dataset format and various neuroimaging data types
-					</p>
+		<!-- Features Grid -->
+		<section class="py-16 px-4 bg-gray-50 dark:bg-vox-gray/20">
+			<div class="container mx-auto max-w-6xl">
+				<h2 class="text-3xl font-bold text-center mb-12">
+					Powerful Features for Advanced Analysis
+				</h2>
+				<div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+					<!-- Workspace Management -->
+					<div
+						class="bg-white dark:bg-vox-gray rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow"
+					>
+						<div class="h-48 mb-6 rounded-lg bg-vox-dark p-3 relative overflow-hidden">
+							<!-- Light theme workspace image -->
+							<div class="absolute inset-0">
+								<img
+									src="./screenshots/workspaces/light.png"
+									alt="VoxLogicA UI Workspace Preview - Light Theme"
+									class="w-full h-full object-cover object-left rounded-lg dark:hidden"
+								/>
+								<div
+									class="absolute inset-y-0 right-0 w-full dark:hidden"
+									style="
+										background: linear-gradient(
+											90deg,
+											rgba(255, 255, 255, 0) 30%,
+											rgba(249, 250, 251, 0.95) 50%
+										);
+									"
+								></div>
+							</div>
+
+							<!-- Dark theme workspace image -->
+							<div class="absolute inset-0">
+								<img
+									src="./screenshots/workspaces/dark.png"
+									alt="VoxLogicA UI Workspace Preview - Dark Theme"
+									class="w-full h-full object-cover object-left rounded-lg hidden dark:block"
+								/>
+								<div
+									class="absolute inset-y-0 right-0 w-full hidden dark:block"
+									style="
+										background: linear-gradient(
+											90deg,
+											rgba(30, 30, 30, 0) 30%,
+											rgba(30, 30, 30, 0.95) 50%
+										);
+									"
+								></div>
+							</div>
+						</div>
+						<h3 class="text-xl font-semibold mb-2">Workspace Management</h3>
+						<p class="text-gray-600 dark:text-gray-300 mb-4">
+							Save and organize your work in workspaces: they will preserve your analysis setup,
+							scripts, and visualizations for easy access and sharing.
+						</p>
+						<div class="space-y-2 mb-4">
+							<div class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
+								<i class="fa-solid fa-check text-vox-accent"></i>
+								Save analysis configurations
+							</div>
+							<div class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
+								<i class="fa-solid fa-check text-vox-accent"></i>
+								Switch between workspaces instantly
+							</div>
+							<div class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
+								<i class="fa-solid fa-check text-vox-accent"></i>
+								Share workspaces with colleagues
+							</div>
+						</div>
+					</div>
+
+					<!-- Dataset Management -->
+					<div
+						class="bg-white dark:bg-vox-gray rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow"
+					>
+						<div class="h-48 mb-6 rounded-lg bg-vox-dark p-3 relative overflow-hidden">
+							<!-- Light theme browser image -->
+							<div class="absolute inset-0">
+								<img
+									src="./screenshots/browser/light.png"
+									alt="VoxLogicA UI Browser Preview - Light Theme"
+									class="w-full h-full object-cover object-left rounded-lg dark:hidden"
+								/>
+								<div
+									class="absolute inset-y-0 right-0 w-full dark:hidden"
+									style="
+										background: linear-gradient(
+											90deg,
+											rgba(255, 255, 255, 0) 30%,
+											rgba(249, 250, 251, 0.95) 60%
+										);
+									"
+								></div>
+							</div>
+
+							<!-- Dark theme browser image -->
+							<div class="absolute inset-0">
+								<img
+									src="./screenshots/browser/dark.png"
+									alt="VoxLogicA UI Browser Preview - Dark Theme"
+									class="w-full h-full object-cover object-left rounded-lg hidden dark:block"
+								/>
+								<div
+									class="absolute inset-y-0 right-0 w-full hidden dark:block"
+									style="
+										background: linear-gradient(
+											90deg,
+											rgba(30, 30, 30, 0) 30%,
+											rgba(30, 30, 30, 0.95) 60%
+										);
+									"
+								></div>
+							</div>
+						</div>
+						<h3 class="text-xl font-semibold mb-2">Dataset & Case Management</h3>
+						<p class="text-gray-600 dark:text-gray-300 mb-4">
+							Efficiently browse your imaging datasets. Search your cases, and quickly locate that
+							one case that obtained the best DICE value!
+						</p>
+					</div>
+
+					<!-- Multiplanar View -->
+					<div
+						class="bg-white dark:bg-vox-gray rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow"
+					>
+						<div class="h-48 mb-6 rounded-lg bg-vox-dark relative overflow-hidden">
+							<!-- Multi-planar visualization image -->
+							<img
+								src="./screenshots/multiplanar/dark-light.png"
+								alt="VoxLogicA UI Multi-planar Visualization"
+								class="w-full h-full object-cover rounded-lg"
+							/>
+						</div>
+						<h3 class="text-xl font-semibold mb-2">Multiplanar Visualization</h3>
+						<p class="text-gray-600 dark:text-gray-300 mb-4">
+							View and analyze neuroimaging data from multiple angles with synchronized
+							cross-referencing. Switch between axial, sagittal, coronal, and 3D views.
+						</p>
+						<div class="space-y-2 mb-4">
+							<div class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
+								<i class="fa-solid fa-check text-vox-accent"></i>
+								Synchronized cross-referencing
+							</div>
+							<div class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
+								<i class="fa-solid fa-check text-vox-accent"></i>
+								Interactive 3D visualization
+							</div>
+							<div class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
+								<i class="fa-solid fa-check text-vox-accent"></i>
+								Multiple anatomical perspectives
+							</div>
+						</div>
+					</div>
+
+					<!-- Layer Management -->
+					<div
+						class="bg-white dark:bg-vox-gray rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow"
+					>
+						<div class="h-48 mb-6 rounded-lg bg-vox-dark relative overflow-hidden">
+							<!-- Light theme layers image -->
+							<img
+								src="./screenshots/layers/light.png"
+								alt="VoxLogicA UI Layers Management - Light Theme"
+								class="w-full h-full object-cover object-left-top rounded-lg dark:hidden"
+							/>
+
+							<!-- Dark theme layers image -->
+							<img
+								src="./screenshots/layers/dark.png"
+								alt="VoxLogicA UI Layers Management - Dark Theme"
+								class="w-full h-full object-cover object-left-top rounded-lg hidden dark:block"
+							/>
+						</div>
+						<h3 class="text-xl font-semibold mb-2">Layer Management</h3>
+						<p class="text-gray-600 dark:text-gray-300 mb-4">
+							Control multiple imaging layers with precise opacity and color mapping tools. Show or
+							hide layers to focus on specific aspects of your analysis.
+						</p>
+						<div class="space-y-2 mb-4">
+							<div class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
+								<i class="fa-solid fa-check text-vox-accent"></i>
+								Toggle layer visibility
+							</div>
+							<div class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
+								<i class="fa-solid fa-check text-vox-accent"></i>
+								Adjust layer opacity
+							</div>
+							<div class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
+								<i class="fa-solid fa-check text-vox-accent"></i>
+								Customize color mappings
+							</div>
+						</div>
+					</div>
+
+					<!-- Multi-Case Visualization -->
+					<div
+						class="bg-white dark:bg-vox-gray rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow"
+					>
+						<div class="h-48 mb-6 rounded-lg bg-vox-dark relative overflow-hidden">
+							<!-- Light theme viewers/layouts image -->
+							<img
+								src="./screenshots/viewers/light.png"
+								alt="VoxLogicA UI Viewer Layouts - Light Theme"
+								class="w-full h-full object-cover object-left-top rounded-lg dark:hidden"
+							/>
+
+							<!-- Dark theme viewers/layouts image -->
+							<img
+								src="./screenshots/viewers/dark.png"
+								alt="VoxLogicA UI Viewer Layouts - Dark Theme"
+								class="w-full h-full object-cover object-left-top rounded-lg hidden dark:block"
+							/>
+						</div>
+						<h3 class="text-xl font-semibold mb-2">Multi-Case Visualization</h3>
+						<p class="text-gray-600 dark:text-gray-300 mb-4">
+							View and analyze multiple cases simultaneously with synchronized controls and
+							comparisons.
+						</p>
+					</div>
+
+					<!-- VoxLogicA Scripting -->
+					<div
+						class="bg-white dark:bg-vox-gray rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow"
+					>
+						<div class="h-48 mb-6 rounded-lg bg-vox-dark p-3 font-mono text-sm overflow-hidden">
+							<!-- IMGQL specification example -->
+							<div class="space-y-0.5 text-xs">
+								<div class="text-gray-400">// Background removal</div>
+								<div>
+									<span class="text-blue-400">load</span>
+									<span class="text-gray-400">flair =</span>
+									<span class="text-green-400">"flair.nii.gz"</span>
+								</div>
+								<div>
+									<span class="text-purple-400">let</span>
+									<span class="text-blue-400">background</span>
+									<span class="text-gray-400">=</span>
+									<span class="text-blue-400">touch</span>
+									<span>(</span>
+									<span class="text-blue-400">intensity</span>
+									<span>(flair) <. 0.1,border)</span>
+								</div>
+								<div>
+									<span class="text-purple-400">let</span>
+									<span class="text-blue-400">brain</span>
+									<span class="text-gray-400">=</span>
+									<span class="text-blue-400">complement</span>
+									<span>(background)</span>
+								</div>
+								<div class="text-gray-400">// Thresholding</div>
+								<div>
+									<span class="text-purple-400">let</span>
+									<span class="text-blue-400">normFlair</span>
+									<span class="text-gray-400">=</span>
+									<span class="text-blue-400">percentiles</span>
+									<span>(</span>
+									<span class="text-blue-400">intensity</span>
+									<span>(flair),brain)</span>
+								</div>
+								<div>
+									<span class="text-purple-400">let</span>
+									<span class="text-blue-400">hyperIntense</span>
+									<span class="text-gray-400">=</span>
+									<span class="text-blue-400">filter</span>
+									<span>(5.0,normFlair >. 0.95)</span>
+								</div>
+							</div>
+						</div>
+						<h3 class="text-xl font-semibold mb-2">VoxLogicA Integration</h3>
+						<p class="text-gray-600 dark:text-gray-300 mb-4">
+							Write powerful image analysis specifications using VoxLogicA's .imgql language. Define
+							spatial properties, detect patterns, and analyze medical imaging data with a
+							declarative approach.
+						</p>
+						<div class="space-y-2 mb-4">
+							<div class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
+								<i class="fa-solid fa-check text-vox-accent"></i>
+								Declarative .imgql specifications
+							</div>
+							<div class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
+								<i class="fa-solid fa-check text-vox-accent"></i>
+								Spatial pattern detection
+							</div>
+							<div class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
+								<i class="fa-solid fa-check text-vox-accent"></i>
+								Real-time analysis feedback
+							</div>
+						</div>
+					</div>
 				</div>
-				<div class="text-center space-y-4">
-					<i class="fas fa-layer-group text-4xl text-primary"></i>
-					<h2 class="text-xl font-bold">Layer Management</h2>
-					<p class="text-gray-600">
-						Intuitive layer visualization and control across multiple cases
-					</p>
-				</div>
-				<div class="text-center space-y-4">
-					<i class="fas fa-code text-4xl text-primary"></i>
-					<h2 class="text-xl font-bold">Script Integration</h2>
-					<p class="text-gray-600">
-						Execute and analyze results with the VoxLogicA scripting language
-					</p>
+				<div
+					class="md:col-span-2 lg:col-span-3 grid md:grid-cols-2 gap-8 w-full lg:max-w-[calc(66.666%-1rem)] mx-auto pt-8"
+				>
+					<!-- Interface Customization -->
+					<div
+						class="bg-white dark:bg-vox-gray rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow"
+					>
+						<div class="h-48 mb-6 rounded-lg bg-vox-dark p-2">
+							<!-- "Interactive" Layout -->
+							<div class="relative h-full rounded bg-vox-gray flex gap-2">
+								<!-- Collapsible Left Sidebar -->
+								<div
+									class="w-1/4 bg-black/30 rounded p-2 flex flex-col gap-2 group cursor-pointer hover:opacity-75 transition-opacity"
+								>
+									<div class="h-3 w-full bg-vox-accent/20 rounded"></div>
+									<div class="h-3 w-3/4 bg-vox-accent/20 rounded"></div>
+									<!-- Collapse Handle -->
+									<div
+										class="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1 opacity-0 group-hover:opacity-100 transition-opacity"
+									>
+										<div class="bg-vox-accent/20 rounded-r px-1 py-3">
+											<i class="fa-solid fa-angles-left text-vox-text/50 w-4 h-4"></i>
+										</div>
+									</div>
+								</div>
+
+								<!-- Main Content Area with Bottom Panel -->
+								<div class="flex-grow flex flex-col gap-2">
+									<!-- Main Content -->
+									<div class="flex-grow bg-black/20 rounded flex items-center justify-center">
+										<!-- Draggable Handle Indicator -->
+										<div
+											class="absolute left-0 top-0 h-full w-1 cursor-ew-resize bg-vox-accent/0 hover:bg-vox-accent/20 transition-colors"
+										></div>
+									</div>
+
+									<!-- Bottom Panel -->
+									<div
+										class="h-1/4 bg-black/30 rounded p-2 group cursor-pointer hover:opacity-75 transition-opacity"
+									>
+										<div class="h-3 w-1/2 bg-vox-accent/20 rounded"></div>
+										<!-- Collapse Handle -->
+										<div
+											class="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1 opacity-0 group-hover:opacity-100 transition-opacity"
+										>
+											<div class="bg-vox-accent/20 rounded-t px-3 py-1">
+												<i class="fa-solid fa-angles-down text-vox-text/50 w-4 h-4"></i>
+											</div>
+										</div>
+									</div>
+								</div>
+
+								<!-- Collapsible Right Sidebar -->
+								<div
+									class="w-1/3 bg-black/30 rounded p-2 flex flex-col gap-2 group cursor-pointer hover:opacity-75 transition-opacity"
+								>
+									<div class="h-3 w-full bg-vox-accent/20 rounded"></div>
+									<div class="h-3 w-2/3 bg-vox-accent/20 rounded"></div>
+									<!-- Collapse Handle -->
+									<div
+										class="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1 opacity-0 group-hover:opacity-100 transition-opacity"
+									>
+										<div class="bg-vox-accent/20 rounded-l px-1 py-3">
+											<i class="fa-solid fa-angles-right text-vox-text/50 w-4 h-4"></i>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+						<h3 class="text-xl font-semibold mb-2">Flexible Interface Layout</h3>
+						<p class="text-gray-600 dark:text-gray-300 mb-4">
+							Customize your workspace with collapsible sidebars, draggable panels, and theme
+							switching for optimal workflow.
+						</p>
+					</div>
+
+					<!-- Deployment Flexibility -->
+					<div
+						class="bg-white dark:bg-vox-gray rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow"
+					>
+						<div class="h-48 mb-6 rounded-lg bg-gray-100 dark:bg-vox-dark p-3">
+							<!-- Visual representation of deployment options -->
+							<div class="grid grid-cols-2 gap-3 h-full">
+								<!-- Local Installation -->
+								<div class="bg-white dark:bg-vox-gray rounded p-2 flex flex-col">
+									<div
+										class="text-xs text-gray-500 dark:text-vox-text/50 mb-2 flex items-center gap-2"
+									>
+										<i class="fa-solid fa-desktop"></i>
+										Local Installation
+									</div>
+									<div
+										class="flex-grow bg-gray-100 dark:bg-black/30 rounded-lg p-2 flex items-center justify-center"
+									>
+										<div class="text-center">
+											<i
+												class="fa-solid fa-download text-2xl text-vox-accent/70 dark:text-vox-accent/50 mb-2"
+											></i>
+											<div class="text-xs text-gray-500 dark:text-vox-text/50">Run locally</div>
+										</div>
+									</div>
+								</div>
+
+								<!-- Server Deployment -->
+								<div class="bg-white dark:bg-vox-gray rounded p-2 flex flex-col">
+									<div
+										class="text-xs text-gray-500 dark:text-vox-text/50 mb-2 flex items-center gap-2"
+									>
+										<i class="fa-solid fa-server"></i>
+										Server Deployment
+									</div>
+									<div class="flex-grow bg-gray-100 dark:bg-black/30 rounded-lg p-2">
+										<div class="flex flex-col h-full">
+											<!-- Server -->
+											<div class="text-center mb-2">
+												<i
+													class="fa-solid fa-cloud text-2xl text-vox-accent/70 dark:text-vox-accent/50"
+												></i>
+											</div>
+											<!-- Connected clients -->
+											<div class="flex justify-center gap-2">
+												<i
+													class="fa-solid fa-laptop text-sm text-gray-400 dark:text-vox-text/30"
+												></i>
+												<i
+													class="fa-solid fa-laptop text-sm text-gray-400 dark:text-vox-text/30"
+												></i>
+												<i
+													class="fa-solid fa-laptop text-sm text-gray-400 dark:text-vox-text/30"
+												></i>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+						<h3 class="text-xl font-semibold mb-2">Flexible Deployment</h3>
+						<p class="text-gray-600 dark:text-gray-300 mb-4">
+							Choose between local installation for individual use or server deployment for
+							institution-wide access. Perfect for hospitals requiring centralized access without
+							local installations.
+						</p>
+						<div class="space-y-2 mb-4">
+							<div class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
+								<i class="fa-solid fa-check text-vox-accent"></i>
+								Local installation for individual use
+							</div>
+							<div class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
+								<i class="fa-solid fa-check text-vox-accent"></i>
+								Server deployment for institution-wide access
+							</div>
+							<div class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
+								<i class="fa-solid fa-check text-vox-accent"></i>
+								No client-side installation needed
+							</div>
+						</div>
+					</div>
 				</div>
 			</div>
-		</div>
+		</section>
 
-		<footer class="mt-auto bg-gray-800 text-white py-6">
-			<div class="container mx-auto px-4 text-center">
-				<p class="flex items-center justify-center gap-2">
-					Built with <i class="fas fa-heart text-red-500"></i> using
-					<a href="https://svelte.dev/" class="underline hover:text-gray-300">Svelte</a>,
-					<a href="https://www.skeleton.dev/" class="underline hover:text-gray-300">Skeleton UI</a>,
-					and
-					<a href="https://niivue.github.io/niivue/" class="underline hover:text-gray-300"
-						>NiiVue</a
-					>
+		<!-- Remove the "Interactive Workspace Demo" section and add this Target Audience section after Features -->
+		<section
+			class="py-16 px-4 bg-gradient-to-b from-white to-gray-50 dark:from-vox-dark dark:to-vox-gray/30"
+		>
+			<div class="container mx-auto max-w-6xl">
+				<h2 class="text-3xl font-bold text-center mb-4">Who Uses VoxLogicA UI?</h2>
+				<p class="text-gray-600 dark:text-gray-300 text-center mb-12 max-w-2xl mx-auto">
+					Powerful tools for both clinical practice and research applications, designed to meet the
+					specific needs of healthcare professionals and researchers.
 				</p>
+
+				<div class="grid md:grid-cols-2 gap-8 lg:gap-12">
+					<!-- Medical Professionals Column -->
+					<div class="bg-white dark:bg-vox-gray rounded-xl p-8 shadow-lg">
+						<div class="flex items-center gap-4 mb-6">
+							<div class="p-3 bg-blue-500/10 rounded-lg">
+								<i class="fa-solid fa-user-md text-3xl text-blue-500"></i>
+							</div>
+							<h3 class="text-2xl font-semibold">Medical Professionals</h3>
+						</div>
+
+						<div class="space-y-4">
+							<div class="flex items-start gap-3">
+								<div class="p-1 bg-blue-500/10 rounded-lg mt-1">
+									<i class="fa-solid fa-check w-4 h-4 text-blue-500"></i>
+								</div>
+								<div>
+									<h4 class="font-medium mb-1">Clinical Decision Support</h4>
+									<p class="text-gray-600 dark:text-gray-300">
+										Advanced visualization tools for accurate diagnosis and treatment planning.
+									</p>
+								</div>
+							</div>
+
+							<div class="flex items-start gap-3">
+								<div class="p-1 bg-blue-500/10 rounded-lg mt-1">
+									<i class="fa-solid fa-check w-4 h-4 text-blue-500"></i>
+								</div>
+								<div>
+									<h4 class="font-medium mb-1">Efficient Workflow</h4>
+									<p class="text-gray-600 dark:text-gray-300">
+										Streamlined interface for quick analysis and reporting in clinical settings.
+									</p>
+								</div>
+							</div>
+
+							<div class="flex items-start gap-3">
+								<div class="p-1 bg-blue-500/10 rounded-lg mt-1">
+									<i class="fa-solid fa-check w-4 h-4 text-blue-500"></i>
+								</div>
+								<div>
+									<h4 class="font-medium mb-1">Multi-Case Analysis</h4>
+									<p class="text-gray-600 dark:text-gray-300">
+										Compare multiple cases simultaneously for better clinical insights.
+									</p>
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<!-- Researchers Column -->
+					<div class="bg-white dark:bg-vox-gray rounded-xl p-8 shadow-lg">
+						<div class="flex items-center gap-4 mb-6">
+							<div class="p-3 bg-vox-accent/10 rounded-lg">
+								<i class="fa-solid fa-microscope text-3xl text-vox-accent"></i>
+							</div>
+							<h3 class="text-2xl font-semibold">Researchers</h3>
+						</div>
+
+						<div class="space-y-4">
+							<div class="flex items-start gap-3">
+								<div class="p-1 bg-vox-accent/10 rounded-lg mt-1">
+									<i class="fa-solid fa-check w-4 h-4 text-vox-accent"></i>
+								</div>
+								<div>
+									<h4 class="font-medium mb-1">Advanced Scripting</h4>
+									<p class="text-gray-600 dark:text-gray-300">
+										Powerful scripting capabilities for custom analysis protocols and batch
+										processing.
+									</p>
+								</div>
+							</div>
+
+							<div class="flex items-start gap-3">
+								<div class="p-1 bg-vox-accent/10 rounded-lg mt-1">
+									<i class="fa-solid fa-check w-4 h-4 text-vox-accent"></i>
+								</div>
+								<div>
+									<h4 class="font-medium mb-1">Data Analysis</h4>
+									<p class="text-gray-600 dark:text-gray-300">
+										Comprehensive tools for quantitative analysis and statistical evaluation.
+									</p>
+								</div>
+							</div>
+
+							<div class="flex items-start gap-3">
+								<div class="p-1 bg-vox-accent/10 rounded-lg mt-1">
+									<i class="fa-solid fa-check w-4 h-4 text-vox-accent"></i>
+								</div>
+								<div>
+									<h4 class="font-medium mb-1">Reproducible Research</h4>
+									<p class="text-gray-600 dark:text-gray-300">
+										Version control and sharing capabilities for collaborative research projects.
+									</p>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</section>
+
+		<!-- Add Open Source Section before the footer -->
+		<section
+			class="py-16 px-4 bg-gradient-to-b from-white to-gray-50 dark:from-vox-dark dark:to-vox-gray/30"
+		>
+			<div class="container mx-auto max-w-6xl">
+				<div class="text-center">
+					<h2 class="text-3xl font-bold mb-4">Open Source</h2>
+					<div class="max-w-3xl mx-auto">
+						<!-- GitHub-style card with subtle shadow and border -->
+						<div
+							class="bg-white dark:bg-vox-gray rounded-xl p-8 shadow-lg border border-gray-100 dark:border-vox-gray/50"
+						>
+							<!-- Open Source Icon -->
+							<div class="mb-6 flex justify-center">
+								<div class="p-4 bg-vox-accent/10 rounded-full">
+									<i class="fa-brands fa-github text-5xl text-vox-accent"></i>
+								</div>
+							</div>
+
+							<!-- Text Content -->
+							<div class="space-y-4">
+								<p class="text-lg text-gray-600 dark:text-gray-300">
+									<span class="font-semibold text-vox-accent">VoxLogicA UI</span> is
+									<span class="font-bold">completely free and open source software</span>, licensed
+									under the
+									<span class="font-semibold">GNU General Public License v3.0 (GPLv3)</span>.
+								</p>
+								<p class="text-gray-600 dark:text-gray-300">
+									We believe in the
+									<span class="font-semibold">power of open collaboration</span> and
+									<span class="font-semibold">welcome contributions from the community</span>.
+									Whether you're a <span class="font-semibold">developer</span>,
+									<span class="font-semibold">researcher</span>, or
+									<span class="font-semibold">medical professional</span>, your input can help make
+									VoxLogicA UI better for everyone.
+								</p>
+							</div>
+
+							<!-- License Button -->
+							<div class="mt-8">
+								<a
+									href="https://github.com/CoffeeStraw/VoxLogica-UI/blob/master/LICENSE"
+									class="inline-flex items-center gap-2 px-6 py-3 bg-vox-accent text-white rounded-lg hover:bg-opacity-90 transition-all"
+								>
+									<svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+										<path
+											stroke-linecap="round"
+											stroke-linejoin="round"
+											stroke-width="2"
+											d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"
+										/>
+									</svg>
+									View License
+								</a>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</section>
+
+		<!-- Add Contact Section and Footer -->
+		<section class="py-16 px-4 bg-white dark:bg-vox-dark">
+			<div class="container mx-auto max-w-6xl">
+				<div class="text-center mb-12">
+					<h2 class="text-3xl font-bold mb-4">Get in Touch</h2>
+					<p class="text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
+						Have questions about VoxLogicA UI? Want to contribute to the project? We'd love to hear
+						from you.
+					</p>
+				</div>
+
+				<div class="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+					<!-- Contact Links -->
+					<div class="bg-gray-50 dark:bg-vox-gray rounded-xl p-8">
+						<h3 class="text-xl font-semibold mb-6">Connect With Us</h3>
+						<div class="space-y-4">
+							<a
+								href="https://github.com/CoffeeStraw/VoxLogica-UI/issues"
+								class="flex items-center gap-3 text-gray-600 dark:text-gray-300 hover:text-vox-accent dark:hover:text-vox-accent transition-colors"
+							>
+								<svg class="w-6 h-6" viewBox="0 0 24 24" fill="currentColor">
+									<path
+										fill-rule="evenodd"
+										d="M12 2C6.477 2 2 6.477 2 12c0 4.42 2.87 8.17 6.84 9.5.5.08.66-.23.66-.5v-1.69c-2.77.6-3.36-1.34-3.36-1.34-.46-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.6.07-.6 1 .07 1.53 1.03 1.53 1.03.87 1.52 2.34 1.07 2.91.83.09-.65.35-1.09.63-1.34-2.22-.25-4.55-1.11-4.55-4.92 0-1.11.38-2 1.03-2.71-.1-.25-.45-1.29.1-2.64 0 0 .84-.27 2.75 1.02A9.8 9.8 0 0112 6.1c.85 0 1.71.11 2.5.33 1.91-1.29 2.75-1.02 2.75-1.02.55 1.35.2 2.39.1 2.64.65.71 1.03 1.6 1.03 2.71 0 3.82-2.34 4.66-4.57 4.91.36.31.69.92.69 1.85V21c0 .27.16.59.67.5C19.14 20.16 22 16.42 22 12A10 10 0 0012 2z"
+									/>
+								</svg>
+								Report Issues on GitHub
+							</a>
+							<a
+								href="https://github.com/CoffeeStraw/VoxLogica-UI/discussions"
+								class="flex items-center gap-3 text-gray-600 dark:text-gray-300 hover:text-vox-accent dark:hover:text-vox-accent transition-colors"
+							>
+								<svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+									<path
+										stroke-linecap="round"
+										stroke-linejoin="round"
+										stroke-width="2"
+										d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z"
+									/>
+								</svg>
+								Join the Discussion
+							</a>
+						</div>
+					</div>
+
+					<!-- Documentation -->
+					<div class="bg-gray-50 dark:bg-vox-gray rounded-xl p-8">
+						<h3 class="text-xl font-semibold mb-6">Resources</h3>
+						<div class="space-y-4">
+							<a
+								href="https://github.com/CoffeeStraw/VoxLogica-UI/wiki"
+								class="flex items-center gap-3 text-gray-600 dark:text-gray-300 hover:text-vox-accent dark:hover:text-vox-accent transition-colors"
+							>
+								<svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+									<path
+										stroke-linecap="round"
+										stroke-linejoin="round"
+										stroke-width="2"
+										d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
+									/>
+								</svg>
+								Documentation Wiki
+							</a>
+							<a
+								href="https://github.com/CoffeeStraw/VoxLogica-UI/releases"
+								class="flex items-center gap-3 text-gray-600 dark:text-gray-300 hover:text-vox-accent dark:hover:text-vox-accent transition-colors"
+							>
+								<svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+									<path
+										stroke-linecap="round"
+										stroke-linejoin="round"
+										stroke-width="2"
+										d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+									/>
+								</svg>
+								Latest Releases
+							</a>
+						</div>
+					</div>
+				</div>
+			</div>
+		</section>
+
+		<!-- Footer -->
+		<footer class="bg-gray-50 dark:bg-vox-gray/30 py-4 px-4">
+			<div class="container mx-auto max-w-6xl">
+				<div class="flex flex-col items-center justify-center gap-4 text-center">
+					<p class="text-gray-600 dark:text-gray-400">
+						© 2024 VoxLogicA UI Authors. All rights reserved.
+					</p>
+					<p
+						class="text-sm text-gray-500 dark:text-gray-500 flex items-center justify-center gap-2"
+					>
+						Built with
+						<svg class="w-4 h-4 text-red-500" viewBox="0 0 24 24" fill="currentColor">
+							<path
+								d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"
+							/>
+						</svg>
+						using
+						<a href="https://svelte.dev" class="text-vox-accent hover:underline">Svelte</a>,
+						<a href="https://www.skeleton.dev" class="text-vox-accent hover:underline"
+							>Skeleton UI</a
+						>, and
+						<a href="https://niivue.github.io/" class="text-vox-accent hover:underline">Niivue</a>
+					</p>
+				</div>
 			</div>
 		</footer>
 
 		<script>
-			const screenshot = document.getElementById('screenshot');
+			// Theme Toggle Logic
 			const themeToggle = document.getElementById('themeToggle');
-			const themeIcon = document.getElementById('themeIcon');
-			const themeText = document.getElementById('themeText');
-			let isDark = false;
+
+			// Set initial theme based on system preference
+			if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+				document.documentElement.classList.add('dark');
+			}
 
 			themeToggle.addEventListener('click', () => {
-				isDark = !isDark;
-
-				// Update screenshot
-				screenshot.src = isDark ? 'screenshots/example_dark.png' : 'screenshots/example_light.png';
-
-				// Update icon and text
-				themeIcon.className = isDark ? 'fas fa-sun' : 'fas fa-moon';
-				themeText.textContent = isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode';
+				document.documentElement.classList.toggle('dark');
 			});
 		</script>
 	</body>
