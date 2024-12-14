@@ -33,11 +33,83 @@
 				<div class="space-y-2 py-4">
 					{#each sessionViewModel.availableWorkspacesIdsAndNames as { id, name }}
 						<button
-							class="w-full p-4 rounded-lg bg-surface-100-800-token hover:bg-primary-500/20 transition-colors flex flex-col gap-1"
+							class="w-full p-4 rounded-lg bg-surface-100-800-token hover:bg-primary-500/20 transition-colors"
 							onclick={async () => await workspaceService.handleSelect(id, name)}
 						>
-							<span class="font-medium">{name}</span>
-							<span class="text-xs opacity-50 font-mono">{id}</span>
+							<div class="flex flex-col gap-1">
+								<div class="flex items-center justify-between">
+									<span class="font-medium">{name}</span>
+									<div class="flex items-center gap-1">
+										<div
+											class="inline-flex items-center justify-center p-1.5 hover:bg-error-500/20 rounded-full opacity-50 hover:opacity-100 transition-all cursor-pointer group"
+											role="button"
+											tabindex="0"
+											title="Delete Workspace"
+											onclick={(event) => {
+												event.stopPropagation();
+												workspaceService.showDeleteWorkspaceModal(id, name);
+											}}
+											onkeydown={(e) => {
+												if (e.key === 'Enter') {
+													e.stopPropagation();
+													workspaceService.showDeleteWorkspaceModal(id, name);
+												}
+											}}
+										>
+											<i class="fa-solid fa-trash text-sm group-hover:text-error-500 transition-all"
+											></i>
+										</div>
+									</div>
+								</div>
+								<div class="flex items-center justify-between">
+									<span class="text-xs opacity-50 font-mono">{id}</span>
+									<div
+										class="inline-flex items-center justify-center p-1.5 hover:bg-surface-500/20 rounded-full opacity-50 hover:opacity-100 transition-all cursor-pointer group"
+										role="button"
+										tabindex="0"
+										title="Copy Workspace ID"
+										onclick={async (event) => {
+											event.preventDefault();
+											event.stopPropagation();
+											try {
+												await navigator.clipboard.writeText(id);
+												toastStore.trigger({
+													message: 'Workspace ID copied',
+													background: 'variant-filled-success',
+												});
+											} catch (err) {
+												toastStore.trigger({
+													message: 'Failed to copy workspace ID',
+													background: 'variant-filled-error',
+												});
+											}
+										}}
+										onkeydown={(e) => {
+											if (e.key === 'Enter') {
+												e.preventDefault();
+												e.stopPropagation();
+												navigator.clipboard
+													.writeText(id)
+													.then(() => {
+														toastStore.trigger({
+															message: 'Workspace ID copied',
+															background: 'variant-filled-success',
+														});
+													})
+													.catch(() => {
+														toastStore.trigger({
+															message: 'Failed to copy workspace ID',
+															background: 'variant-filled-error',
+														});
+													});
+											}
+										}}
+									>
+										<i class="fa-solid fa-copy text-sm group-hover:text-surface-50 transition-all"
+										></i>
+									</div>
+								</div>
+							</div>
 						</button>
 					{/each}
 				</div>
