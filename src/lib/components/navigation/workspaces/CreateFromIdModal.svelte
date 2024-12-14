@@ -12,26 +12,30 @@
 	};
 
 	let isSubmitting = false;
-	let error = '';
+	let form: HTMLFormElement;
 
-	async function onFormSubmit(): Promise<void> {
-		if (!formData.id.trim() || !formData.name.trim()) {
-			error = 'Please fill in all fields';
+	async function onFormSubmit(event: SubmitEvent): Promise<void> {
+		event.preventDefault();
+
+		// Check native form validation first
+		if (!form.checkValidity()) {
+			form.reportValidity();
 			return;
 		}
 
 		try {
 			isSubmitting = true;
-			error = '';
 
 			// First, validate the workspace ID exists
 			const response = await fetch(`/workspaces/${formData.id}`);
 			if (!response.ok) {
+				const idInput = form.querySelector('input[name="id"]') as HTMLInputElement;
 				if (response.status === 404) {
-					error = 'Workspace ID not found. Please check the ID and try again.';
+					idInput.setCustomValidity('Workspace ID not found. Please check the ID and try again.');
 				} else {
-					error = 'Failed to validate workspace ID. Please try again.';
+					idInput.setCustomValidity('Failed to validate workspace ID. Please try again.');
 				}
+				form.reportValidity();
 				return;
 			}
 
@@ -39,42 +43,40 @@
 			if ($modalStore[0].response) $modalStore[0].response(formData);
 			modalStore.close();
 		} catch (e) {
-			error = 'An unexpected error occurred. Please try again.';
+			const idInput = form.querySelector('input[name="id"]') as HTMLInputElement;
+			idInput.setCustomValidity('An unexpected error occurred. Please try again.');
+			form.reportValidity();
 		} finally {
 			isSubmitting = false;
 		}
+	}
+
+	// Clear custom validity when input changes
+	function handleInput(event: Event) {
+		const input = event.target as HTMLInputElement;
+		input.setCustomValidity('');
 	}
 </script>
 
 {#if $modalStore[0]}
 	<div class="card p-6 w-modal shadow-xl space-y-6">
-		<!-- Header -->
 		<div class="space-y-2">
 			<div class="text-2xl font-semibold">{$modalStore[0].title ?? '(title missing)'}</div>
 			<p class="text-surface-600-300-token">{$modalStore[0].body ?? '(body missing)'}</p>
 		</div>
 
-		<!-- Error Alert -->
-		{#if error}
-			<div class="alert variant-filled-error py-3">
-				<div class="flex items-center gap-3">
-					<i class="fa-solid fa-circle-exclamation"></i>
-					<span>{error}</span>
-				</div>
-			</div>
-		{/if}
-
-		<!-- Form -->
-		<div class="space-y-4">
+		<form bind:this={form} on:submit={onFormSubmit} class="space-y-4" novalidate>
 			<label class="space-y-2">
 				<div class="font-medium">Workspace ID</div>
 				<input
 					class="input p-2 rounded-lg w-full"
 					type="text"
+					name="id"
 					bind:value={formData.id}
 					placeholder="Enter workspace ID..."
 					disabled={isSubmitting}
 					required
+					on:input={handleInput}
 				/>
 				<div class="text-sm text-surface-600-300-token opacity-75">
 					The ID of the workspace you want to copy
@@ -86,30 +88,36 @@
 				<input
 					class="input p-2 rounded-lg w-full"
 					type="text"
+					name="name"
 					bind:value={formData.name}
 					placeholder="Enter workspace name..."
 					minlength="3"
 					maxlength="30"
 					disabled={isSubmitting}
 					required
+					on:input={handleInput}
 				/>
 				<div class="text-sm text-surface-600-300-token opacity-75">
 					A name for your new workspace (3-30 characters)
 				</div>
 			</label>
-		</div>
 
-		<!-- Footer -->
-		<div class="modal-footer {parent.regionFooter}">
-			<button class="btn variant-ghost-surface" on:click={parent.onClose} disabled={isSubmitting}>
-				Cancel
-			</button>
-			<button class="btn variant-filled-primary" on:click={onFormSubmit} disabled={isSubmitting}>
-				{#if isSubmitting}
-					<i class="fa-solid fa-spinner animate-spin mr-2"></i>
-				{/if}
-				Create
-			</button>
-		</div>
+			<div class="modal-footer {parent.regionFooter}">
+				<button
+					type="button"
+					class="btn variant-ghost-surface"
+					on:click={parent.onClose}
+					disabled={isSubmitting}
+				>
+					Cancel
+				</button>
+				<button type="submit" class="btn variant-filled-primary" disabled={isSubmitting}>
+					{#if isSubmitting}
+						<i class="fa-solid fa-spinner animate-spin mr-2"></i>
+					{/if}
+					Create
+				</button>
+			</div>
+		</form>
 	</div>
 {/if}
