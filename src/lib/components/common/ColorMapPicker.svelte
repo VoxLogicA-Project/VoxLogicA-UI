@@ -135,7 +135,11 @@
 		></i>
 	</button>
 
-	<div class="card p-3 w-64 shadow-xl fixed" data-popup={popupId} style="z-index: 1000;">
+	<div
+		class="card p-3 w-64 shadow-xl bg-surface-50-900-token border border-surface-400-500-token fixed"
+		data-popup={popupId}
+		style="z-index: 1000;"
+	>
 		<div class="flex flex-col gap-1">
 			<!-- Minimal tabs -->
 			<div class="tabs">
@@ -274,6 +278,6 @@
 				</div>
 			</div>
 		</div>
-		<div class="arrow bg-surface-100-800-token"></div>
+		<div class="arrow bg-surface-400-500-token"></div>
 	</div>
 </div>
