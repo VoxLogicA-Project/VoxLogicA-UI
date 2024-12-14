@@ -28,107 +28,97 @@
 </script>
 
 <div
-	class="card flex flex-col bg-surface-100-800-token hover:bg-primary-50-900-token transition-all duration-200
-        {uiViewModel.state.viewers.fullscreenCasePath === case_.path ? 'w-full h-full min-h-0' : ''}
-		svelte-dnd-touch-feedback"
-	style:display={uiViewModel.state.viewers.fullscreenCasePath &&
-	uiViewModel.state.viewers.fullscreenCasePath !== case_.path
-		? 'none'
-		: 'flex'}
+	class="p-2 border-b border-surface-300-600-token flex justify-between items-center w-full overflow-hidden"
 	use:droppable={{
 		container: caseViewModel.getSelectionIndex(case_.path).toString(),
 		callbacks: { onDrop: handleDrop },
 	}}
 >
-	<div
-		class="p-2 border-b border-surface-300-600-token flex justify-between items-center w-full overflow-hidden"
+	<span
+		class="text-sm font-medium flex items-center flex-1 min-w-0 cursor-grab"
+		use:draggable={{
+			container: caseViewModel.getSelectionIndex(case_.path).toString(),
+			dragData: case_,
+			disabled: uiViewModel.state.viewers.fullscreenCasePath !== null,
+		}}
 	>
-		<span
-			class="text-sm font-medium flex items-center flex-1 min-w-0 cursor-grab"
-			use:draggable={{
-				container: caseViewModel.getSelectionIndex(case_.path).toString(),
-				dragData: case_,
-				disabled: uiViewModel.state.viewers.fullscreenCasePath !== null,
-			}}
-		>
-			{#if true}
-				<div class="badge badge-sm variant-filled-primary mr-2 flex-shrink-0">
-					{caseViewModel.getSelectionIndex(case_.path)}
-				</div>
-			{/if}
-			<span class="truncate">
-				{case_.name}
-			</span>
+		{#if true}
+			<div class="badge badge-sm variant-filled-primary mr-2 flex-shrink-0">
+				{caseViewModel.getSelectionIndex(case_.path)}
+			</div>
+		{/if}
+		<span class="truncate">
+			{case_.name}
 		</span>
-		<div class="flex gap-1">
-			<!-- Screenshot button -->
-			{#if niivueViewerRef}
-				<button
-					class="w-6 h-6 flex items-center justify-center rounded hover:bg-surface-300-600-token transition-colors"
-					onclick={() => niivueViewerRef?.saveScreenshot()}
-					title="Save screenshot"
-					aria-label="Save screenshot"
-				>
-					<i class="fa-solid fa-camera"></i>
-				</button>
-				{#if caseViewModel.selectedCases.length > 1}
-					<button
-						class="w-6 h-6 flex items-center justify-center rounded transition-colors
-                        {uiViewModel.state.viewers.fullscreenCasePath === case_.path
-							? 'bg-primary-500 text-white hover:bg-primary-600'
-							: 'hover:bg-surface-300-600-token'}"
-						onclick={() =>
-							(uiViewModel.state.viewers.fullscreenCasePath =
-								uiViewModel.state.viewers.fullscreenCasePath === case_.path ? null : case_.path)}
-						title={uiViewModel.state.viewers.fullscreenCasePath === case_.path
-							? 'Exit full screen'
-							: 'View full screen'}
-						aria-label={uiViewModel.state.viewers.fullscreenCasePath === case_.path
-							? 'Exit full screen'
-							: 'View full screen'}
-					>
-						<i
-							class="fa-solid {uiViewModel.state.viewers.fullscreenCasePath === case_.path
-								? 'fa-compress'
-								: 'fa-expand'}"
-						></i>
-					</button>
-				{/if}
-			{/if}
-
+	</span>
+	<div class="flex gap-1">
+		<!-- Screenshot button -->
+		{#if niivueViewerRef}
 			<button
 				class="w-6 h-6 flex items-center justify-center rounded hover:bg-surface-300-600-token transition-colors"
-				onclick={() => caseViewModel.deselectCase(case_)}
-				title="Close case"
-				aria-label="Close case"
+				onclick={() => niivueViewerRef?.saveScreenshot()}
+				title="Save screenshot"
+				aria-label="Save screenshot"
 			>
-				<i class="fa-solid fa-xmark"></i>
+				<i class="fa-solid fa-camera"></i>
 			</button>
-		</div>
-	</div>
-	<div
-		class="relative {uiViewModel.state.viewers.fullscreenCasePath === case_.path
-			? 'h-full'
-			: 'aspect-square'}"
-	>
-		<div class="absolute inset-0">
-			{#if layerViewModel.getAllSelectedLayersNoContext(case_.path).length > 0}
-				<NiivueViewer {case_} bind:this={niivueViewerRef} />
-			{:else}
-				<div
-					class="w-full h-full variant-soft-surface flex flex-col items-center justify-center gap-1 p-2 overflow-hidden"
+			{#if caseViewModel.selectedCases.length > 1}
+				<button
+					class="w-6 h-6 flex items-center justify-center rounded transition-colors
+                        {uiViewModel.state.viewers.fullscreenCasePath === case_.path
+						? 'bg-primary-500 text-white hover:bg-primary-600'
+						: 'hover:bg-surface-300-600-token'}"
+					onclick={() =>
+						(uiViewModel.state.viewers.fullscreenCasePath =
+							uiViewModel.state.viewers.fullscreenCasePath === case_.path ? null : case_.path)}
+					title={uiViewModel.state.viewers.fullscreenCasePath === case_.path
+						? 'Exit full screen'
+						: 'View full screen'}
+					aria-label={uiViewModel.state.viewers.fullscreenCasePath === case_.path
+						? 'Exit full screen'
+						: 'View full screen'}
 				>
-					<i class="fa-solid fa-layer-group text-xl sm:text-4xl text-surface-400-500-token"></i>
-					<div
-						class="flex flex-col sm:flex-row items-center gap-1 sm:gap-3 text-surface-600-300-token text-center"
-					>
-						<p class="text-[8px] sm:text-base line-clamp-3">
-							Add layers from the below panel to view images
-						</p>
-						<i class="fa-solid fa-arrow-down text-base sm:text-2xl animate-pulse"></i>
-					</div>
-				</div>
+					<i
+						class="fa-solid {uiViewModel.state.viewers.fullscreenCasePath === case_.path
+							? 'fa-compress'
+							: 'fa-expand'}"
+					></i>
+				</button>
 			{/if}
-		</div>
+		{/if}
+
+		<button
+			class="w-6 h-6 flex items-center justify-center rounded hover:bg-surface-300-600-token transition-colors"
+			onclick={() => caseViewModel.deselectCase(case_)}
+			title="Close case"
+			aria-label="Close case"
+		>
+			<i class="fa-solid fa-xmark"></i>
+		</button>
+	</div>
+</div>
+<div
+	class="relative {uiViewModel.state.viewers.fullscreenCasePath === case_.path
+		? 'h-full'
+		: 'aspect-square'}"
+>
+	<div class="absolute inset-0">
+		{#if layerViewModel.getAllSelectedLayersNoContext(case_.path).length > 0}
+			<NiivueViewer {case_} bind:this={niivueViewerRef} />
+		{:else}
+			<div
+				class="w-full h-full variant-soft-surface flex flex-col items-center justify-center gap-1 p-2 overflow-hidden"
+			>
+				<i class="fa-solid fa-layer-group text-xl sm:text-4xl text-surface-400-500-token"></i>
+				<div
+					class="flex flex-col sm:flex-row items-center gap-1 sm:gap-3 text-surface-600-300-token text-center"
+				>
+					<p class="text-[8px] sm:text-base line-clamp-3">
+						Add layers from the below panel to view images
+					</p>
+					<i class="fa-solid fa-arrow-down text-base sm:text-2xl animate-pulse"></i>
+				</div>
+			</div>
+		{/if}
 	</div>
 </div>

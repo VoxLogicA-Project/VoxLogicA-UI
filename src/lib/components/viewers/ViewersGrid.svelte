@@ -2,6 +2,7 @@
 	import ViewerWindow from '$lib/components/viewers/ViewerWindow.svelte';
 	import { caseViewModel } from '$lib/viewmodels/case.svelte';
 	import { uiViewModel } from '$lib/viewmodels/ui.svelte';
+	import { flip } from 'svelte/animate';
 
 	// Automatic fullscreen mode when only one case is selected
 	let lastNumberOfOpenedCases = 0;
@@ -65,8 +66,19 @@
 
 <div class="h-full w-full relative">
 	<section class="{gridClass} p-8">
-		{#each caseViewModel.selectedCases as case_}
-			<ViewerWindow {case_} />
+		{#each caseViewModel.selectedCases as case_ (case_.path)}
+			<div
+				class="card flex flex-col bg-surface-100-800-token hover:bg-primary-50-900-token transition-all duration-200
+        {uiViewModel.state.viewers.fullscreenCasePath === case_.path ? 'w-full h-full min-h-0' : ''}
+		svelte-dnd-touch-feedback"
+				style:display={uiViewModel.state.viewers.fullscreenCasePath &&
+				uiViewModel.state.viewers.fullscreenCasePath !== case_.path
+					? 'none'
+					: 'flex'}
+				animate:flip={{ duration: 300 }}
+			>
+				<ViewerWindow {case_} />
+			</div>
 		{/each}
 	</section>
 
