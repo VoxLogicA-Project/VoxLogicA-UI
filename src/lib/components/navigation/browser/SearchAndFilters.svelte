@@ -33,7 +33,9 @@
 		{#if runViewModel.printFilters.length === 0}
 			<div class="flex flex-shrink-0">
 				<button
-					title="Filter cases by run print"
+					title={runViewModel.uniquePrintLabels.length !== 0
+						? 'Filter cases by run print'
+						: 'Cannot filter by prints: no run with prints has been produced yet'}
 					aria-label="Filter cases by run print"
 					class="btn-icon hover:variant-soft-primary rounded-full h-8 w-8 flex items-center justify-center"
 					onclick={addFilter}

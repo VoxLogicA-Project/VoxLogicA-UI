@@ -295,8 +295,12 @@
 		<button
 			class="btn variant-filled-surface flex-1"
 			disabled={!uiViewModel.editorContent.trim()}
-			title="Download the current script content"
-			aria-label="Download the current script content"
+			title={!uiViewModel.editorContent.trim()
+				? 'Cannot download: Script is empty'
+				: 'Download the current script content'}
+			aria-label={!uiViewModel.editorContent.trim()
+				? 'Cannot download: Script is empty'
+				: 'Download the current script content'}
 			onclick={handleScriptDownload}
 		>
 			<i class="fa-solid fa-download"></i>
@@ -308,8 +312,12 @@
 			<button
 				class="btn variant-filled-primary flex-1"
 				disabled={!uiViewModel.editorContent.trim()}
-				title="Run the script for all opened cases"
-				aria-label="Run the script for all opened cases"
+				title={!uiViewModel.editorContent.trim()
+					? 'Cannot run: Script is empty'
+					: 'Run the script for all opened cases'}
+				aria-label={!uiViewModel.editorContent.trim()
+					? 'Cannot run: Script is empty'
+					: 'Run the script for all opened cases'}
 				onclick={handleRun}
 			>
 				<i class="fa-solid fa-play"></i>
@@ -325,8 +333,12 @@
 					target: 'case-dropdown',
 					placement: 'top-end',
 				}}
-				title="Run Script for a single case"
-				aria-label="Run Script for a single case"
+				title={!uiViewModel.editorContent.trim()
+					? 'Cannot run: Script is empty'
+					: 'Run script for a single case'}
+				aria-label={!uiViewModel.editorContent.trim()
+					? 'Cannot run: Script is empty'
+					: 'Run script for a single case'}
 			>
 				<i class="fa-solid fa-chevron-up text-sm"></i>
 			</button>
