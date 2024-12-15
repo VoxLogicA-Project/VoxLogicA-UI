@@ -383,16 +383,16 @@
 									<span class="text-blue-400">background</span>
 									<span class="text-gray-400">=</span>
 									<span class="text-blue-400">touch</span>
-									<span>(</span>
+									<span class="text-gray-400 dark:text-gray-300">(</span>
 									<span class="text-blue-400">intensity</span>
-									<span>(flair) <. 0.1,border)</span>
+									<span class="text-gray-400 dark:text-gray-300">(flair) <. 0.1,border)</span>
 								</div>
 								<div>
 									<span class="text-purple-400">let</span>
 									<span class="text-blue-400">brain</span>
 									<span class="text-gray-400">=</span>
 									<span class="text-blue-400">complement</span>
-									<span>(background)</span>
+									<span class="text-gray-400 dark:text-gray-300">(background)</span>
 								</div>
 								<div class="text-gray-400">// Thresholding</div>
 								<div>
@@ -400,16 +400,16 @@
 									<span class="text-blue-400">normFlair</span>
 									<span class="text-gray-400">=</span>
 									<span class="text-blue-400">percentiles</span>
-									<span>(</span>
+									<span class="text-gray-400 dark:text-gray-300">(</span>
 									<span class="text-blue-400">intensity</span>
-									<span>(flair),brain)</span>
+									<span class="text-gray-400 dark:text-gray-300">(flair),brain)</span>
 								</div>
 								<div>
 									<span class="text-purple-400">let</span>
 									<span class="text-blue-400">hyperIntense</span>
 									<span class="text-gray-400">=</span>
 									<span class="text-blue-400">filter</span>
-									<span>(5.0,normFlair >. 0.95)</span>
+									<span class="text-gray-400 dark:text-gray-300">(5.0,normFlair >. 0.95)</span>
 								</div>
 							</div>
 						</div>
