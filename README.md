@@ -142,6 +142,12 @@ yarn dev
 - `yarn test` - Run tests
 - `yarn test:coverage` - Run tests with coverage report
 
+## Credits
+
+This software has been developed by Antonio Strippoli as part of his Master Thesis project, under the joint supervision of [dr. Vincenzo Ciancia](https://dblp.org/pid/50/1930.html), [Prof. Fabio Gadducci](https://dblp.org/pid/g/FabioGadducci.html), [dr. Mieke Massink](https://dblp.org/pid/79/1724.html), and the guidance of [dr. Giovanna Broccia](https://dblp.org/pid/207/2093.html) for user testing and design.
+
+A big thanks as well to all the people who contributed to this project through suggestions, feedback, testing, and code contributions. Every bit of help, no matter how small, has been invaluable in making VoxLogicA UI better.
+
 ## License
 
 VoxLogica UI is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
