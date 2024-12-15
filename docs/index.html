@@ -71,13 +71,13 @@
 						class="absolute -left-4 transform -translate-x-full whitespace-nowrap opacity-0"
 					>
 						<div
-							class="bg-vox-accent/90 text-white px-3 py-1.5 rounded-lg text-sm font-medium flex items-center gap-2 shadow-lg relative"
+							class="bg-vox-accent text-white px-3 py-1.5 rounded-lg text-sm font-medium flex items-center gap-2 shadow-lg relative"
 						>
 							<span class="animate-bounce">👋</span>
 							<span id="hintMessage">Psst! Try me!</span>
 							<!-- Triangle pointer -->
 							<div
-								class="absolute -right-[8px] top-1/2 -translate-y-1/2 w-0 h-0 border-l-[8px] border-l-vox-accent/90 border-y-[6px] border-y-transparent border-r-0"
+								class="absolute -right-[7px] top-1/2 -translate-y-1/2 w-0 h-0 border-l-[8px] border-l-vox-accent border-y-[6px] border-y-transparent border-r-0"
 							></div>
 						</div>
 					</div>
@@ -198,7 +198,7 @@
 						<h3 class="text-xl font-semibold mb-2">Workspace Management</h3>
 						<p class="text-gray-600 dark:text-gray-300 mb-4">
 							Save and organize your work in workspaces: they will preserve your analysis setup,
-							scripts, and visualizations for easy access and sharing.
+							scripts, and visualizations.
 						</p>
 						<div class="space-y-2 mb-4">
 							<div class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
@@ -442,21 +442,23 @@
 					<div
 						class="bg-white dark:bg-vox-gray rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow"
 					>
-						<div class="h-48 mb-6 rounded-lg bg-vox-dark p-2">
+						<div class="h-48 mb-6 rounded-lg bg-gray-100 dark:bg-vox-dark p-2">
 							<!-- "Interactive" Layout -->
-							<div class="relative h-full rounded bg-vox-gray flex gap-2">
+							<div class="relative h-full rounded bg-gray-200 dark:bg-vox-gray flex gap-2">
 								<!-- Collapsible Left Sidebar -->
 								<div
-									class="w-1/4 bg-black/30 rounded p-2 flex flex-col gap-2 group cursor-pointer hover:opacity-75 transition-opacity"
+									class="w-1/4 bg-gray-300/50 dark:bg-black/30 rounded p-2 flex flex-col gap-2 group cursor-pointer hover:opacity-75 transition-opacity"
 								>
-									<div class="h-3 w-full bg-vox-accent/20 rounded"></div>
-									<div class="h-3 w-3/4 bg-vox-accent/20 rounded"></div>
+									<div class="h-3 w-full bg-gray-400/50 dark:bg-vox-accent/20 rounded"></div>
+									<div class="h-3 w-3/4 bg-gray-400/50 dark:bg-vox-accent/20 rounded"></div>
 									<!-- Collapse Handle -->
 									<div
 										class="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1 opacity-0 group-hover:opacity-100 transition-opacity"
 									>
-										<div class="bg-vox-accent/20 rounded-r px-1 py-3">
-											<i class="fa-solid fa-angles-left text-vox-text/50 w-4 h-4"></i>
+										<div class="bg-gray-400/50 dark:bg-vox-accent/20 rounded-r px-1 py-3">
+											<i
+												class="fa-solid fa-angles-left text-gray-600/75 dark:text-vox-text/50 w-4 h-4"
+											></i>
 										</div>
 									</div>
 								</div>
@@ -464,24 +466,28 @@
 								<!-- Main Content Area with Bottom Panel -->
 								<div class="flex-grow flex flex-col gap-2">
 									<!-- Main Content -->
-									<div class="flex-grow bg-black/20 rounded flex items-center justify-center">
+									<div
+										class="flex-grow bg-gray-300/50 dark:bg-black/20 rounded flex items-center justify-center"
+									>
 										<!-- Draggable Handle Indicator -->
 										<div
-											class="absolute left-0 top-0 h-full w-1 cursor-ew-resize bg-vox-accent/0 hover:bg-vox-accent/20 transition-colors"
+											class="absolute left-0 top-0 h-full w-1 cursor-ew-resize bg-gray-400/0 hover:bg-gray-400/50 dark:bg-vox-accent/0 dark:hover:bg-vox-accent/20 transition-colors"
 										></div>
 									</div>
 
 									<!-- Bottom Panel -->
 									<div
-										class="h-1/4 bg-black/30 rounded p-2 group cursor-pointer hover:opacity-75 transition-opacity"
+										class="h-1/4 bg-gray-300/50 dark:bg-black/30 rounded p-2 group cursor-pointer hover:opacity-75 transition-opacity"
 									>
-										<div class="h-3 w-1/2 bg-vox-accent/20 rounded"></div>
+										<div class="h-3 w-1/2 bg-gray-400/50 dark:bg-vox-accent/20 rounded"></div>
 										<!-- Collapse Handle -->
 										<div
 											class="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1 opacity-0 group-hover:opacity-100 transition-opacity"
 										>
-											<div class="bg-vox-accent/20 rounded-t px-3 py-1">
-												<i class="fa-solid fa-angles-down text-vox-text/50 w-4 h-4"></i>
+											<div class="bg-gray-400/50 dark:bg-vox-accent/20 rounded-t px-3 py-1">
+												<i
+													class="fa-solid fa-angles-down text-gray-600/75 dark:text-vox-text/50 w-4 h-4"
+												></i>
 											</div>
 										</div>
 									</div>
@@ -489,16 +495,18 @@
 
 								<!-- Collapsible Right Sidebar -->
 								<div
-									class="w-1/3 bg-black/30 rounded p-2 flex flex-col gap-2 group cursor-pointer hover:opacity-75 transition-opacity"
+									class="w-1/3 bg-gray-300/50 dark:bg-black/30 rounded p-2 flex flex-col gap-2 group cursor-pointer hover:opacity-75 transition-opacity"
 								>
-									<div class="h-3 w-full bg-vox-accent/20 rounded"></div>
-									<div class="h-3 w-2/3 bg-vox-accent/20 rounded"></div>
+									<div class="h-3 w-full bg-gray-400/50 dark:bg-vox-accent/20 rounded"></div>
+									<div class="h-3 w-2/3 bg-gray-400/50 dark:bg-vox-accent/20 rounded"></div>
 									<!-- Collapse Handle -->
 									<div
 										class="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1 opacity-0 group-hover:opacity-100 transition-opacity"
 									>
-										<div class="bg-vox-accent/20 rounded-l px-1 py-3">
-											<i class="fa-solid fa-angles-right text-vox-text/50 w-4 h-4"></i>
+										<div class="bg-gray-400/50 dark:bg-vox-accent/20 rounded-l px-1 py-3">
+											<i
+												class="fa-solid fa-angles-right text-gray-600/75 dark:text-vox-text/50 w-4 h-4"
+											></i>
 										</div>
 									</div>
 								</div>
@@ -547,9 +555,9 @@
 										Server Deployment
 									</div>
 									<div class="flex-grow bg-gray-100 dark:bg-black/30 rounded-lg p-2">
-										<div class="flex flex-col h-full">
+										<div class="flex flex-col h-full justify-center items-center gap-2">
 											<!-- Server -->
-											<div class="text-center mb-2">
+											<div>
 												<i
 													class="fa-solid fa-cloud text-2xl text-vox-accent/70 dark:text-vox-accent/50"
 												></i>
@@ -585,10 +593,6 @@
 							<div class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
 								<i class="fa-solid fa-check text-vox-accent"></i>
 								Server deployment for institution-wide access
-							</div>
-							<div class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
-								<i class="fa-solid fa-check text-vox-accent"></i>
-								No client-side installation needed
 							</div>
 						</div>
 					</div>
@@ -686,7 +690,8 @@
 								<div>
 									<h4 class="font-medium mb-1">Data Analysis</h4>
 									<p class="text-gray-600 dark:text-gray-300">
-										Comprehensive tools for quantitative analysis and statistical evaluation.
+										Comprehensive tools for quantitative/qualitative analysis and statistical
+										evaluation.
 									</p>
 								</div>
 							</div>
@@ -775,15 +780,22 @@
 				<div class="text-center mb-12">
 					<h2 class="text-3xl font-bold mb-4">Get in Touch</h2>
 					<p class="text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-						Have questions about VoxLogicA UI? Want to contribute to the project? We'd love to hear
-						from you.
+						Have questions about VoxLogicA UI? Want to contribute to the project?
+					</p>
+					<p class="text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
+						We'd love to hear from you.
 					</p>
 				</div>
 
 				<div class="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
 					<!-- Contact Links -->
 					<div class="bg-gray-50 dark:bg-vox-gray rounded-xl p-8">
-						<h3 class="text-xl font-semibold mb-6">Connect With Us</h3>
+						<div class="flex flex-col items-center mb-6">
+							<div class="text-vox-accent mb-3">
+								<i class="fa-solid fa-comments text-3xl"></i>
+							</div>
+							<h3 class="text-xl font-semibold">Connect With Us</h3>
+						</div>
 						<div class="space-y-4">
 							<a
 								href="https://github.com/CoffeeStraw/VoxLogica-UI/issues"
@@ -816,7 +828,12 @@
 
 					<!-- Documentation -->
 					<div class="bg-gray-50 dark:bg-vox-gray rounded-xl p-8">
-						<h3 class="text-xl font-semibold mb-6">Resources</h3>
+						<div class="flex flex-col items-center mb-6">
+							<div class="text-vox-accent mb-3">
+								<i class="fa-solid fa-book-open text-3xl"></i>
+							</div>
+							<h3 class="text-xl font-semibold">Resources</h3>
+						</div>
 						<div class="space-y-4">
 							<a
 								href="https://github.com/CoffeeStraw/VoxLogica-UI/wiki"
