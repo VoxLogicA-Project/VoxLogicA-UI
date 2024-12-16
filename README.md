@@ -99,9 +99,12 @@ touch .env
 Then set the following paths in the `.env` file:
 
 ```bash
+# Data paths
 DATASET_PATH=/path/to/your/datasets     # Default: static/datasets
 SCRIPTS_PATH=/path/to/your/scripts      # Default: static/scripts
 WORKSPACES_PATH=/path/to/workspaces     # Default: {temp_dir}/voxlogica-ui/workspaces
+# VoxLogicA binary path
+VOXLOGICA_BINARY_PATH=/path/to/voxlogica # Default: /opt/voxlogica
 ```
 
 3. Download and install dependencies:
@@ -112,7 +115,7 @@ yarn install
 
 4. Set up VoxLogicA binary:
 
-Download the appropriate VoxLogicA binary from the [VoxLogicA releases page](https://github.com/vincenzoml/VoxLogicA/releases) and extract the content of the folder inside the archive into `static/bin/VoxLogicA` directory.
+Download the appropriate VoxLogicA binary from the [VoxLogicA releases page](https://github.com/vincenzoml/VoxLogicA/releases) and extract the content of the folder in `${VOXLOGICA_BINARY_PATH}`.
 
 5. Start the development server:
 

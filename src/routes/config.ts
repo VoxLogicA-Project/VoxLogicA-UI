@@ -8,7 +8,7 @@ export const DATASET_PATH = process.env.DATASET_PATH || path.join(STATIC_PATH, '
 export const SCRIPTS_PATH = process.env.SCRIPTS_PATH || path.join(STATIC_PATH, 'scripts');
 
 export const VOXLOGICA_BINARY_PATH = (() => {
-	const binPath = path.join(STATIC_PATH, 'bin', 'VoxLogicA');
+	const binPath = process.env.VOXLOGICA_BINARY_PATH || '';
 	switch (platform()) {
 		case 'win32':
 			return path.join(binPath, 'VoxLogicA.exe');

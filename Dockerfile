@@ -18,6 +18,7 @@ RUN yarn install --frozen-lockfile
 COPY . .
 
 # Setup VoxLogicA binary
+ENV VOXLOGICA_BINARY_PATH=/opt/voxlogica
 COPY .devcontainer/setup.sh ./setup.sh
 RUN chmod +x ./setup.sh && \
     ./setup.sh && \
@@ -42,19 +43,20 @@ RUN yarn install --production --frozen-lockfile
 
 # Copy built application and VoxLogicA binary from builder
 COPY --from=builder /app/build ./build
-COPY --from=builder /app/static ./static
+COPY --from=builder /opt/voxlogica /opt/voxlogica
 
 # Create data directories with correct permissions
 RUN mkdir -p /data/datasets /data/scripts /data/workspaces && \
-    chown -R node:node /data /app
+    chown -R node:node /data /app /opt/voxlogica
 
 # Use node user for better security
 USER node
 
-# Set environment variables for data paths
+# Set environment variables for paths
 ENV DATASET_PATH=/data/datasets \
     SCRIPTS_PATH=/data/scripts \
-    WORKSPACES_PATH=/data/workspaces
+    WORKSPACES_PATH=/data/workspaces \
+    VOXLOGICA_BINARY_PATH=/opt/voxlogica
 
 # Expose the port the app runs on
 EXPOSE 3000

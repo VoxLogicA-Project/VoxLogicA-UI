@@ -10,10 +10,11 @@
 			"extensions": ["svelte.svelte-vscode", "dbaeumer.vscode-eslint", "esbenp.prettier-vscode"]
 		}
 	},
-	"mounts": [
-		"source=/,target=/target,type=bind"
-	],
+	"mounts": ["source=/,target=/target,type=bind"],
 	"forwardPorts": [5173],
 	"postCreateCommand": "bash .devcontainer/setup.sh",
-	"remoteUser": "node"
+	"remoteUser": "node",
+	"containerEnv": {
+		"VOXLOGICA_BINARY_PATH": "/opt/voxlogica"
+	}
 }

@@ -25,7 +25,6 @@ setup_voxlogica() {
 }
 
 # Determine OS and corresponding download URL
-BASE_DIR="static/bin/VoxLogicA"
 case "$(uname -s)" in
   Linux*)   OS="linux"; URL="https://github.com/vincenzoml/VoxLogicA/releases/download/v1.3.3-experimental/VoxLogicA_1.3.3-experimental_linux-x64.zip";;
   Darwin*)  OS="macos"; URL="https://github.com/vincenzoml/VoxLogicA/releases/download/v1.3.3-experimental/VoxLogicA_1.3.3-experimental_osx-x64.zip";;
@@ -34,7 +33,8 @@ case "$(uname -s)" in
 esac
 
 # Run setup
-setup_voxlogica "$OS" "$URL" "$BASE_DIR"
+BINARY_PATH="${VOXLOGICA_BINARY_PATH:-/opt/voxlogica}"
+setup_voxlogica "$OS" "$URL" "$BINARY_PATH"
 
 # Run yarn install
 yarn install
