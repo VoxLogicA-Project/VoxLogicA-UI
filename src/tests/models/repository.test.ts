@@ -1,7 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { apiRepository, loadedData } from '$lib/models/repository.svelte';
-import type { Dataset, Case, Layer, PresetScript } from '$lib/models/types';
-import { initialWorkspaceState, resetTestState } from '../viewmodels/viewmodel-test-utils';
+import type { Dataset, Case, Layer, ExampleScript } from '$lib/models/types';
+import { DEFAULT_WORKSPACE_STATE } from '$lib/models/repository.svelte';
+import { resetTestState } from '../viewmodels/viewmodel-test-utils';
 
 // Mock fetch globally
 const mockFetch = vi.fn();
@@ -19,10 +20,7 @@ describe('ApiRepository', () => {
 	describe('getDatasets', () => {
 		it('should fetch and update datasets state', async () => {
 			// Arrange
-			const mockDatasets: Dataset[] = [
-				{ name: 'dataset1', layout: 'brats' },
-				{ name: 'dataset2', layout: 'custom' },
-			];
+			const mockDatasets: Dataset[] = [{ name: 'dataset1' }, { name: 'dataset2' }];
 
 			mockFetch.mockResolvedValueOnce({
 				ok: true,
@@ -49,7 +47,7 @@ describe('ApiRepository', () => {
 	describe('getCases', () => {
 		it('should fetch and update cases state', async () => {
 			// Arrange
-			const mockDataset: Dataset = { name: 'dataset1', layout: 'brats' };
+			const mockDataset: Dataset = { name: 'dataset1' };
 			const mockCases: Case[] = [
 				{ name: 'case1', path: 'dataset1/case1' },
 				{ name: 'case2', path: 'dataset1/case2' },
@@ -92,32 +90,32 @@ describe('ApiRepository', () => {
 		});
 	});
 
-	describe('getPresetScripts', () => {
-		it('should fetch and update preset scripts state', async () => {
+	describe('getExampleScripts', () => {
+		it('should fetch and update example scripts state', async () => {
 			// Arrange
-			const mockPresets: PresetScript[] = [
-				{ name: 'preset1', path: 'preset1.imgql' },
-				{ name: 'preset2', path: 'preset2.imgql' },
+			const mockScripts: ExampleScript[] = [
+				{ name: 'script1', path: 'script1.imgql' },
+				{ name: 'script2', path: 'script2.imgql' },
 			];
 
 			mockFetch.mockResolvedValueOnce({
 				ok: true,
-				json: () => Promise.resolve(mockPresets),
+				json: () => Promise.resolve(mockScripts),
 			});
 
 			// Act
-			await apiRepository.fetchPresetsScripts();
+			await apiRepository.fetchExampleScripts();
 
 			// Assert
 			expect(mockFetch).toHaveBeenCalledWith('/scripts', undefined);
-			expect(loadedData.presetScripts).toEqual(mockPresets);
+			expect(loadedData.exampleScripts).toEqual(mockScripts);
 		});
 	});
 
-	describe('getPresetScriptCode', () => {
+	describe('getExampleScriptCode', () => {
 		it('should fetch and return script content', async () => {
 			// Arrange
-			const mockPreset: PresetScript = { name: 'preset1', path: 'preset1.imgql' };
+			const mockScript: ExampleScript = { name: 'script1', path: 'script1.imgql' };
 			const mockContent = 'script content';
 
 			mockFetch.mockResolvedValueOnce({
@@ -126,15 +124,14 @@ describe('ApiRepository', () => {
 			});
 
 			// Act
-			const content = await apiRepository.fetchPresetScriptCode(mockPreset);
+			const content = await apiRepository.fetchExampleScriptCode(mockScript);
 
 			// Assert
-			expect(mockFetch).toHaveBeenCalledWith(mockPreset.path);
+			expect(mockFetch).toHaveBeenCalledWith(mockScript.path);
 			expect(content).toBe(mockContent);
 		});
 	});
 
-	// Add new tests for workspace-related functionality
 	describe('workspace operations', () => {
 		it('should fetch and load workspace data', async () => {
 			// Arrange
@@ -143,35 +140,7 @@ describe('ApiRepository', () => {
 				name: 'Test Workspace',
 				createdAt: new Date(),
 				updatedAt: new Date(),
-				state: {
-					data: {
-						openedDatasetsNames: ['dataset1'],
-						openedCasesPaths: ['dataset1/case1'],
-						openedRunsIds: [],
-					},
-					datasetLayersState: {
-						openedLayersPathsByCasePath: {},
-						stylesByLayerName: {},
-					},
-					runsLayersStates: {},
-					ui: {
-						isDarkMode: false,
-						sidebars: {
-							datasetCollapsed: false,
-							layerCollapsed: false,
-							scriptCollapsed: false,
-						},
-						viewers: {
-							fullscreenCasePath: null,
-						},
-						layers: {
-							layerContext: { type: 'dataset' },
-						},
-						scriptEditor: {
-							content: '',
-						},
-					},
-				},
+				state: DEFAULT_WORKSPACE_STATE,
 			};
 
 			mockFetch.mockResolvedValueOnce({
@@ -186,7 +155,7 @@ describe('ApiRepository', () => {
 			});
 			mockFetch.mockResolvedValueOnce({
 				ok: true,
-				json: () => Promise.resolve([]), // preset scripts
+				json: () => Promise.resolve([]), // example scripts
 			});
 			mockFetch.mockResolvedValueOnce({
 				ok: true,
@@ -198,8 +167,6 @@ describe('ApiRepository', () => {
 
 			// Assert
 			expect(mockFetch).toHaveBeenNthCalledWith(1, '/workspaces/workspace1', undefined);
-
-			// Add more specific assertions for subsequent calls
 			expect(mockFetch).toHaveBeenNthCalledWith(2, '/datasets', undefined);
 			expect(mockFetch).toHaveBeenNthCalledWith(3, '/scripts', undefined);
 			expect(mockFetch).toHaveBeenNthCalledWith(4, '/workspaces/workspace1/runs', undefined);
@@ -212,7 +179,7 @@ describe('ApiRepository', () => {
 				name: 'New Workspace',
 				createdAt: new Date(),
 				updatedAt: new Date(),
-				state: initialWorkspaceState,
+				state: DEFAULT_WORKSPACE_STATE,
 			};
 
 			mockFetch.mockResolvedValueOnce({
@@ -229,7 +196,7 @@ describe('ApiRepository', () => {
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({
 					sourceId: undefined,
-					workspace: { name: 'New Workspace', state: initialWorkspaceState },
+					workspace: { name: 'New Workspace', state: DEFAULT_WORKSPACE_STATE },
 				}),
 			});
 			expect(result).toEqual(mockWorkspace);

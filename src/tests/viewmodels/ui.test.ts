@@ -1,19 +1,30 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { uiViewModel } from '$lib/viewmodels/ui.svelte';
-import { currentWorkspace } from '$lib/models/repository.svelte';
+import { currentWorkspace, apiRepository } from '$lib/models/repository.svelte';
 import { resetTestState } from './viewmodel-test-utils';
 import type { LayerContext } from '$lib/models/types';
 
+// Mock repository
+vi.mock('$lib/models/repository.svelte', async () => {
+	const actual = await vi.importActual('$lib/models/repository.svelte');
+	return {
+		...actual,
+		apiRepository: {
+			fetchExampleScripts: vi.fn(),
+			fetchExampleScriptCode: vi.fn(),
+		},
+	};
+});
+
 describe('uiViewModel', () => {
-	// Use the shared test state reset utility
 	resetTestState();
 
 	describe('dark mode', () => {
 		it('should toggle dark mode', () => {
-			expect(uiViewModel.state.isDarkMode).toBe(false);
-			uiViewModel.toggleDarkMode();
 			expect(uiViewModel.state.isDarkMode).toBe(true);
-			expect(currentWorkspace.state.ui.isDarkMode).toBe(true);
+			uiViewModel.toggleDarkMode();
+			expect(uiViewModel.state.isDarkMode).toBe(false);
+			expect(currentWorkspace.state.ui.isDarkMode).toBe(false);
 		});
 	});
 
@@ -30,6 +41,39 @@ describe('uiViewModel', () => {
 			expect(uiViewModel.blinkingTabLayerContext).toBeNull();
 			uiViewModel.blinkingTabLayerContext = context;
 			expect(uiViewModel.blinkingTabLayerContext).toEqual(context);
+		});
+	});
+
+	describe('script handling', () => {
+		it('should load script content correctly', () => {
+			const script = '// END load layers\nconst x = 1;';
+			uiViewModel.loadScript(script);
+			expect(uiViewModel.editorContent).toBe('const x = 1;');
+		});
+
+		it('should handle script without load layers marker', () => {
+			const script = 'const x = 1;';
+			uiViewModel.loadScript(script);
+			expect(uiViewModel.editorContent).toBe('const x = 1;');
+		});
+
+		it('should load example scripts', async () => {
+			vi.mocked(apiRepository.fetchExampleScripts).mockResolvedValueOnce();
+
+			await uiViewModel.loadExampleScripts();
+
+			expect(apiRepository.fetchExampleScripts).toHaveBeenCalled();
+			expect(uiViewModel.isEditorLoading).toBe(false);
+			expect(uiViewModel.editorError).toBeNull();
+		});
+
+		it('should handle example script loading error', async () => {
+			vi.mocked(apiRepository.fetchExampleScripts).mockRejectedValueOnce(new Error('Failed'));
+
+			await uiViewModel.loadExampleScripts();
+
+			expect(uiViewModel.editorError).toBe('Failed to load example scripts');
+			expect(uiViewModel.isEditorLoading).toBe(false);
 		});
 	});
 
@@ -66,7 +110,7 @@ describe('uiViewModel', () => {
 			uiViewModel.toggleDarkMode();
 			uiViewModel.showRunsForCase('test-case');
 			uiViewModel.toggleRunExpansion('test-run');
-			uiViewModel.state.scriptEditor.content = 'test content';
+			uiViewModel.editorContent = 'test content';
 			uiViewModel.blinkingTabLayerContext = { type: 'dataset' };
 
 			// Reset
@@ -75,7 +119,7 @@ describe('uiViewModel', () => {
 			// Verify defaults
 			expect(uiViewModel.state.isDarkMode).toBe(false);
 			expect(uiViewModel.state.sidebars.datasetCollapsed).toBe(false);
-			expect(uiViewModel.state.scriptEditor.content).toBe('');
+			expect(uiViewModel.editorContent).toBe('');
 			expect(uiViewModel.expandedCasePaths.size).toBe(0);
 			expect(uiViewModel.expandedRunIds.size).toBe(0);
 			expect(uiViewModel.blinkingTabLayerContext).toBeNull();

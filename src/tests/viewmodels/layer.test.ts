@@ -10,13 +10,7 @@ describe('layerViewModel', () => {
 	const mockCase = { path: '/datasets/dataset1/case1', name: 'Case 1' };
 	const mockLayer: Layer = { name: 'layer1', path: '/layer1' };
 
-	const mockColorMap = {
-		R: [0, 255],
-		G: [0, 0],
-		B: [0, 0],
-		A: [255, 255],
-		I: [0, 1],
-	};
+	const mockColorMap = 'gray';
 
 	describe('layer selection', () => {
 		beforeEach(() => {
@@ -24,6 +18,7 @@ describe('layerViewModel', () => {
 			currentWorkspace.state.ui.layers.layerContext = { type: 'dataset' };
 			loadedData.layersByCasePath[mockCase.path] = [mockLayer];
 			currentWorkspace.state.data.openedCasesPaths = [mockCase.path];
+			currentWorkspace.state.lastGlobalStylesByLayerName = {};
 		});
 
 		it('should select a layer and update workspace state', () => {
@@ -34,9 +29,7 @@ describe('layerViewModel', () => {
 		});
 
 		it('should deselect a layer and update workspace state', () => {
-			// First select the layer
 			layerViewModel.selectLayer(mockCase.path, mockLayer.path);
-			// Then deselect it
 			layerViewModel.deselectLayer(mockCase.path, mockLayer.path);
 
 			expect(layerViewModel.isLayerSelected(mockCase.path, mockLayer.path)).toBe(false);
@@ -44,11 +37,9 @@ describe('layerViewModel', () => {
 		});
 
 		it('should toggle layer selection', () => {
-			// Toggle on
 			layerViewModel.toggleLayer(mockCase.path, mockLayer.path);
 			expect(layerViewModel.isLayerSelected(mockCase.path, mockLayer.path)).toBe(true);
 
-			// Toggle off
 			layerViewModel.toggleLayer(mockCase.path, mockLayer.path);
 			expect(layerViewModel.isLayerSelected(mockCase.path, mockLayer.path)).toBe(false);
 		});
@@ -68,34 +59,20 @@ describe('layerViewModel', () => {
 	describe('layer styles', () => {
 		beforeEach(() => {
 			currentWorkspace.state.ui.layers.layerContext = { type: 'dataset' };
+			currentWorkspace.state.lastGlobalStylesByLayerName = {};
 		});
 
-		it('should update layer style', () => {
-			const style: Partial<LayerStyle> = {
+		it('should update global layer style', () => {
+			const style: LayerStyle = {
 				colorMap: mockColorMap,
 				alpha: 0.5,
 			};
 
-			layerViewModel.updateLayerStyle(mockLayer.name, style);
-
-			expect(layerViewModel.stylesByLayerName[mockLayer.name]).toEqual(style);
-		});
-
-		it('should merge new style with existing style', () => {
-			const initialStyle: Partial<LayerStyle> = {
-				colorMap: mockColorMap,
-				alpha: 0.5,
+			layerViewModel.lastGlobalStylesByLayerName = {
+				[mockLayer.name]: style,
 			};
 
-			layerViewModel.updateLayerStyle(mockLayer.name, initialStyle);
-
-			const updateStyle: Partial<LayerStyle> = { alpha: 0.8 };
-			layerViewModel.updateLayerStyle(mockLayer.name, updateStyle);
-
-			expect(layerViewModel.stylesByLayerName[mockLayer.name]).toEqual({
-				colorMap: mockColorMap,
-				alpha: 0.8,
-			});
+			expect(layerViewModel.lastGlobalStylesByLayerName[mockLayer.name]).toEqual(style);
 		});
 	});
 
@@ -104,6 +81,7 @@ describe('layerViewModel', () => {
 			currentWorkspace.state.ui.layers.layerContext = { type: 'dataset' };
 			loadedData.layersByCasePath[mockCase.path] = [mockLayer];
 			currentWorkspace.state.data.openedCasesPaths = [mockCase.path];
+			currentWorkspace.state.lastGlobalStylesByLayerName = {};
 		});
 
 		it('should return current layers by case', () => {
@@ -125,10 +103,9 @@ describe('layerViewModel', () => {
 		beforeEach(() => {
 			currentWorkspace.state.ui.layers.layerContext = { type: 'dataset' };
 			layerViewModel.selectLayer(mockCase.path, mockLayer.path);
-			layerViewModel.updateLayerStyle(mockLayer.name, {
-				colorMap: mockColorMap,
-				alpha: 0.5,
-			});
+			currentWorkspace.state.lastGlobalStylesByLayerName = {
+				[mockLayer.name]: { colorMap: mockColorMap, alpha: 0.5 },
+			};
 		});
 
 		it('should reset dataset layers state', () => {
@@ -137,7 +114,6 @@ describe('layerViewModel', () => {
 			expect(layerViewModel.isLoading).toBe(false);
 			expect(layerViewModel.error).toBeNull();
 			expect(layerViewModel.getSelectedLayers(mockCase.path)).toBeUndefined();
-			expect(layerViewModel.stylesByLayerName[mockLayer.name]).toBeUndefined();
 		});
 	});
 });

@@ -2,6 +2,8 @@ import { describe, it, expect, vi } from 'vitest';
 import { caseViewModel } from '$lib/viewmodels/case.svelte';
 import { apiRepository, loadedData, currentWorkspace } from '$lib/models/repository.svelte';
 import { resetTestState } from './viewmodel-test-utils';
+import type { Dataset, Case } from '$lib/models/types';
+import { layerViewModel } from '$lib/viewmodels/layer.svelte';
 
 // Mock the repository
 vi.mock('$lib/models/repository.svelte', async () => {
@@ -17,8 +19,8 @@ vi.mock('$lib/models/repository.svelte', async () => {
 describe('caseViewModel', () => {
 	resetTestState();
 
-	const mockDataset = { name: 'dataset1', layout: 'brats' };
-	const mockCase = { name: 'case1', path: '/datasets/dataset1/case1' };
+	const mockDataset: Dataset = { name: 'dataset1' };
+	const mockCase: Case = { name: 'case1', path: '/datasets/dataset1/case1' };
 
 	describe('selectCase', () => {
 		it('should handle successful case selection', async () => {
@@ -27,9 +29,17 @@ describe('caseViewModel', () => {
 				{ name: 'layer2', path: '/layer2' },
 			];
 
+			loadedData.datasets = [mockDataset];
+			loadedData.casesByDataset[mockDataset.name] = [mockCase];
+
 			vi.mocked(apiRepository.fetchLayers).mockImplementationOnce(async () => {
 				loadedData.layersByCasePath[mockCase.path] = mockLayers;
 			});
+
+			currentWorkspace.state.lastGlobalStylesByLayerName = {
+				layer1: layerViewModel.DEFAULT_LAYER_STYLE,
+				layer2: layerViewModel.DEFAULT_LAYER_STYLE,
+			};
 
 			await caseViewModel.selectCase(mockCase);
 
@@ -62,7 +72,7 @@ describe('caseViewModel', () => {
 			currentWorkspace.state.data.openedCasesPaths = [];
 
 			// Add necessary dataset and cases to loadedData
-			loadedData.datasets = [{ name: 'dataset1', layout: 'brats' }];
+			loadedData.datasets = [{ name: 'dataset1' }];
 			loadedData.casesByDataset['dataset1'] = Array.from({ length: 17 }, (_, i) => ({
 				name: `case${i}`,
 				path: `/datasets/dataset1/case${i}`,

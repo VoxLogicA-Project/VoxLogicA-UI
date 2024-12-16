@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { datasetViewModel } from '$lib/viewmodels/dataset.svelte';
 import { apiRepository, loadedData, currentWorkspace } from '$lib/models/repository.svelte';
 import { resetTestState } from './viewmodel-test-utils';
+import type { Dataset } from '$lib/models/types';
 
 vi.mock('$lib/models/repository.svelte', async () => {
 	const actual = await vi.importActual('$lib/models/repository.svelte');
@@ -19,10 +20,7 @@ describe('datasetViewModel', () => {
 
 	describe('loadDatasets', () => {
 		it('should handle successful dataset loading', async () => {
-			const mockDatasets = [
-				{ name: 'dataset1', layout: 'brats' },
-				{ name: 'dataset2', layout: 'custom' },
-			];
+			const mockDatasets: Dataset[] = [{ name: 'dataset1' }, { name: 'dataset2' }];
 
 			vi.mocked(apiRepository.fetchDatasets).mockImplementationOnce(async () => {
 				loadedData.datasets = mockDatasets;
@@ -111,7 +109,7 @@ describe('datasetViewModel', () => {
 	describe('reset', () => {
 		it('should reset all state', () => {
 			// Set some initial state
-			loadedData.datasets = [{ name: 'dataset1', layout: 'brats' }];
+			loadedData.datasets = [{ name: 'dataset1' }];
 			currentWorkspace.state.data.openedDatasetsNames = ['dataset1'];
 			loadedData.casesByDataset = { dataset1: [{ name: 'case1', path: '/case1' }] };
 
