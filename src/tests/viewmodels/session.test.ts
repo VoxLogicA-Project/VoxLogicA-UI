@@ -37,6 +37,7 @@ describe('sessionViewModel', () => {
 				openedCasesPaths: [],
 				openedRunsIds: [],
 			},
+			lastGlobalStylesByLayerName: {},
 			datasetLayersState: {
 				openedLayersPathsByCasePath: {},
 				stylesByLayerName: {},

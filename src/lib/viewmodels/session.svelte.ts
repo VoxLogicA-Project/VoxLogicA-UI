@@ -156,7 +156,7 @@ function reset(): void {
 	loadedData.casesByDataset = {};
 	loadedData.layersByCasePath = {};
 	loadedData.runsByCasePath = {};
-	loadedData.presetScripts = [];
+	loadedData.exampleScripts = [];
 
 	isLoading = false;
 	error = null;
