@@ -4,7 +4,7 @@
 	import { layerViewModel } from '$lib/viewmodels/layer.svelte';
 	import { runViewModel } from '$lib/viewmodels/run.svelte';
 	import { EditorState } from '@codemirror/state';
-	import { EditorView, basicSetup } from '@codemirror/basic-setup';
+	import { EditorView, basicSetup } from "codemirror"
 	import { lineNumbers } from '@codemirror/view';
 	import { imgql } from './imgql-lang';
 	import type { Case, ExampleScript } from '$lib/models/types';
