@@ -8,6 +8,10 @@ RUN apt-get update && apt-get install -y \
     libicu-dev \
     && rm -rf /var/lib/apt/lists/*
 
+# Create VoxLogicA directory
+RUN mkdir -p /opt/voxlogica && \
+    chown -R node:node /opt/voxlogica
+
 # Return to workspace directory and set permissions
 WORKDIR /workspaces/VoxLogica-UI
 RUN chown -R node:node /workspaces/VoxLogica-UI && \

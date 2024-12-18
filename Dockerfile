@@ -35,7 +35,9 @@ WORKDIR /app
 # Install production dependencies and tools needed for VoxLogicA
 RUN apt-get update && apt-get install -y \
     libicu-dev \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/* && \
+    mkdir -p /opt/voxlogica && \
+    chown -R node:node /opt/voxlogica
 
 # Copy package files and install production dependencies
 COPY package.json yarn.lock ./
