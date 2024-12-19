@@ -645,6 +645,11 @@
   dependencies:
     "@testing-library/dom" "^10.0.0"
 
+"@thisux/sveltednd@0.0.12":
+  version "0.0.12"
+  resolved "https://registry.yarnpkg.com/@thisux/sveltednd/-/sveltednd-0.0.12.tgz#0e9e8bb0de22fb4bd1d202c901e8bb85d9e7a9a7"
+  integrity sha512-9edVcakYkoCzU6pNIwmJ6Cf+9anECod26Ue/rL3Ssf5LyuLaBLXtBx4H4U8YwQCkwtMeSGFf0OsiMpPpFjvCcg==
+
 "@thisux/sveltednd@^0.0.14":
   version "0.0.14"
   resolved "https://registry.yarnpkg.com/@thisux/sveltednd/-/sveltednd-0.0.14.tgz#a3ccbf9830326c318bb4c1b44704659f18e3c94b"
@@ -2237,6 +2242,11 @@ svelte-check@^4.0.9:
     fdir "^6.2.0"
     picocolors "^1.0.0"
     sade "^1.7.4"
+
+svelte-skeleton-collapsible-sidebar@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/svelte-skeleton-collapsible-sidebar/-/svelte-skeleton-collapsible-sidebar-1.0.0.tgz#d5d6728f466a6ecf0f633e4d6b2a883d8943230a"
+  integrity sha512-JZFQDRYOcuCxWBUhF/ID+LCtFYi5XCoeBZ06C9F05nhu9hPi755RT/FaxwKNOy/PB1+XyL/7JuGXA07TqxUd5A==
 
 svelte@^5.2.3:
   version "5.14.1"
