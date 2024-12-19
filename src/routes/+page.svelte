@@ -1,6 +1,6 @@
 <script lang="ts">
 	// Layout Components
-	import CollapsibleSidebar from 'svelte-skeleton-collapsible-sidebar';
+	import CollapsibleSidebar from '$lib/components/common/CollapsibleSidebar.svelte';
 
 	// Navigation Components
 	import Browser from '$lib/components/navigation/browser/Browser.svelte';
