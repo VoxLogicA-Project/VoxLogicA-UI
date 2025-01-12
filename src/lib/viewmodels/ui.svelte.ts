@@ -20,6 +20,7 @@ const headerContent = $derived.by(() => {
 		'// END load layers',
 	].join('\n');
 });
+
 const fullScriptContent = $derived(
 	`${headerContent}\n\n${currentWorkspace.state.ui.scriptEditor.content}`
 );
@@ -121,7 +122,7 @@ async function loadExampleScript(example: ExampleScript): Promise<void> {
 }
 
 export const uiViewModel = {
-	// Bindable state
+	// States
 	get state() {
 		return currentWorkspace.state.ui;
 	},
@@ -185,4 +186,4 @@ export const uiViewModel = {
 	loadExampleScripts,
 	loadExampleScript,
 	reset,
-};
+} as const;

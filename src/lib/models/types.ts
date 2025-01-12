@@ -12,6 +12,7 @@ export interface Layer {
 	path: string;
 }
 
+/** https://github.com/niivue/niivue/blob/main/docs/development-notes/colormaps.md */
 export interface ColorMap {
 	R: number[];
 	G: number[];
@@ -21,7 +22,7 @@ export interface ColorMap {
 }
 
 export interface LayerStyle {
-	colorMap: ColorMap | string; // Either a color map or a string representing a color map name
+	colorMap: ColorMap | string; // Either a custom color map or a predefined color map name
 	alpha: number;
 }
 

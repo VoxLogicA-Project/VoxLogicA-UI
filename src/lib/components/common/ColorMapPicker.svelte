@@ -1,8 +1,22 @@
 <script lang="ts">
 	import { popup } from '@skeletonlabs/skeleton';
 	import { onMount } from 'svelte';
+	import type { ColorMap } from '$lib/models/types';
 
-	let { id, colormapValue = $bindable(), alphaValue = $bindable(1) } = $props();
+	interface ColorMapPickerProps {
+		/** Unique identifier for the picker */
+		id: string;
+		/** Current colormap value (either a string name or ColorMap object) */
+		colormapValue: string | ColorMap;
+		/** Current alpha/opacity value (0-1) */
+		alphaValue: number;
+	}
+
+	let {
+		id,
+		colormapValue = $bindable<ColorMapPickerProps['colormapValue']>(),
+		alphaValue = $bindable(1),
+	}: ColorMapPickerProps = $props();
 
 	const popupId = `colormap-picker-${id}`;
 
@@ -65,13 +79,18 @@
 		rgb: { r: 255, g: 0, b: 0 },
 	};
 
-	let isColorDark = $derived(
-		(0.299 * colormapValue?.R?.[2] +
-			0.587 * colormapValue?.G?.[2] +
-			0.114 * colormapValue?.B?.[2]) /
-			255 <
+	let isColorDark = $derived.by(() => {
+		if (typeof colormapValue === 'string') {
+			return false; // Default for preset colormaps
+		}
+		if (!colormapValue?.R?.[2] || !colormapValue?.G?.[2] || !colormapValue?.B?.[2]) {
+			return false;
+		}
+		return (
+			(0.299 * colormapValue.R[2] + 0.587 * colormapValue.G[2] + 0.114 * colormapValue.B[2]) / 255 <
 			0.5
-	);
+		);
+	});
 
 	function createCustomColorMap(r: number, g: number, b: number) {
 		const colorMap = {
@@ -84,7 +103,8 @@
 		colormapValue = colorMap;
 	}
 
-	let activeTab: 'preset' | 'custom' = $state('preset');
+	type ColorPickerTab = 'preset' | 'custom';
+	let activeTab: ColorPickerTab = $state('preset');
 
 	// Set the initial tab
 	onMount(() => {
@@ -97,7 +117,7 @@
 		}
 	});
 
-	function setActiveTab(tab: 'preset' | 'custom') {
+	function setActiveTab(tab: ColorPickerTab) {
 		activeTab = tab;
 		if (tab === 'preset' && presetColorMaps.length > 0) {
 			if (presetColorMaps.includes('gray')) {

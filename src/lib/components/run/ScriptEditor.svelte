@@ -4,7 +4,7 @@
 	import { layerViewModel } from '$lib/viewmodels/layer.svelte';
 	import { runViewModel } from '$lib/viewmodels/run.svelte';
 	import { EditorState } from '@codemirror/state';
-	import { EditorView, basicSetup } from "codemirror"
+	import { EditorView, basicSetup } from 'codemirror';
 	import { lineNumbers } from '@codemirror/view';
 	import { imgql } from './imgql-lang';
 	import type { Case, ExampleScript } from '$lib/models/types';
@@ -208,7 +208,7 @@
 	// Run the script for a single case
 	async function handleSingleRun(case_: Case) {
 		try {
-			await runViewModel.runAll([case_]);
+			await runViewModel.singleRun(case_);
 
 			if (runViewModel.error) {
 				toastStore.trigger({

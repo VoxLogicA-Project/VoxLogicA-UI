@@ -8,6 +8,7 @@ let error = $state<string | null>(null);
 
 // Derived states
 const datasets = $derived(loadedData.datasets);
+
 const selectedDatasets = $derived.by(() => {
 	const datasetNames = currentWorkspace.state.data.openedDatasetsNames;
 	return loadedData.datasets.filter((d) => datasetNames.includes(d.name));
@@ -76,7 +77,7 @@ function reset(): void {
 
 // Public API
 export const datasetViewModel = {
-	// State (readonly)
+	// States (readonly)
 	get isLoading() {
 		return isLoading;
 	},
@@ -102,4 +103,4 @@ export const datasetViewModel = {
 	deselectDataset,
 	toggleDataset,
 	reset,
-};
+} as const;

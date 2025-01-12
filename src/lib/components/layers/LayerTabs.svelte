@@ -43,6 +43,7 @@
 			uiViewModel.layerContext = tab.layerContext;
 		}
 	});
+
 	// And viceversa, whenever layerContext changes, we need to update the currentTabId
 	$effect(() => {
 		const tab = tabs.find(

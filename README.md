@@ -1,8 +1,8 @@
 # VoxLogicA UI
 
-A modern web interface for [VoxLogicA](https://github.com/vincenzoml/VoxLogicA), the Voxel-based Logical Analyser. VoxLogicA is an interpreter of a declarative language, inspired by spatial logics, to analyze images in a simple way.
+VoxLogicA UI is a modern web-based interface for visualizing and analyzing neuroimaging data, where analysis are performed through spatial model checking leveraging VoxLogicA.
 
-This UI provides an intuitive way to work with neuroimaging data, currently supporting the BraTS (Brain Tumor Segmentation) dataset format. For more information about VoxLogicA itself, please visit the [main project repository](https://github.com/vincenzoml/VoxLogicA).
+VoxLogicA is an interpreter of a declarative language, inspired by spatial logics, to analyze images in a simple declarative way. For more information about VoxLogicA itself, please visit the [main project repository](https://github.com/vincenzoml/VoxLogicA).
 
 ## Requirements
 
@@ -147,7 +147,7 @@ yarn dev
 
 ## Credits
 
-This software has been developed by Antonio Strippoli as part of his Master Thesis project, under the joint supervision of [dr. Vincenzo Ciancia](https://dblp.org/pid/50/1930.html), [Prof. Fabio Gadducci](https://dblp.org/pid/g/FabioGadducci.html), [dr. Mieke Massink](https://dblp.org/pid/79/1724.html), and the guidance of [dr. Giovanna Broccia](https://dblp.org/pid/207/2093.html) for user testing and design.
+This software has been developed by Antonio Strippoli as part of his Master Thesis project, under the joint supervision of [Vincenzo Ciancia](https://dblp.org/pid/50/1930.html), [Fabio Gadducci](https://dblp.org/pid/g/FabioGadducci.html), [Mieke Massink](https://dblp.org/pid/79/1724.html), and the guidance of [Giovanna Broccia](https://dblp.org/pid/207/2093.html) for user testing and design.
 
 A big thanks as well to all the people who contributed to this project through suggestions, feedback, testing, and code contributions. Every bit of help, no matter how small, has been invaluable in making VoxLogicA UI better.
 

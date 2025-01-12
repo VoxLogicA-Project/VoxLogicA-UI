@@ -17,6 +17,7 @@ let printFilters = $state<PrintFilter[]>([]);
 
 // Derived states
 const openedRunsIds = $derived(currentWorkspace.state.data.openedRunsIds);
+
 const uniquePrintLabels = $derived.by(() => {
 	const labels = new Set<string>();
 
@@ -36,7 +37,6 @@ const getRunsWithErrors = $derived((runId: Run['id']) => {
 	const runsErrors: Record<Case['path'], Run> = {};
 	for (const casePath in loadedData.runsByCasePath) {
 		const runs = loadedData.runsByCasePath[casePath];
-		// Find run with given runId
 		const run = runs.find((r) => r.id === runId);
 		if (run && run.outputError) {
 			runsErrors[casePath] = run;
@@ -44,6 +44,7 @@ const getRunsWithErrors = $derived((runId: Run['id']) => {
 	}
 	return runsErrors;
 });
+
 const getRunPrints = $derived((runId: Run['id'], casePath: Case['path']) => {
 	const runsForCase = loadedData.runsByCasePath[casePath];
 	if (!runsForCase) return [];
@@ -51,6 +52,7 @@ const getRunPrints = $derived((runId: Run['id'], casePath: Case['path']) => {
 	if (!run) return [];
 	return run.outputPrint;
 });
+
 const getRunsForCase = $derived((casePath: Case['path']) => {
 	const runs = loadedData.runsByCasePath[casePath] ?? [];
 
@@ -92,9 +94,11 @@ const getRunsForCase = $derived((casePath: Case['path']) => {
 		});
 	});
 });
+
 const isRunSelected = $derived((runId: Run['id']) => {
 	return currentWorkspace.state.data.openedRunsIds.some((id) => id === runId);
 });
+
 const getSuccessfulCasesForRun = $derived((runId: Run['id']) => {
 	const successfulCases: Case[] = [];
 
@@ -115,7 +119,6 @@ const getSuccessfulCasesForRun = $derived((runId: Run['id']) => {
 });
 
 // Actions
-
 async function singleRun(case_: Case): Promise<void> {
 	await runAll([case_]);
 }
@@ -226,8 +229,6 @@ function deselectRun(runId: Run['id']): void {
 	if (index !== -1) {
 		currentWorkspace.state.data.openedRunsIds.splice(index, 1);
 	}
-
-	// Persist layer styles to remember user's choices next time they open the run
 	currentWorkspace.state.runsLayersStates[runId].openedLayersPathsByCasePath = {};
 }
 
@@ -266,7 +267,7 @@ function reset(): void {
 
 // Public API
 export const runViewModel = {
-	// State (readonly)
+	// States (readonly)
 	get isLoading() {
 		return isLoading;
 	},
@@ -285,8 +286,6 @@ export const runViewModel = {
 	get uniquePrintLabels() {
 		return uniquePrintLabels;
 	},
-
-	// Queries
 	getRunsWithErrors,
 	getRunPrints,
 	getRunsForCase,
@@ -304,4 +303,4 @@ export const runViewModel = {
 	updatePrintFilter,
 	clearPrintFilters,
 	reset,
-};
+} as const;

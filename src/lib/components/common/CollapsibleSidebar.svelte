@@ -1,4 +1,28 @@
 <script lang="ts">
+	type SidebarSide = 'left' | 'right' | 'top' | 'bottom';
+
+	/** Props for the CollapsibleSidebar component */
+	interface SidebarProps {
+		/** Position of the sidebar ('left', 'right', 'top', 'bottom') */
+		side?: SidebarSide;
+		/** Minimum size in pixels before collapsing */
+		minSize?: number;
+		/** Maximum size in pixels */
+		maxSize?: number;
+		/** Initial size in pixels */
+		startSize?: number;
+		/** Current size in pixels (bindable) */
+		currentSize?: number;
+		/** Whether the sidebar is collapsed (bindable) */
+		isCollapsed?: boolean;
+		/** Size in pixels when collapsed */
+		collapsedSize?: number;
+		/** Title shown when collapsed */
+		title?: string;
+		/** Content to render inside the sidebar */
+		children?: any;
+	}
+
 	let {
 		side = 'left',
 		minSize = 150,
@@ -9,7 +33,7 @@
 		collapsedSize = 40,
 		title = '',
 		children,
-	} = $props();
+	}: SidebarProps = $props();
 
 	let sidebarElement: HTMLElement;
 	const isVertical = side === 'left' || side === 'right';
@@ -20,45 +44,54 @@
 		const startPos = isVertical ? event.pageX : event.pageY;
 		const startSize = isVertical ? sidebarElement.offsetWidth : sidebarElement.offsetHeight;
 
-		function onMouseMove(e: MouseEvent) {
+		const onMouseMove = (e: MouseEvent) => {
 			if (isCollapsed) return;
 
 			const currentPos = isVertical ? e.pageX : e.pageY;
-			const size =
-				side === 'left' || side === 'top'
-					? startSize + (currentPos - startPos)
-					: startSize - (currentPos - startPos);
+			const size = calculateNewSize(startSize, startPos, currentPos);
+			updateSize(size);
+		};
 
-			if (size > minSize && size < maxSize) {
-				currentSize = size;
-			} else if (size <= minSize) {
-				isCollapsed = true;
-			}
-		}
-
-		function onMouseUp() {
+		const onMouseUp = () => {
 			document.removeEventListener('mousemove', onMouseMove);
 			document.removeEventListener('mouseup', onMouseUp);
 			document.body.style.cursor = 'default';
-		}
+		};
 
 		document.addEventListener('mousemove', onMouseMove);
 		document.addEventListener('mouseup', onMouseUp);
 		document.body.style.cursor = isVertical ? 'col-resize' : 'row-resize';
 	}
 
+	function calculateNewSize(startSize: number, startPos: number, currentPos: number): number {
+		return side === 'left' || side === 'top'
+			? startSize + (currentPos - startPos)
+			: startSize - (currentPos - startPos);
+	}
+
+	function updateSize(size: number) {
+		if (size > minSize && size < maxSize) {
+			currentSize = size;
+		} else if (size <= minSize) {
+			isCollapsed = true;
+		}
+	}
+
+	// Automatically collapse when size becomes too small
 	$effect(() => {
 		if (currentSize <= minSize && !isCollapsed) {
 			isCollapsed = true;
 		}
 	});
 
+	// Update size when collapsed state changes
 	$effect(() => {
 		if (isCollapsed && currentSize !== collapsedSize) {
 			currentSize = collapsedSize;
 		}
 	});
 
+	// Update DOM when size changes
 	$effect(() => {
 		sidebarElement.style[isVertical ? 'width' : 'height'] = currentSize + 'px';
 	});
@@ -66,7 +99,7 @@
 
 <aside
 	bind:this={sidebarElement}
-	class="sidebar bg-surface-100-800-token relative border-surface-500/30 flex flex-col}"
+	class="sidebar bg-surface-100-800-token relative border-surface-500/30 flex flex-col"
 	class:border-r={side === 'left'}
 	class:border-l={side === 'right'}
 	class:border-t={side === 'bottom'}

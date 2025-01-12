@@ -9,7 +9,7 @@ import type {
 	LocalWorkspaceEntry,
 } from './types';
 
-// State Management
+/** Global application state containing all loaded data */
 export const loadedData = $state<LoadedData>({
 	availableWorkspacesIdsAndNames: [],
 	datasets: [],
@@ -19,6 +19,7 @@ export const loadedData = $state<LoadedData>({
 	exampleScripts: [],
 });
 
+/** Default state for new workspaces */
 export const DEFAULT_WORKSPACE_STATE: Workspace['state'] = {
 	data: {
 		openedDatasetsNames: [],
@@ -50,6 +51,7 @@ export const DEFAULT_WORKSPACE_STATE: Workspace['state'] = {
 	},
 };
 
+/** Currently active workspace */
 export const currentWorkspace = $state<Workspace>({
 	id: '',
 	name: '',
@@ -58,7 +60,7 @@ export const currentWorkspace = $state<Workspace>({
 	state: DEFAULT_WORKSPACE_STATE,
 });
 
-// Error Handling
+/** Custom error class for repository-related errors */
 export class RepositoryError extends Error {
 	constructor(
 		message: string,
@@ -67,15 +69,24 @@ export class RepositoryError extends Error {
 	) {
 		super(message);
 		this.name = 'RepositoryError';
+		Object.setPrototypeOf(this, RepositoryError.prototype);
 	}
 
 	get isNotFound() {
 		return this.statusCode === 404;
 	}
+
+	get isServerError() {
+		return this.statusCode ? this.statusCode >= 500 : false;
+	}
 }
 
-// API Utilities
+/** API utility functions for making HTTP requests */
 const api = {
+	/**
+	 * Fetch JSON data from the API
+	 * @throws {RepositoryError} If the request fails or returns non-200 status
+	 */
 	async fetch<T>(url: string, options?: RequestInit): Promise<T> {
 		try {
 			const response = await fetch(url, options);
@@ -93,6 +104,10 @@ const api = {
 		}
 	},
 
+	/**
+	 * Fetch text content from the API
+	 * @throws {RepositoryError} If the request fails or returns non-200 status
+	 */
 	async fetchText(url: string): Promise<string> {
 		const response = await fetch(url);
 		if (!response.ok) {
@@ -100,7 +115,7 @@ const api = {
 		}
 		return response.text();
 	},
-};
+} as const;
 
 // Repository Functions
 export const apiRepository = {
@@ -223,44 +238,56 @@ export const apiRepository = {
 		const workspaces = this.getLocalWorkspaces();
 		this.saveLocalWorkspaces(workspaces.filter((w) => w.id !== workspaceId));
 	},
-};
+} as const;
 
 async function loadWorkspaceData(workspace: Workspace) {
-	// Load datasets, preset scripts and runs
-	await apiRepository.fetchDatasets();
-	await apiRepository.fetchExampleScripts();
+	// Extract dataset name from case path
+	const getDatasetName = (casePath: string) => {
+		return casePath.split('/')[2];
+	};
 
-	// TODO: this could be optimized by fetching only the runs that are needed
-	await apiRepository.fetchWorkspaceRuns(workspace.id);
+	// Get unique dataset names from workspace state
+	const getRequiredDatasets = (workspace: Workspace) => {
+		const datasets = new Set<string>();
 
-	// Create a Set of required dataset names based on opened cases and explicitly opened datasets
-	const requiredDatasets = new Set<string>();
+		// Add explicitly opened datasets
+		workspace.state.data.openedDatasetsNames.forEach((name) => datasets.add(name));
 
-	// Add explicitly opened datasets
-	workspace.state.data.openedDatasetsNames.forEach((name) => requiredDatasets.add(name));
+		// Add datasets from opened cases
+		workspace.state.data.openedCasesPaths.forEach((path) => {
+			const datasetName = getDatasetName(path);
+			if (datasetName) datasets.add(datasetName);
+		});
 
-	// Find which datasets contain the opened cases
-	for (const casePath of workspace.state.data.openedCasesPaths) {
-		const datasetName = casePath.split('/')[2]; // Assuming path format is '/datasets/datasetName/...'
-		if (datasetName) {
-			requiredDatasets.add(datasetName);
-		}
-	}
+		return datasets;
+	};
 
-	// Load cases for all required datasets
-	for (const datasetName of requiredDatasets) {
-		const dataset = loadedData.datasets.find((d) => d.name === datasetName);
-		if (dataset) {
-			await apiRepository.fetchCases(dataset);
-		}
-	}
+	try {
+		// Load basic data
+		await Promise.all([
+			apiRepository.fetchDatasets(),
+			apiRepository.fetchExampleScripts(),
+			apiRepository.fetchWorkspaceRuns(workspace.id), // TODO: this could be optimized by fetching only the runs that are needed
+		]);
 
-	// Load layers for opened cases
-	for (const casePath of workspace.state.data.openedCasesPaths) {
-		const datasetName = casePath.split('/')[2];
-		const case_ = loadedData.casesByDataset[datasetName]?.find((c) => c.path === casePath);
-		if (case_) {
-			await apiRepository.fetchLayers(case_);
-		}
+		// Load required datasets and cases
+		const requiredDatasets = getRequiredDatasets(workspace);
+		await Promise.all(
+			Array.from(requiredDatasets).map(async (datasetName) => {
+				const dataset = loadedData.datasets.find((d) => d.name === datasetName);
+				if (dataset) await apiRepository.fetchCases(dataset);
+			})
+		);
+
+		// Load layers for opened cases
+		await Promise.all(
+			workspace.state.data.openedCasesPaths.map(async (casePath) => {
+				const datasetName = getDatasetName(casePath);
+				const case_ = loadedData.casesByDataset[datasetName]?.find((c) => c.path === casePath);
+				if (case_) await apiRepository.fetchLayers(case_);
+			})
+		);
+	} catch (error) {
+		throw new RepositoryError('Failed to load workspace data', undefined, error);
 	}
 }

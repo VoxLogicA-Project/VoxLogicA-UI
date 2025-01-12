@@ -14,8 +14,11 @@ let error = $state<string | null>(null);
 
 // Derived states
 const availableWorkspacesIdsAndNames = $derived(loadedData.availableWorkspacesIdsAndNames);
+
 const hasWorkspaces = $derived(availableWorkspacesIdsAndNames.length > 0);
+
 const selectedWorkspaceId = $derived(currentWorkspace.id);
+
 const selectedWorkspaceName = $derived(currentWorkspace.name);
 
 // Store the initial state snapshot when workspace is loaded
@@ -165,7 +168,7 @@ function reset(): void {
 
 // Public API
 export const sessionViewModel = {
-	// State (readonly)
+	// States (readonly)
 	get isLoading() {
 		return isLoading;
 	},
@@ -208,4 +211,4 @@ export const sessionViewModel = {
 	saveLocalWorkspaces,
 	removeLocalWorkspace,
 	reset,
-};
+} as const;

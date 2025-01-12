@@ -11,44 +11,33 @@
 
 	const TRANSITION_DURATION = 200;
 
-	const hasResults = (datasetName: string) =>
-		filteredCases.some((c) => caseViewModel.casesOfDataset(datasetName).includes(c));
-
-	// Filter datasets based on search results
-	const visibleDatasets = $derived.by(() => {
-		const hasActiveSearch = searchQuery.trim() !== '';
-		const hasActiveFilters = runViewModel.printFilters.some(
-			(f) => f.label.trim() && f.value.trim()
-		);
-
-		// Only filter datasets if there's an active search or filter
-		if ((hasActiveSearch || hasActiveFilters) && filteredCases.length > 0) {
-			return datasetViewModel.datasets.filter((d) => hasResults(d.name));
-		}
-		return datasetViewModel.datasets;
-	});
-
-	function handleDatasetClick(dataset: Dataset) {
-		const hasActiveSearch = searchQuery.trim() !== '';
-		const hasActiveFilters = runViewModel.printFilters.some(
-			(f) => f.label.trim() && f.value.trim()
-		);
-
-		// Only prevent unselecting if there's an active search/filter and dataset has results
-		if (
-			(hasActiveSearch || hasActiveFilters) &&
-			hasResults(dataset.name) &&
-			datasetViewModel.isSelected(dataset)
-		) {
-			return;
-		}
-		datasetViewModel.toggleDataset(dataset);
-	}
-
 	const hasActiveSearch = $derived(searchQuery.trim() !== '');
 	const hasActiveFilters = $derived(
 		runViewModel.printFilters.some((f) => f.label.trim() && f.value.trim())
 	);
+	function hasActiveFiltersOrSearch(): boolean {
+		return hasActiveSearch || hasActiveFilters;
+	}
+
+	const hasResults = (datasetName: string) =>
+		filteredCases.some((c) => caseViewModel.casesOfDataset(datasetName).includes(c));
+
+	const visibleDatasets = $derived.by(() => {
+		if (!hasActiveFiltersOrSearch() || !filteredCases.length) {
+			return datasetViewModel.datasets;
+		}
+		return datasetViewModel.datasets.filter((d) => hasResults(d.name));
+	});
+
+	function handleDatasetClick(dataset: Dataset) {
+		if (
+			hasActiveFiltersOrSearch() &&
+			hasResults(dataset.name) &&
+			datasetViewModel.isSelected(dataset)
+		)
+			return;
+		datasetViewModel.toggleDataset(dataset);
+	}
 </script>
 
 <ul class="p-2 space-y-1">

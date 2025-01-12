@@ -14,24 +14,28 @@ const cases = $derived.by(() => {
 	// Combine cases from all selected datasets
 	return loadedData.datasets.flatMap((dataset) => loadedData.casesByDataset[dataset.name] || []);
 });
+
 const selectedCases = $derived.by(() => {
 	const selectedPaths = currentWorkspace.state.data.openedCasesPaths;
 	return selectedPaths
 		.map((path) => cases.find((c) => c.path === path))
 		.filter((c): c is Case => c !== undefined);
 });
+
 const canSelectMore = $derived(selectedCases.length < MAX_SELECTED_CASES);
 
-// Queries
 const casesOfDataset = $derived((datasetName: string) => {
 	return loadedData.casesByDataset[datasetName] || [];
 });
+
 const getSelectedCasesForDataset = $derived((datasetName: string) => {
 	return selectedCases.filter((c) => casesOfDataset(datasetName).includes(c));
 });
+
 const getSelectionIndex = $derived((casePath: Case['path']) => {
 	return (currentWorkspace.state.data.openedCasesPaths.indexOf(casePath) + 1).toString();
 });
+
 const isSelected = $derived((casePath: Case['path']) => {
 	return currentWorkspace.state.data.openedCasesPaths.includes(casePath);
 });
@@ -73,7 +77,7 @@ async function selectCase(case_: Case): Promise<void> {
 function deselectCase(case_: Case): void {
 	currentWorkspace.state.data.openedCasesPaths =
 		currentWorkspace.state.data.openedCasesPaths.filter((path) => path !== case_.path);
-	// Clean up any associated layers state
+	// Clean up associated state
 	delete loadedData.layersByCasePath[case_.path];
 	delete currentWorkspace.state.datasetLayersState.openedLayersPathsByCasePath[case_.path];
 }
@@ -121,7 +125,7 @@ export const caseViewModel = {
 	// Constants
 	MAX_SELECTED_CASES,
 
-	// State (readonly)
+	// States (readonly)
 	get isLoading() {
 		return isLoading;
 	},
@@ -140,8 +144,6 @@ export const caseViewModel = {
 	get canSelectMore() {
 		return canSelectMore;
 	},
-
-	// Queries
 	casesOfDataset,
 	getSelectedCasesForDataset,
 	getSelectionIndex,
@@ -151,8 +153,6 @@ export const caseViewModel = {
 	selectCase,
 	deselectCase,
 	toggleCase,
-	reset,
-
-	// New action
 	swapCases,
-};
+	reset,
+} as const;

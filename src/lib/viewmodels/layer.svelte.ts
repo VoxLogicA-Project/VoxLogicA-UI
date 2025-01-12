@@ -10,7 +10,7 @@ const DEFAULT_LAYER_STYLE: LayerStyle = {
 let isLoading = $state(false);
 let error = $state<string | null>(null);
 
-// Context-dependent states
+// Context-dependent derived states
 const currentLayersByCase = $derived((casePath: Case['path']) => {
 	if (currentWorkspace.state.ui.layers.layerContext.type === 'dataset') {
 		return loadedData.layersByCasePath[casePath] ?? [];
@@ -20,6 +20,7 @@ const currentLayersByCase = $derived((casePath: Case['path']) => {
 	const run = runs.find((r) => r.id === currentWorkspace.state.ui.layers.layerContext.runId);
 	return run?.outputLayers ?? [];
 });
+
 const currentLayerState = $derived.by(() => {
 	if (currentWorkspace.state.ui.layers.layerContext.type === 'dataset') {
 		return currentWorkspace.state.datasetLayersState;
@@ -40,9 +41,10 @@ const currentLayerState = $derived.by(() => {
 	];
 });
 
-// Derived states
 const openedLayersPathsByCasePath = $derived(currentLayerState.openedLayersPathsByCasePath);
+
 const stylesByLayerName = $derived(currentLayerState.stylesByLayerName);
+
 const datasetUniqueLayersNames = $derived.by(() => {
 	if (currentWorkspace.state.data.openedCasesPaths.length === 0) {
 		return [];
@@ -57,6 +59,7 @@ const datasetUniqueLayersNames = $derived.by(() => {
 	});
 	return Array.from(layerNames);
 });
+
 const uniqueLayersNames = $derived.by(() => {
 	// Return unique layer names from all cases
 	const layerNames = new Set<string>();
@@ -69,7 +72,6 @@ const uniqueLayersNames = $derived.by(() => {
 	return Array.from(layerNames);
 });
 
-// Queries
 const openedLayersByCasePath = $derived((casePath: Case['path']) => {
 	return openedLayersPathsByCasePath[casePath]
 		?.map((path) => currentLayersByCase(casePath).find((l) => l.path === path))
@@ -103,7 +105,7 @@ const getAvailableLayerFromName = $derived((casePath: Case['path'], layerName: L
 	return currentLayersByCase(casePath).find((l) => l.name === layerName);
 });
 
-// Context-independent queries
+// Context-independent derived states
 const getAllSelectedLayersNoContext = $derived((casePath: Case['path']) => {
 	// Return all opened layers objects from dataset and runs
 	const selectedDatasetLayers =
@@ -216,7 +218,7 @@ export const layerViewModel = {
 	// Constants
 	DEFAULT_LAYER_STYLE,
 
-	// State (readonly)
+	// States (readonly)
 	get isLoading() {
 		return isLoading;
 	},
@@ -238,8 +240,6 @@ export const layerViewModel = {
 	set lastGlobalStylesByLayerName(value: Record<Layer['name'], LayerStyle>) {
 		currentWorkspace.state.lastGlobalStylesByLayerName = value;
 	},
-
-	// Queries
 	currentLayersByCase,
 	getSelectedLayers,
 	isLayerSelected,
@@ -255,4 +255,4 @@ export const layerViewModel = {
 	selectLayerForAllOpenedCases,
 	deselectLayerForAllOpenedCases,
 	reset,
-};
+} as const;

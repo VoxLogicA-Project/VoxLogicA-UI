@@ -15,13 +15,6 @@
 	});
 
 	let isPrintsExpanded = $state(true);
-
-	function formatPrint(print: PrintOutput): string {
-		if (print.vltype === 'number' || print.vltype === 'string') {
-			return `${print.name}: ${print.value}`;
-		}
-		return `${print.name}: [${print.vltype}] ${print.value}`;
-	}
 </script>
 
 <tr
