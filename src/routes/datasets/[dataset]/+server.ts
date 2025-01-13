@@ -8,7 +8,6 @@ import type { Dataset } from '$lib/models/types';
 export const GET: RequestHandler = async ({ params }) => {
 	try {
 		const datasetPath = path.join(DATASET_PATH, params.dataset);
-		const configPath = path.join(datasetPath, 'dataset.json');
 
 		// Check if dataset directory exists
 		try {
