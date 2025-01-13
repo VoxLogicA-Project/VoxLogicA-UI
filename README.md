@@ -4,6 +4,14 @@ VoxLogicA UI is a modern web-based interface for visualizing and analyzing neuro
 
 VoxLogicA is an interpreter of a declarative language, inspired by spatial logics, to analyze images in a simple declarative way. For more information about VoxLogicA itself, please visit the [main project repository](https://github.com/vincenzoml/VoxLogicA).
 
+## Tech Stack
+
+- [SvelteKit](https://svelte.dev/) (v5) - Web framework
+- [Skeleton UI](https://www.skeleton.dev/) (v2) - UI components
+- [TailwindCSS](https://tailwindcss.com/) - Styling
+- [NiiVue](https://niivue.github.io/niivue/) - Neuroimaging visualization
+- [VoxLogicA](https://github.com/vincenzoml/VoxLogicA) (v1.3.3-experimental) - Spatial model checking
+
 ## Requirements
 
 ### Using Docker (Recommended)
@@ -17,11 +25,89 @@ VoxLogicA is an interpreter of a declarative language, inspired by spatial logic
 - curl (for downloading VoxLogicA binaries)
 - unzip or tar (depending on your OS)
 
-## Production Deployment
+## Configuration
 
-### Using Docker
+### Data Directories
 
-The easiest way to deploy VoxLogicA UI in production is using Docker:
+VoxLogicA UI uses three main data directories that you can configure:
+
+1. **Datasets Directory:** contains your neuroimaging data organized by dataset
+2. **Scripts Directory:** contains example VoxLogicA scripts
+3. **Workspaces Directory:** contains saved user workspaces
+
+#### Default Locations
+
+```bash
+DATASET_PATH=static/datasets         # Neuroimaging datasets
+SCRIPTS_PATH=static/scripts          # Example VoxLogicA scripts
+WORKSPACES_PATH={temp_dir}/voxlogica-ui/workspaces  # User workspaces
+```
+
+#### Directory Structure
+
+##### Datasets Directory
+
+```
+datasets/
+├── dataset1/
+│   ├── case1/
+│   │   ├── case1_t1.nii.gz
+│   │   └── case1_t2.nii.gz
+│   └── case2/
+│       ├── case2_t1.nii.gz
+│       └── case2_t2.nii.gz
+└── dataset2/
+    └── ...
+```
+
+- Each dataset is a directory containing case directories
+- Case directories contain NIFTI files (`.nii.gz`)
+- Layer files should follow the naming convention: `layername.nii.gz` or possibly `casename_layername.nii.gz`
+
+##### Scripts Directory
+
+```
+scripts/
+├── example1.imgql
+├── example2.imgql
+└── ...
+```
+
+- Contains `.imgql` files with VoxLogicA scripts
+- These scripts will be available as examples in the UI
+
+##### Workspaces Directory
+
+```
+workspaces/
+├── workspace1/
+│   ├── workspace.json
+│   └── cases/
+│       └── ...
+└── workspace2/
+    └── ...
+```
+
+- Each workspace has its own directory containing configuration and analysis results
+- The application automatically manages this directory structure
+
+#### Custom Configuration
+
+You can customize these paths by:
+
+1. Passing the wanted paths to the docker run command (see [Installation & Deployment](#installation--deployment))
+
+2. If not using Docker, creating a `.env` file in the project root:
+
+```bash
+DATASET_PATH=/path/to/your/datasets
+SCRIPTS_PATH=/path/to/your/scripts
+WORKSPACES_PATH=/path/to/workspaces
+```
+
+## Installation & Deployment
+
+### Production Deployment with Docker (Recommended)
 
 1. Build the Docker image:
 
@@ -66,9 +152,9 @@ Remove the container:
 docker rm voxlogica-ui
 ```
 
-## Development Environment
+### Development Setup
 
-If you have Docker installed, the easiest way to get started is using the provided Dev Container configuration:
+#### Using Dev Container (Recommended)
 
 1. Install [Visual Studio Code](https://code.visualstudio.com/) and the [Dev Containers extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers)
 2. Clone the repository and open it in VS Code
@@ -80,7 +166,7 @@ If you have Docker installed, the easiest way to get started is using the provid
    - Configure VS Code with recommended extensions
 5. Run the development server with `yarn dev`
 
-### Manual Installation
+#### Manual Installation
 
 1. Clone the repository:
 
@@ -125,17 +211,7 @@ yarn dev
 
 6. Open your browser and navigate to the development server address displayed in the terminal.
 
-## Development
-
-### Tech Stack
-
-- [SvelteKit](https://svelte.dev/) (v5) - Web framework
-- [Skeleton UI](https://www.skeleton.dev/) (v2) - UI components
-- [TailwindCSS](https://tailwindcss.com/) - Styling
-- [NiiVue](https://niivue.github.io/niivue/) - Neuroimaging visualization
-- [VoxLogicA](https://github.com/vincenzoml/VoxLogicA) (v1.3.3-experimental) - Image analysis engine
-
-### Scripts
+### Development Scripts
 
 - `yarn dev` - Start development server
 - `yarn build` - Build for production
@@ -147,7 +223,7 @@ yarn dev
 
 ## Credits
 
-This software has been developed by Antonio Strippoli as part of his Master Thesis project, under the joint supervision of [Vincenzo Ciancia](https://dblp.org/pid/50/1930.html), [Fabio Gadducci](https://dblp.org/pid/g/FabioGadducci.html), [Mieke Massink](https://dblp.org/pid/79/1724.html), and the guidance of [Giovanna Broccia](https://dblp.org/pid/207/2093.html) for user testing and design.
+This software has been developed by [Antonio Strippoli](https://github.com/CoffeeStraw) as part of his Master Thesis project, under the joint supervision of [Vincenzo Ciancia](https://dblp.org/pid/50/1930.html), [Fabio Gadducci](https://dblp.org/pid/g/FabioGadducci.html), [Mieke Massink](https://dblp.org/pid/79/1724.html), and the guidance of [Giovanna Broccia](https://dblp.org/pid/207/2093.html) for user testing and design.
 
 A big thanks as well to all the people who contributed to this project through suggestions, feedback, testing, and code contributions. Every bit of help, no matter how small, has been invaluable in making VoxLogicA UI better.
 
