@@ -28,3 +28,4 @@ vite.config.ts.timestamp-*
 # VoxLogicA binaries
 voxlogica.zip
 /static/bin/**
+dist
