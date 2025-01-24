@@ -4,6 +4,28 @@ VoxLogicA UI is a modern web-based interface for visualizing and analyzing neuro
 
 VoxLogicA is an interpreter of a declarative language, inspired by spatial logics, to analyze images in a simple declarative way. For more information about VoxLogicA itself, please visit the [main project repository](https://github.com/vincenzoml/VoxLogicA).
 
+## How to run
+
+Currently, VoxLogicA UI runs as a web application. A desktop app using electron is in progress and will be uploaded soon.
+
+The most straightforward way to test the web application is using Docker (see https://www.docker.com/). Clone the repository first (actually, just the static directory is all that you need) and then run the official docker image of VoxLogicA UI on linux and mac is as follows:
+
+```bash
+docker run -p 3000:3000   -v "$(pwd)/static/datasets:/data/datasets"   -v "$(pwd)/static/scripts:/data/scripts"   docker.io/vincenzoml/voxlogica-ui:latest
+```
+
+On windows, use powershell:
+
+```psh
+docker run -p 3000:3000 -v "${PWD}/static/datasets:/data/datasets" -v "${PWD}/static/scripts:/data/scripts" docker.io/vincenzoml/voxlogica-ui:latest
+```
+
+The test can be interrupted using CTRL+C. Note that this opens a port at localhost:3000. Open localhost:3000 in your web browser and start testing.
+
+To use the tool on your own data, just replace "$(pwd)/static/datasets" (only the part before the semicolon!) with the full path to the directory where your datasets are hosted (see below for more details on the format). The path **must** be absolute.
+
+To use a different port, change the first occurrence of `3000`. To be able to close the terminal while the application run, the `-d`switch can be added to the command line (e.g., just before `-p`). See below for details on how to manage the running application and stop it, in that case.
+
 ## Tech Stack
 
 - [SvelteKit](https://svelte.dev/) (v5) - Web framework
