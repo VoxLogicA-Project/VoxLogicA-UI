@@ -4,10 +4,33 @@
 	"private": true,
 	"license": "GPL-3.0-or-later",
 	"main": "main.js",
+	"build": {
+		"appId": "org.voxlogica.ui",
+		"productName": "VoxLogicA-UI",
+		"files": [
+			"dist/**/*",
+			"node_modules/**/*",
+			"package.json",
+			"main.js"
+		],
+		"directories": {
+			"buildResources": "build"
+		},
+		"mac": {
+			"target": "dmg"
+		},
+		"win": {
+			"target": "nsis"
+		},
+		"linux": {
+			"target": "AppImage"
+		}
+	},
 	"scripts": {
 		"dev": "vite dev",
 		"app": "electron .",
-		"package:mac-arm": "electron-packager . VoxLogicA-UI --platform=darwin --arch=arm64 --out=dist --overwrite",
+		"build-pkg": "electron-builder",
+		"single-file:mac-arm": "electron-packager . VoxLogicA-UI --platform=darwin --arch=arm64 --out=dist --overwrite",
 		"build": "vite build",
 		"preview": "vite preview",
 		"start": "node build",
@@ -34,6 +57,7 @@
 		"@vitest/coverage-v8": "2.1.8",
 		"autoprefixer": "10.4.20",
 		"electron": "^34.0.1",
+		"electron-builder": "^25.1.8",
 		"electron-packager": "^17.1.2",
 		"express": "^4.21.2",
 		"jsdom": "^25.0.1",
